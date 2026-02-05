@@ -1,0 +1,5 @@
+{
+  "name": "Voice AI Admin Configurator",
+  "description": "An enterprise-grade admin dashboard for configuring Voice AI runtime agents, featuring Gemini-powered auto-configuration.",
+  "requestFramePermissions": []
+}
