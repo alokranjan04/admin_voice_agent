@@ -2,12 +2,12 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Sidebar } from './components/Sidebar';
 import { LoginScreen } from './components/LoginScreen';
 import { generateConfigFromDescription } from './services/geminiService';
-import { saveConfiguration } from './services/firebase';
+import { saveConfiguration, auth, loginWithGoogle, logoutUser } from './services/firebase';
 import { createVapiAssistant } from './services/vapiService';
 import { researchBusiness } from './services/researchService';
 import { AgentConfiguration, INITIAL_CONFIG, DeliveryModeType } from './types';
 import { Wand2, Plus, Trash2, Loader2, AlertCircle, Copy, Check, Database, Calendar, Rocket, Braces, Search } from 'lucide-react';
-// Removed Firebase Auth imports as we're switching to local admin login
+import { onAuthStateChanged, User } from 'firebase/auth';
 
 const TIME_ZONES = [
   'UTC',
@@ -35,7 +35,7 @@ const TIME_ZONES = [
 ];
 
 export default function App() {
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [isDemoMode, setIsDemoMode] = useState(false);
@@ -50,33 +50,37 @@ export default function App() {
   const [isLaunching, setIsLaunching] = useState(false); // New state for launch process
   const [copySuccess, setCopySuccess] = useState(false);
 
-  // Session Persistence
+  // Auth Listener
   useEffect(() => {
-    const savedSession = localStorage.getItem('admin_session');
-    if (savedSession === 'active') {
-      setUser({ email: 'admin@voice-ai.com', uid: 'admin-local' } as any);
-      // Automatically enable integrations locally
-      setConfig(prev => ({
-        ...prev,
-        integrations: {
-          firebase: true,
-          googleCalendar: true,
-          ...(prev.integrations || {})
-        }
-      }));
-    }
-    setAuthLoading(false);
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+      setAuthLoading(false);
+      setIsLoggingIn(false);
+      if (currentUser) {
+        setIsDemoMode(false);
+        // Automatically enable calendar integration if logged in, but PRESERVE existing keys
+        setConfig(prev => ({
+          ...prev,
+          integrations: {
+            firebase: true, // Default ensure
+            ...(prev.integrations || {}),
+            googleCalendar: true
+          }
+        }));
+      }
+    });
+    return () => unsubscribe();
   }, []);
 
   const handleLogin = async () => {
     setIsLoggingIn(true);
-    // Simulation of network delay
-    await new Promise(resolve => setTimeout(resolve, 800));
-
-    setUser({ email: 'admin@voice-ai.com', uid: 'admin-local' } as any);
-    localStorage.setItem('admin_session', 'active');
-    setIsLoggingIn(false);
-    setIsDemoMode(false);
+    try {
+      await loginWithGoogle();
+    } catch (error) {
+      console.error("Login Error", error);
+      setIsLoggingIn(false);
+      throw error;
+    }
   };
 
   const handleDemoLogin = () => {
@@ -84,11 +88,19 @@ export default function App() {
   };
 
   const handleLogout = async () => {
-    localStorage.removeItem('admin_session');
-    setUser(null);
-    setIsDemoMode(false);
-    setIsLocked(false);
-    setConfig(INITIAL_CONFIG);
+    if (isDemoMode) {
+      setIsDemoMode(false);
+      setConfig(INITIAL_CONFIG);
+      setIsLocked(false);
+      return;
+    }
+    try {
+      await logoutUser();
+      setIsLocked(false);
+      setConfig(INITIAL_CONFIG);
+    } catch (error) {
+      console.error("Logout Error", error);
+    }
   };
 
   // Helper to scroll to section
@@ -127,8 +139,9 @@ export default function App() {
         setIsLocked(true); // Ensure UI reflects saved state
       }
 
-      // Step 2: Get Fresh Token (Mocked for local admin)
-      const token = "mock-admin-token";
+      // Step 2: Get Fresh Token
+      // Pass true to force refresh and avoid "Session expired" errors on client
+      const token = await user.getIdToken(true);
 
       // Step 3: Open Client
       // We also pass 'role=admin' to help the client context (optional usage)
