@@ -117,10 +117,10 @@ export default function App() {
     config.services.length > 0 &&
     config.locations.length > 0;
 
-  // Generates a token and opens the client app on port 3001
+  // Generates a token and opens the client app on Vercel
   const handleLaunchClient = async () => {
     if (isDemoMode) {
-      window.open('http://localhost:3001?mode=demo', '_blank');
+      window.open('https://voice-agent-eight-delta.vercel.app/', '_blank');
       return;
     }
 
@@ -145,7 +145,7 @@ export default function App() {
 
       // Step 3: Open Client
       // We also pass 'role=admin' to help the client context (optional usage)
-      const url = `http://localhost:3009?authtoken=${encodeURIComponent(token)}&role=admin`;
+      const url = `https://voice-agent-eight-delta.vercel.app?authtoken=${encodeURIComponent(token)}&role=admin`;
       window.open(url, '_blank');
     } catch (error) {
       console.error("Failed to launch client", error);

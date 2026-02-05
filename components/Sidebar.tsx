@@ -71,8 +71,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 <button
                   onClick={() => onNavigate(item.id)}
                   className={`w-full flex items-center gap-3 px-6 py-3 text-sm font-medium transition-colors ${isActive
-                      ? 'bg-brand-900/30 text-brand-500 border-r-2 border-brand-500'
-                      : 'hover:bg-slate-800 hover:text-white'
+                    ? 'bg-brand-900/30 text-brand-500 border-r-2 border-brand-500'
+                    : 'hover:bg-slate-800 hover:text-white'
                     }`}
                 >
                   <Icon className={`w-4 h-4 ${isActive ? 'text-brand-500' : 'text-slate-500'}`} />
@@ -90,7 +90,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           onClick={onLaunchClient}
           disabled={isLaunching}
           className="w-full flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold bg-slate-800 text-indigo-400 hover:bg-slate-700 hover:text-indigo-300 border border-slate-700 transition-all disabled:opacity-70 disabled:cursor-wait"
-          title="Open localhost:3001 with current auth session"
+          title="Open Live Agent Interface"
         >
           {isLaunching ? <Loader2 className="w-4 h-4 animate-spin" /> : <ExternalLink className="w-4 h-4" />}
           {isLaunching ? 'Launching...' : 'Launch Web Client'}
@@ -101,8 +101,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
           onClick={onLock}
           disabled={!isValid || isSaving || isLocked}
           className={`w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-sm font-bold transition-all ${isValid && !isLocked
-              ? 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-900/20'
-              : 'bg-slate-800 text-slate-500 cursor-not-allowed'
+            ? 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-900/20'
+            : 'bg-slate-800 text-slate-500 cursor-not-allowed'
             } ${isSaving ? 'opacity-80 cursor-wait' : ''}`}
         >
           {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : (isValid && !isLocked ? <CheckCircle2 className="w-4 h-4" /> : <Lock className="w-4 h-4" />)}
