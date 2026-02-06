@@ -16,20 +16,27 @@ const getEnv = (key: string) => {
   return null;
 };
 
-export const GOOGLE_CLIENT_ID = getEnv('VITE_GOOGLE_CLIENT_ID') || "101257437274-9p20p1jo0ovin7k9cdfuk5nvhdkv0o31.apps.googleusercontent.com";
-export const GOOGLE_CALENDAR_TOKEN_FALLBACK = getEnv('VITE_GOOGLE_CALENDAR_TOKEN') || "optional_fallback_token";
+export const GOOGLE_CLIENT_ID = getEnv('VITE_GOOGLE_CLIENT_ID') || "";
+export const GOOGLE_CALENDAR_TOKEN_FALLBACK = getEnv('VITE_GOOGLE_CALENDAR_TOKEN') || "";
 
-// Explicit configuration provided by user
 // Firebase configuration using environment variables
 const firebaseConfig = {
-  apiKey: getEnv('VITE_FIREBASE_API_KEY') || "AIzaSyDUj6JWI2F9UNaj4fySRU4-MBqgHTUCwRc",
-  authDomain: getEnv('VITE_FIREBASE_AUTH_DOMAIN') || "ai-voice-agent-c2a2b.firebaseapp.com",
-  projectId: getEnv('VITE_FIREBASE_PROJECT_ID') || "ai-voice-agent-c2a2b",
-  storageBucket: getEnv('VITE_FIREBASE_STORAGE_BUCKET') || "ai-voice-agent-c2a2b.firebasestorage.app",
-  messagingSenderId: getEnv('VITE_FIREBASE_MESSAGING_SENDER_ID') || "536573436709",
-  appId: getEnv('VITE_FIREBASE_APP_ID') || "1:536573436709:web:7f4997b23cbdfa996070cc",
-  measurementId: "G-YQJ7HBDYVZ"
+  apiKey: getEnv('VITE_FIREBASE_API_KEY') || "",
+  authDomain: getEnv('VITE_FIREBASE_AUTH_DOMAIN') || "",
+  projectId: getEnv('VITE_FIREBASE_PROJECT_ID') || "",
+  storageBucket: getEnv('VITE_FIREBASE_STORAGE_BUCKET') || "",
+  messagingSenderId: getEnv('VITE_FIREBASE_MESSAGING_SENDER_ID') || "",
+  appId: getEnv('VITE_FIREBASE_APP_ID') || "",
+  measurementId: getEnv('VITE_FIREBASE_MEASUREMENT_ID') || "G-YQJ7HBDYVZ"
 };
+
+// Validate critical config
+if (!firebaseConfig.apiKey) {
+  console.error("CRITICAL: VITE_FIREBASE_API_KEY is missing from environment.");
+}
+if (!firebaseConfig.projectId) {
+  console.error("CRITICAL: VITE_FIREBASE_PROJECT_ID is missing from environment.");
+}
 
 // Initialize Firebase
 let app;

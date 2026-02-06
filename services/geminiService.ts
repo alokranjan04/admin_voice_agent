@@ -17,15 +17,7 @@ const getEnv = (key: string) => {
 };
 
 const getGeminiApiKey = (): string => {
-  let apiKey =
-    getEnv('VITE_GEMINI_API_KEY') ||
-    getEnv('VITE_API_KEY') ||
-    getEnv('REACT_APP_GEMINI_API_KEY') ||
-    getEnv('REACT_APP_API_KEY') ||
-    getEnv('GEMINI_API_KEY') ||
-    getEnv('API_KEY') ||
-    process.env.API_KEY ||
-    '';
+  let apiKey = getEnv('VITE_GEMINI_API_KEY') || '';
 
   apiKey = apiKey ? apiKey.trim() : '';
   if ((apiKey.startsWith('"') && apiKey.endsWith('"')) || (apiKey.startsWith("'") && apiKey.endsWith("'"))) {
