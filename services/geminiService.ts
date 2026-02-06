@@ -105,8 +105,7 @@ export async function generateConfigFromDescription(description: string, researc
     Set temperature to 0.3.
     
     FOR VAPI TRANSCRIBER SETTINGS:
-    Always use "openai" for provider and "whisper-1" for model by default, or "deepgram" with "nova-2" for high accuracy.
-    Set language to "en".
+    Always use "deepgram" for provider and "nova-2" for model by default for high accuracy. Set language to "en".
 
     FOR VAPI MESSAGE SETTINGS:
     Generate a "firstMessage" that is personalized to the business (e.g., "Hello, thanks for calling GreenThumb Atlanta, how can I help you?"). Ensure NO placeholders like {{COMPANY_NAME}} remain in the firstMessage.
@@ -278,7 +277,7 @@ function processResult(result: any) {
       temperature: 0.3,
       voiceProvider: 'vapi',
       voiceId: 'Mia',
-      transcriber: { provider: 'openai', language: 'en', model: 'whisper-1' },
+      transcriber: { provider: 'deepgram', language: 'en', model: 'nova-2' },
       ...(parsed.vapi || {})
     }
   } as Partial<AgentConfiguration>;

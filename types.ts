@@ -162,9 +162,9 @@ AI Assistant must not use numeric characters in any response.`,
     voiceProvider: 'vapi',
     voiceId: 'Mia', // specialized voice name
     transcriber: {
-      provider: 'openai',
+      provider: 'deepgram',
       language: 'en',
-      model: 'whisper-1'
+      model: 'nova-2'
     },
     backgroundSound: 'default',
     knowledgeBase: `# FAQs for {{Company Name}}

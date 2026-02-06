@@ -258,6 +258,8 @@ export default function App() {
         setIsLocked(true); // Ensure UI reflects saved state
       }
 
+      // FOR VAPI TRANSCRIBER SETTINGS:
+      // Always use "deepgram" for provider and "nova-2" for model for high accuracy. Use "en" for language.
       // Step 2: Get Fresh Token
       // Pass true to force refresh and avoid "Session expired" errors on client
       const token = await user.getIdToken(true);
@@ -890,7 +892,7 @@ export default function App() {
             </div>
             <div className="space-y-2">
               <label className="text-sm font-medium text-red-700">Disallowed Topics</label>
-              <textarea className="w-full p-2 border border-red-200 bg-red-50 rounded-md h-24"
+              <textarea className="w-full p-2 border border-red-200 bg-red-500 rounded-md h-24"
                 value={config.safety.disallowedTopics} onChange={(e) => setConfig(prev => ({ ...prev, safety: { ...prev.safety, disallowedTopics: e.target.value } }))} />
             </div>
             <div className="space-y-2">
