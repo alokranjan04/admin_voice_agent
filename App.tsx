@@ -298,8 +298,9 @@ export default function App() {
       const orgId = getOrgId(user);
       const safeName = config.metadata.businessName.trim().toLowerCase().replace(/[^a-z0-9]+/g, '_');
       const agentId = activeAgentId || `agent_${safeName}`;
+      const clientBaseUrl = config.vapi.clientUrl || 'https://voice-agent-eight-delta.vercel.app';
 
-      const url = `https://voice-agent-eight-delta.vercel.app?authtoken=${encodeURIComponent(token)}&orgId=${orgId}&agentId=${agentId}&role=admin`;
+      const url = `${clientBaseUrl}?authtoken=${encodeURIComponent(token)}&orgId=${orgId}&agentId=${agentId}&role=admin`;
       window.open(url, '_blank');
     } catch (error) {
       console.error("Failed to launch client", error);
@@ -1069,7 +1070,6 @@ export default function App() {
                   )}
                 </div>
 
-                {/* Additional Settings */}
                 <div className="space-y-2">
                   <label className="text-xs font-semibold text-slate-500 uppercase">Background Sound</label>
                   <select
@@ -1081,6 +1081,19 @@ export default function App() {
                       <option key={s.id} value={s.id}>{s.name}</option>
                     ))}
                   </select>
+                </div>
+
+                {/* Web Client URL */}
+                <div className="space-y-2">
+                  <label className="text-xs font-semibold text-slate-500 uppercase">Web Client Deployment URL</label>
+                  <input
+                    type="url"
+                    placeholder="https://your-client-app.vercel.app"
+                    className="w-full p-2 border rounded bg-slate-50 text-xs font-mono"
+                    value={config.vapi.clientUrl}
+                    onChange={(e) => setConfig(prev => ({ ...prev, vapi: { ...prev.vapi, clientUrl: e.target.value } }))}
+                  />
+                  <p className="text-[10px] text-slate-400 italic">Target URL for the 'Launch Agent Interface' button.</p>
                 </div>
               </div>
             </div>
@@ -1204,10 +1217,10 @@ export default function App() {
             </div>
 
           </div>
-        </section>
+        </section >
 
         {/* Section I: Modes */}
-        <section id="mode" className="space-y-6 scroll-mt-24 pb-20">
+        < section id="mode" className="space-y-6 scroll-mt-24 pb-20" >
           <div className="border-b border-slate-200 pb-4">
             <h2 className="text-2xl font-bold text-slate-800">Section I: Operation Modes</h2>
             <p className="text-slate-500">Control the runtime environment.</p>
@@ -1232,8 +1245,8 @@ export default function App() {
               </button>
             ))}
           </div>
-        </section>
-      </main>
-    </div>
+        </section >
+      </main >
+    </div >
   );
 }
