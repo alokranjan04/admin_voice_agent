@@ -48,7 +48,7 @@ export async function generateConfigFromDescription(description: string, researc
   }
 
   const genAI = new GoogleGenerativeAI(apiKey);
-  const modelNames = ["gemini-1.5-flash", "gemini-flash-lite", "gemini-2.0-flash", "gemini-pro"];
+  const modelNames = ["gemini-2.0-flash", "gemini-flash-latest", "gemini-1.5-flash-8b", "gemini-pro-latest"];
 
   const systemInstruction = `
     You are an expert Voice AI Configuration Admin.
