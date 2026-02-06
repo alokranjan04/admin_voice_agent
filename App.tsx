@@ -268,38 +268,35 @@ export default function App() {
 
   // Generates a token and opens the client app on Vercel
   const handleLaunchClient = async () => {
+    // 1. Calculate Identifiers (works for Auth and Demo)
+    const orgId = user ? getOrgId(user) : 'anonymous_org';
+    const safeName = config.metadata.businessName.trim().toLowerCase().replace(/[^a-z0-9]+/g, '_');
+    const agentId = activeAgentId || `agent_${safeName}`;
+    const clientBaseUrl = config.vapi.clientUrl || 'https://voice-agent-eight-delta.vercel.app';
+
     if (isDemoMode) {
-      window.open('https://voice-agent-eight-delta.vercel.app/', '_blank');
+      const url = `${clientBaseUrl}?orgId=${orgId}&agentId=${agentId}&role=admin&demo=true`;
+      window.open(url, '_blank');
       return;
     }
 
     if (!user) {
-      alert("Please sign in first.");
+      alert("Please sign in first or use Demo Mode.");
       return;
     }
 
     setIsLaunching(true);
     try {
       // Step 1: Force Save if valid. 
-      // This ensures the DB has the latest schema (including integrations field) before the client reads it.
-      // We skip the confirmation prompt here because "Launch" implies "Use current config".
       if (isValid) {
         await saveConfiguration(config);
         setIsLocked(true); // Ensure UI reflects saved state
       }
 
-      // FOR VAPI TRANSCRIBER SETTINGS:
-      // Always use "deepgram" for provider and "nova-2" for model for high accuracy. Use "en" for language.
       // Step 2: Get Fresh Token
-      // Pass true to force refresh and avoid "Session expired" errors on client
       const token = await user.getIdToken(true);
 
       // Step 3: Open Client
-      const orgId = getOrgId(user);
-      const safeName = config.metadata.businessName.trim().toLowerCase().replace(/[^a-z0-9]+/g, '_');
-      const agentId = activeAgentId || `agent_${safeName}`;
-      const clientBaseUrl = config.vapi.clientUrl || 'https://voice-agent-eight-delta.vercel.app';
-
       const url = `${clientBaseUrl}?authtoken=${encodeURIComponent(token)}&orgId=${orgId}&agentId=${agentId}&role=admin`;
       window.open(url, '_blank');
     } catch (error) {
@@ -313,6 +310,7 @@ export default function App() {
   const handleAiGenerate = async (useResearch = false) => {
     if (!aiPrompt.trim()) return;
 
+    setActiveAgentId(null); // Reset active agent ID for new generation
     setIsGenerating(true);
     if (useResearch) setIsResearching(true);
 
