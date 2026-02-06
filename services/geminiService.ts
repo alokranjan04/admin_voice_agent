@@ -62,7 +62,7 @@ export async function generateConfigFromDescription(description: string, researc
   // Initialize client here to ensure we use the latest env var and catch initialization errors
   const genAI = new GoogleGenerativeAI(apiKey);
   const model = genAI.getGenerativeModel({
-    model: "gemini-1.5-flash",
+    model: "gemini-1.5-flash-latest",
     systemInstruction: {
       role: "system",
       parts: [{
