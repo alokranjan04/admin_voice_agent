@@ -6,7 +6,7 @@ import { saveConfiguration, auth, loginWithGoogle, logoutUser } from './services
 import { createVapiAssistant } from './services/vapiService';
 import { researchBusiness } from './services/researchService';
 import { AgentConfiguration, INITIAL_CONFIG, DeliveryModeType } from './types';
-import { Wand2, Plus, Trash2, Loader2, AlertCircle, Copy, Check, Database, Calendar, Rocket, Braces, Search } from 'lucide-react';
+import { Wand2, Plus, Trash2, Loader2, AlertCircle, Copy, Check, Database, Calendar, Rocket, Braces, Search, Upload } from 'lucide-react';
 import { onAuthStateChanged, User } from 'firebase/auth';
 
 const TIME_ZONES = [
@@ -168,6 +168,7 @@ export default function App() {
   const [isResearching, setIsResearching] = useState(false);
   const [isLaunching, setIsLaunching] = useState(false); // New state for launch process
   const [copySuccess, setCopySuccess] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Auth Listener
   useEffect(() => {
@@ -328,7 +329,27 @@ export default function App() {
 
 
 
-  // ... (existing imports)
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const content = e.target?.result as string;
+      if (content) {
+        setConfig(prev => ({
+          ...prev,
+          vapi: {
+            ...prev.vapi,
+            knowledgeBase: (prev.vapi.knowledgeBase ? prev.vapi.knowledgeBase + "\n\n" : "") + content
+          }
+        }));
+      }
+    };
+    reader.readAsText(file);
+    // Reset file input so same file can be uploaded again
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
 
   const handleLock = async () => {
     setIsSaving(true);
@@ -1117,8 +1138,26 @@ export default function App() {
 
             {/* Knowledge Base */}
             <div className="space-y-2">
-              <label className="text-sm font-medium text-slate-700">Knowledge Base (Files/FAQs)</label>
-              <p className="text-xs text-slate-500">Markdown content to represent files to train upon.</p>
+              <div className="flex justify-between items-center">
+                <div className="space-y-1">
+                  <label className="text-sm font-medium text-slate-700">Knowledge Base (Files/FAQs)</label>
+                  <p className="text-xs text-slate-500">Markdown content to represent files to train upon.</p>
+                </div>
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  className="flex items-center gap-2 px-3 py-1.5 text-xs font-semibold text-brand-600 bg-brand-50 hover:bg-brand-100 border border-brand-200 rounded-lg transition-colors"
+                >
+                  <Upload className="w-3.5 h-3.5" />
+                  Upload File (.txt, .md)
+                </button>
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleFileUpload}
+                  accept=".txt,.md"
+                  className="hidden"
+                />
+              </div>
               <textarea
                 className="w-full p-2 border rounded-md h-48 font-mono text-xs"
                 value={config.vapi.knowledgeBase}
