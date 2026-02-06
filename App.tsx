@@ -34,6 +34,125 @@ const TIME_ZONES = [
   'Pacific/Auckland'
 ];
 
+const VAPI_MODEL_PROVIDERS = [
+  { id: 'openai', name: 'OpenAI' },
+  { id: 'azure-openai', name: 'Azure OpenAI' },
+  { id: 'anthropic', name: 'Anthropic' },
+  { id: 'anthropic-bedrock', name: 'Anthropic Bedrock' },
+  { id: 'google', name: 'Google' },
+  { id: 'groq', name: 'Groq' },
+  { id: 'cerebras', name: 'Cerebras' },
+  { id: 'deepseek', name: 'Deepseek' },
+  { id: 'xai', name: 'Xai' },
+  { id: 'mistral', name: 'Mistral' },
+  { id: 'perplexity-ai', name: 'Perplexity AI' },
+  { id: 'together-ai', name: 'Together AI' },
+  { id: 'anyscale', name: 'Anyscale' },
+  { id: 'openrouter', name: 'Openrouter' },
+  { id: 'deepinfra', name: 'Deepinfra' },
+  { id: 'inflection-ai', name: 'Inflection AI' },
+  { id: 'custom-llm', name: 'Custom LLM' }
+];
+
+const VAPI_MODELS: Record<string, string[]> = {
+  'openai': ['gpt-4o', 'gpt-4o-mini', 'gpt-4-turbo', 'gpt-3.5-turbo', 'gpt-4o-realtime-preview', 'gpt-4o-mini-realtime-preview'],
+  'google': ['gemini-1.5-pro', 'gemini-1.5-flash', 'gemini-pro'],
+  'groq': ['llama-3.1-70b-versatile', 'llama-3.1-8b-instant', 'mixtral-8x7b-32768'],
+  'anthropic': ['claude-3-5-sonnet-20240620', 'claude-3-haiku-20240307', 'claude-3-opus-20240229'],
+  'deepseek': ['deepseek-chat', 'deepseek-coder'],
+  'mistral': ['mistral-large-latest', 'mistral-small-latest', 'pixtral-12b-2409'],
+  'perplexity-ai': ['llama-3-sonar-large-32k-online', 'llama-3-sonar-small-32k-online'],
+  'xai': ['grok-beta'],
+  'together-ai': ['meta-llama/Llama-3-70b-chat-hf', 'mistralai/Mixtral-8x7B-Instruct-v0.1'],
+};
+
+const VAPI_VOICE_PROVIDERS = [
+  { id: 'vapi', name: 'Vapi' },
+  { id: 'elevenlabs', name: 'ElevenLabs' },
+  { id: 'playht', name: 'PlayHT' },
+  { id: 'rime', name: 'Rime' },
+  { id: 'azure', name: 'Azure' },
+  { id: 'openai', name: 'OpenAI' },
+  { id: 'deepgram', name: 'Deepgram' },
+  { id: 'cartesia', name: 'Cartesia' },
+  { id: 'lmnt', name: 'LMNT' },
+  { id: 'neets', name: 'Neets' }
+];
+
+const VAPI_TRANSCRIBER_PROVIDERS = [
+  { id: 'deepgram', name: 'Deepgram' },
+  { id: 'openai', name: 'OpenAI' },
+  { id: 'gladia', name: 'Gladia' },
+  { id: 'azure', name: 'Azure' },
+  { id: 'talkscriber', name: 'Talkscriber' }
+];
+
+const VAPI_TRANSCRIBER_MODELS: Record<string, string[]> = {
+  'openai': ['whisper-1', 'gpt-4o-mini-transcribe'],
+  'deepgram': ['nova-2', 'nova-2-medical', 'nova-2-meeting', 'nova-2-phonecall', 'nova-2-voicemail'],
+  'azure': ['standard'],
+  'gladia': ['standard'],
+  'talkscriber': ['whisper']
+};
+
+const VAPI_VOICES_BY_PROVIDER: Record<string, { id: string, name: string }[]> = {
+  'vapi': [
+    { id: 'Mia', name: 'Mia' },
+    { id: 'Leah', name: 'Leah' },
+    { id: 'Zac', name: 'Zac' },
+    { id: 'Jess', name: 'Jess' },
+    { id: 'Tara', name: 'Tara' },
+    { id: 'Dan', name: 'Dan' },
+    { id: 'Zoe', name: 'Zoe' },
+    { id: 'Leo', name: 'Leo' },
+    { id: 'Savannah', name: 'Savannah' },
+    { id: 'Rohan', name: 'Rohan' },
+    { id: 'Elliot', name: 'Elliot' },
+    { id: 'Andrew', name: 'Andrew' },
+    { id: 'Lily', name: 'Lily' },
+  ],
+  'deepgram': [
+    { id: 'aura-asteria-en', name: 'Asteria' },
+    { id: 'aura-luna-en', name: 'Luna' },
+    { id: 'aura-stella-en', name: 'Stella' },
+    { id: 'aura-athena-en', name: 'Athena' },
+    { id: 'aura-hera-en', name: 'Hera' },
+    { id: 'aura-orion-en', name: 'Orion' },
+    { id: 'aura-arcas-en', name: 'Arcas' },
+    { id: 'aura-perseus-en', name: 'Perseus' },
+    { id: 'aura-zeus-en', name: 'Zeus' },
+  ],
+  'elevenlabs': [
+    { id: 'pNInz6ovunSMqEisjW85', name: 'Rachel' },
+    { id: 'Lcf7I4mD7T99S0x82oBy', name: 'Josh' },
+    { id: 'VR6AewrXVre97E4pNM8C', name: 'Drew' },
+    { id: 'MF3mGyEYCl7XYW7Y904z', name: 'Marcus' },
+    { id: 'kPzsL2i3sdVqBn97W7oBy', name: 'Charlotte' },
+  ]
+};
+
+const VAPI_LANGUAGES = [
+  { id: 'en', name: 'English' },
+  { id: 'en-US', name: 'English (US)' },
+  { id: 'en-GB', name: 'English (UK)' },
+  { id: 'hi', name: 'Hindi' },
+  { id: 'es', name: 'Spanish' },
+  { id: 'fr', name: 'French' },
+  { id: 'de', name: 'German' },
+  { id: 'it', name: 'Italian' },
+  { id: 'pt', name: 'Portuguese' },
+  { id: 'ja', name: 'Japanese' },
+  { id: 'ko', name: 'Korean' },
+  { id: 'zh', name: 'Chinese' },
+];
+
+const VAPI_BACKGROUND_SOUNDS = [
+  { id: 'off', name: 'Off' },
+  { id: 'office', name: 'Office' },
+  { id: 'default', name: 'Default' },
+  { id: 'custom', name: 'Custom' },
+];
+
 export default function App() {
   const [user, setUser] = useState<User | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
@@ -806,17 +925,43 @@ export default function App() {
                 <h3 className="font-semibold text-slate-900 border-b pb-2">Model</h3>
                 <div className="space-y-2">
                   <label className="text-xs font-semibold text-slate-500 uppercase">Provider</label>
-                  <input type="text" className="w-full p-2 border rounded bg-slate-50"
-                    value={config.vapi.provider}
-                    onChange={(e) => setConfig(prev => ({ ...prev, vapi: { ...prev.vapi, provider: e.target.value } }))}
-                  />
+                  <select
+                    className="w-full p-2 border rounded bg-slate-50"
+                    value={config.vapi.provider.toLowerCase()}
+                    onChange={(e) => setConfig(prev => ({
+                      ...prev,
+                      vapi: {
+                        ...prev.vapi,
+                        provider: e.target.value,
+                        // Reset model to first available for this provider if known
+                        model: VAPI_MODELS[e.target.value]?.[0] || prev.vapi.model
+                      }
+                    }))}
+                  >
+                    {VAPI_MODEL_PROVIDERS.map(p => (
+                      <option key={p.id} value={p.id}>{p.name}</option>
+                    ))}
+                  </select>
                 </div>
                 <div className="space-y-2">
                   <label className="text-xs font-semibold text-slate-500 uppercase">Model</label>
-                  <input type="text" className="w-full p-2 border rounded bg-slate-50"
-                    value={config.vapi.model}
-                    onChange={(e) => setConfig(prev => ({ ...prev, vapi: { ...prev.vapi, model: e.target.value } }))}
-                  />
+                  {VAPI_MODELS[config.vapi.provider.toLowerCase()] ? (
+                    <select
+                      className="w-full p-2 border rounded bg-slate-50"
+                      value={config.vapi.model}
+                      onChange={(e) => setConfig(prev => ({ ...prev, vapi: { ...prev.vapi, model: e.target.value } }))}
+                    >
+                      {VAPI_MODELS[config.vapi.provider.toLowerCase()].map(m => (
+                        <option key={m} value={m}>{m}</option>
+                      ))}
+                    </select>
+                  ) : (
+                    <input type="text" className="w-full p-2 border rounded bg-slate-50"
+                      value={config.vapi.model}
+                      onChange={(e) => setConfig(prev => ({ ...prev, vapi: { ...prev.vapi, model: e.target.value } }))}
+                      placeholder="Enter model name..."
+                    />
+                  )}
                 </div>
                 <div className="space-y-2">
                   <label className="text-xs font-semibold text-slate-500 uppercase">Temperature</label>
@@ -832,17 +977,50 @@ export default function App() {
                 <h3 className="font-semibold text-slate-900 border-b pb-2">Voice & Audio</h3>
                 <div className="space-y-2">
                   <label className="text-xs font-semibold text-slate-500 uppercase">Voice Provider</label>
-                  <input type="text" className="w-full p-2 border rounded bg-slate-50"
-                    value={config.vapi.voiceProvider}
+                  <select
+                    className="w-full p-2 border rounded bg-slate-50"
+                    value={config.vapi.voiceProvider.toLowerCase()}
                     onChange={(e) => setConfig(prev => ({ ...prev, vapi: { ...prev.vapi, voiceProvider: e.target.value } }))}
-                  />
+                  >
+                    {VAPI_VOICE_PROVIDERS.map(p => (
+                      <option key={p.id} value={p.id}>{p.name}</option>
+                    ))}
+                  </select>
                 </div>
                 <div className="space-y-2">
                   <label className="text-xs font-semibold text-slate-500 uppercase">Voice ID</label>
-                  <input type="text" className="w-full p-2 border rounded bg-slate-50"
-                    value={config.vapi.voiceId}
-                    onChange={(e) => setConfig(prev => ({ ...prev, vapi: { ...prev.vapi, voiceId: e.target.value } }))}
-                  />
+                  {VAPI_VOICES_BY_PROVIDER[config.vapi.voiceProvider.toLowerCase()] ? (
+                    <select
+                      className="w-full p-2 border rounded bg-slate-50"
+                      value={config.vapi.voiceId}
+                      onChange={(e) => setConfig(prev => ({ ...prev, vapi: { ...prev.vapi, voiceId: e.target.value } }))}
+                    >
+                      <option value="">Select a voice...</option>
+                      {VAPI_VOICES_BY_PROVIDER[config.vapi.voiceProvider.toLowerCase()].map(v => (
+                        <option key={v.id} value={v.id}>{v.name}</option>
+                      ))}
+                    </select>
+                  ) : (
+                    <input type="text" className="w-full p-2 border rounded bg-slate-50"
+                      value={config.vapi.voiceId}
+                      onChange={(e) => setConfig(prev => ({ ...prev, vapi: { ...prev.vapi, voiceId: e.target.value } }))}
+                      placeholder="e.g. Mia, Andrew, elevenlabs_id..."
+                    />
+                  )}
+                </div>
+
+                {/* Additional Settings */}
+                <div className="space-y-2">
+                  <label className="text-xs font-semibold text-slate-500 uppercase">Background Sound</label>
+                  <select
+                    className="w-full p-2 border rounded bg-slate-50"
+                    value={VAPI_BACKGROUND_SOUNDS.find(s => s.id === config.vapi.backgroundSound.toLowerCase() || s.name.toLowerCase() === config.vapi.backgroundSound.toLowerCase())?.id || 'off'}
+                    onChange={(e) => setConfig(prev => ({ ...prev, vapi: { ...prev.vapi, backgroundSound: e.target.value } }))}
+                  >
+                    {VAPI_BACKGROUND_SOUNDS.map(s => (
+                      <option key={s.id} value={s.id}>{s.name}</option>
+                    ))}
+                  </select>
                 </div>
               </div>
             </div>
@@ -853,24 +1031,74 @@ export default function App() {
               <div className="grid grid-cols-3 gap-4">
                 <div className="space-y-2">
                   <label className="text-xs font-semibold text-slate-500 uppercase">Provider</label>
-                  <input type="text" className="w-full p-2 border rounded bg-slate-50"
-                    value={config.vapi.transcriber.provider}
-                    onChange={(e) => setConfig(prev => ({ ...prev, vapi: { ...prev.vapi, transcriber: { ...prev.vapi.transcriber, provider: e.target.value } } }))}
-                  />
+                  <select
+                    className="w-full p-2 border rounded bg-slate-50"
+                    value={VAPI_TRANSCRIBER_PROVIDERS.find(p => p.id === config.vapi.transcriber.provider.toLowerCase() || p.name.toLowerCase() === config.vapi.transcriber.provider.toLowerCase())?.id || 'openai'}
+                    onChange={(e) => setConfig(prev => ({
+                      ...prev,
+                      vapi: {
+                        ...prev.vapi,
+                        transcriber: {
+                          ...prev.vapi.transcriber,
+                          provider: e.target.value,
+                          model: VAPI_TRANSCRIBER_MODELS[e.target.value]?.[0] || prev.vapi.transcriber.model
+                        }
+                      }
+                    }))}
+                  >
+                    {VAPI_TRANSCRIBER_PROVIDERS.map(p => (
+                      <option key={p.id} value={p.id}>{p.name}</option>
+                    ))}
+                  </select>
                 </div>
                 <div className="space-y-2">
                   <label className="text-xs font-semibold text-slate-500 uppercase">Model</label>
-                  <input type="text" className="w-full p-2 border rounded bg-slate-50"
-                    value={config.vapi.transcriber.model}
-                    onChange={(e) => setConfig(prev => ({ ...prev, vapi: { ...prev.vapi, transcriber: { ...prev.vapi.transcriber, model: e.target.value } } }))}
-                  />
+                  {VAPI_TRANSCRIBER_MODELS[config.vapi.transcriber.provider.toLowerCase()] ? (
+                    <select
+                      className="w-full p-2 border rounded bg-slate-50"
+                      value={config.vapi.transcriber.model}
+                      onChange={(e) => setConfig(prev => ({
+                        ...prev,
+                        vapi: {
+                          ...prev.vapi,
+                          transcriber: { ...prev.vapi.transcriber, model: e.target.value }
+                        }
+                      }))}
+                    >
+                      {VAPI_TRANSCRIBER_MODELS[config.vapi.transcriber.provider.toLowerCase()].map(m => (
+                        <option key={m} value={m}>{m}</option>
+                      ))}
+                    </select>
+                  ) : (
+                    <input type="text" className="w-full p-2 border rounded bg-slate-50"
+                      value={config.vapi.transcriber.model}
+                      onChange={(e) => setConfig(prev => ({
+                        ...prev,
+                        vapi: {
+                          ...prev.vapi,
+                          transcriber: { ...prev.vapi.transcriber, model: e.target.value }
+                        }
+                      }))}
+                    />
+                  )}
                 </div>
                 <div className="space-y-2">
                   <label className="text-xs font-semibold text-slate-500 uppercase">Language</label>
-                  <input type="text" className="w-full p-2 border rounded bg-slate-50"
-                    value={config.vapi.transcriber.language}
-                    onChange={(e) => setConfig(prev => ({ ...prev, vapi: { ...prev.vapi, transcriber: { ...prev.vapi.transcriber, language: e.target.value } } }))}
-                  />
+                  <select
+                    className="w-full p-2 border rounded bg-slate-50"
+                    value={VAPI_LANGUAGES.find(l => l.id === config.vapi.transcriber.language.toLowerCase() || l.name.toLowerCase() === config.vapi.transcriber.language.toLowerCase())?.id || 'en'}
+                    onChange={(e) => setConfig(prev => ({
+                      ...prev,
+                      vapi: {
+                        ...prev.vapi,
+                        transcriber: { ...prev.vapi.transcriber, language: e.target.value }
+                      }
+                    }))}
+                  >
+                    {VAPI_LANGUAGES.map(l => (
+                      <option key={l.id} value={l.id}>{l.name}</option>
+                    ))}
+                  </select>
                 </div>
               </div>
             </div>

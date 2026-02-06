@@ -77,6 +77,7 @@ export interface VapiConfiguration {
     language: string;
     model: string;
   };
+  backgroundSound: string;
   knowledgeBase: string; // Markdown content for FAQs etc.
 }
 
@@ -163,8 +164,9 @@ AI Assistant must not use numeric characters in any response.`,
     transcriber: {
       provider: 'openai',
       language: 'en',
-      model: 'gpt-4o-mini-transcribe'
+      model: 'whisper-1'
     },
+    backgroundSound: 'default',
     knowledgeBase: `# FAQs for {{Company Name}}
 
 ## 1. What services do you offer?

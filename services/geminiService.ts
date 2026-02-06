@@ -117,11 +117,11 @@ export async function generateConfigFromDescription(description: string, researc
     Always use "vapi" for voiceProvider and "Mia" for voiceId.
     
     FOR VAPI MODEL SETTINGS:
-    Always use "openai" for provider and "gpt-4o-mini" for model.
+    Use "openai" for provider and "gpt-4o-mini" for model by default, but you can also use these providers if appropriate: "groq", "deepseek", "google", "anthropic", "mistral", "perplexity-ai", "xai".
     Set temperature to 0.3.
     
     FOR VAPI TRANSCRIBER SETTINGS:
-    Always use "openai" for provider and "gpt-4o-mini-transcribe" for model.
+    Always use "openai" for provider and "whisper-1" for model by default, or "deepgram" with "nova-2" for high accuracy.
     Set language to "en".
 
     FOR VAPI MESSAGE SETTINGS:
@@ -309,7 +309,7 @@ export async function generateConfigFromDescription(description: string, researc
         temperature: 0.3,
         voiceProvider: 'vapi',
         voiceId: 'Mia',
-        transcriber: { provider: 'openai', language: 'en', model: 'gpt-4o-mini-transcribe' },
+        transcriber: { provider: 'openai', language: 'en', model: 'whisper-1' },
         ...(parsed.vapi || {}) // Overwrite with AI generated prompt/KB if present
       }
     };

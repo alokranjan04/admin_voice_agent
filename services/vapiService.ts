@@ -57,10 +57,11 @@ export const createVapiAssistant = async (config: AgentConfiguration) => {
             voiceId: (['Andrew', 'Lily', 'asteria', 'luna'].includes(config.vapi.voiceId) || !config.vapi.voiceId ? 'Mia' : config.vapi.voiceId),
         },
         transcriber: {
-            provider: 'openai',
-            model: 'gpt-4o-mini-transcribe',
+            provider: (config.vapi.transcriber.provider || 'openai').toLowerCase(),
+            model: (config.vapi.transcriber.model || 'whisper-1').toLowerCase(),
             language: config.vapi.transcriber.language || 'en'
         },
+        backgroundSound: config.vapi.backgroundSound || 'default',
         firstMessage: firstMessage,
     };
 
