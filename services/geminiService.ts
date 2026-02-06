@@ -17,8 +17,6 @@ const getEnv = (key: string) => {
 };
 
 const getGeminiApiKey = (): string => {
-  // Check for keys in specific order of likelihood for a Vite/React app
-  // We prioritize VITE_GEMINI_API_KEY as it is the most specific to this use case
   let apiKey =
     getEnv('VITE_GEMINI_API_KEY') ||
     getEnv('VITE_API_KEY') ||
@@ -29,44 +27,30 @@ const getGeminiApiKey = (): string => {
     process.env.API_KEY ||
     '';
 
-  // Sanitize: Trim whitespace
   apiKey = apiKey ? apiKey.trim() : '';
-
-  // Sanitize: Remove wrapping quotes which can happen in some .env parsers
   if ((apiKey.startsWith('"') && apiKey.endsWith('"')) || (apiKey.startsWith("'") && apiKey.endsWith("'"))) {
     apiKey = apiKey.slice(1, -1);
   }
-
   return apiKey;
 };
 
 export async function generateConfigFromDescription(description: string, researchData?: any): Promise<Partial<AgentConfiguration>> {
   const apiKey = getGeminiApiKey();
 
-  // Debug Log (Masked) to help user troubleshoot without exposing full key in logs
   if (apiKey) {
     console.log(`[Gemini Service] Initializing with key starting with: ${apiKey.substring(0, 4)}... (Length: ${apiKey.length})`);
   } else {
     console.warn("[Gemini Service] No API Key found in environment variables.");
   }
 
-  // Validation
   if (!apiKey || apiKey === 'undefined' || apiKey === 'null') {
-    console.error("Gemini Service: API Key is missing or invalid string.");
-    throw new Error(
-      "System configuration error: API Key is missing or undefined. " +
-      "If you are using Vite, ensure your .env variable starts with 'VITE_' (e.g. VITE_GEMINI_API_KEY) and you have RESTARTED the dev server."
-    );
+    throw new Error("System configuration error: API Key is missing or undefined.");
   }
 
-  // Initialize client here to ensure we use the latest env var and catch initialization errors
   const genAI = new GoogleGenerativeAI(apiKey);
-  const model = genAI.getGenerativeModel({
-    model: "gemini-1.5-flash",
-    systemInstruction: {
-      role: "system",
-      parts: [{
-        text: `
+  const modelNames = ["gemini-1.5-flash", "gemini-flash-lite", "gemini-2.0-flash", "gemini-pro"];
+
+  const systemInstruction = `
     You are an expert Voice AI Configuration Admin.
     Your job is to generate a structured JSON configuration for a Voice AI agent based on a short business description provided by the user.
     
@@ -77,10 +61,10 @@ export async function generateConfigFromDescription(description: string, researc
         - Services (Invent plausible services with durations)
     - Locations (Invent a plausible location)
         - Resources (Invent staff or rooms if applicable)
-        - Data Fields (Recommend mandatory fields)
-        - Conversation Rules (Match the tone to the business type)
-            - Safety Boundaries (Relevant to the industry)
-            - VAPI Configuration (Crucial: Generate a specialized System Prompt and Knowledge Base)
+    - Data Fields (Recommend mandatory fields)
+    - Conversation Rules (Match the tone to the business type)
+        - Safety Boundaries (Relevant to the industry)
+        - VAPI Configuration (Crucial: Generate a specialized System Prompt and Knowledge Base)
     
     FOR VAPI SYSTEM PROMPT:
     Use this EXACT template, replacing {{COMPANY_NAME}} and {{DEPARTMENT_NAME}} with generated values appropriate for the business:
@@ -128,11 +112,7 @@ export async function generateConfigFromDescription(description: string, researc
     Generate a "firstMessage" that is personalized to the business (e.g., "Hello, thanks for calling GreenThumb Atlanta, how can I help you?"). Ensure NO placeholders like {{COMPANY_NAME}} remain in the firstMessage.
 
     Ensure strict adherence to the schema provided.
-          `}]
-    }
-  });
-
-
+  `;
 
   const schema = {
     type: SchemaType.OBJECT,
@@ -240,83 +220,66 @@ export async function generateConfigFromDescription(description: string, researc
     }
   };
 
-  try {
-    const maxRetries = 3;
-    let result;
+  const userContent = researchData
+    ? `Business Description: ${description}\n\nREAL WORLD RESEARCH DATA (Priority):\n${JSON.stringify(researchData, null, 2)}\n\nPlease use the research data above to populate the JSON.`
+    : `Business Description: ${description}`;
 
-    for (let attempt = 0; attempt < maxRetries; attempt++) {
-      try {
-        const userContent = researchData
-          ? `Business Description: ${description}\n\nREAL WORLD RESEARCH DATA (Priority):\n${JSON.stringify(researchData, null, 2)}\n\nPlease use the research data above to populate the JSON. If research data is missing specific fields (like specific staff names or detailed hours), use your knowledge to invent plausible ones that fit the context.`
-          : `Business Description: ${description}`;
+  let lastError = null;
 
-        result = await model.generateContent({
-          contents: [{ role: "user", parts: [{ text: userContent }] }],
-          generationConfig: {
-            responseMimeType: "application/json",
-            responseSchema: schema as any
-          }
-        });
-        break;
-      } catch (callError: any) {
-        console.warn(`Attempt ${attempt + 1} failed: ${callError.message}`);
-        if (attempt === maxRetries - 1) throw callError;
-
-        if (callError.message?.includes('503') || callError.message?.includes('429')) {
-          const delay = 1000 * Math.pow(2, attempt);
-          await new Promise(resolve => setTimeout(resolve, delay));
-        } else {
-          throw callError;
-        }
-      }
-    }
-
-    if (!result) {
-      throw new Error("Failed to get response.");
-    }
-
-    const jsonText = result.response.text();
-    // No manual JSON extraction needed usually with schema mode, but good to have fallback parsing
-    // SDK 1.5-flash with schema returns valid JSON string directly.
-
-    let parsed;
+  for (const modelName of modelNames) {
     try {
-      parsed = JSON.parse(jsonText);
-    } catch (e) {
-      console.error("Failed to parse JSON:", e);
-      throw new Error("AI returned invalid JSON format.");
-    }
+      console.log(`[Gemini Service] Trying model: ${modelName}`);
+      const model = genAI.getGenerativeModel({
+        model: modelName,
+        systemInstruction: { role: "system", parts: [{ text: systemInstruction }] }
+      });
 
+      const result = await model.generateContent({
+        contents: [{ role: "user", parts: [{ text: userContent }] }],
+        generationConfig: {
+          responseMimeType: "application/json",
+          responseSchema: schema as any
+        }
+      });
 
-    // Post-processing to ensure IDs exist and enums match exactly if schema missed subtle things
-    const processed: Partial<AgentConfiguration> = {
-      ...parsed,
-      metadata: {
-        ...(parsed.metadata || {}),
-        createdAt: new Date().toISOString() // Inject creation timestamp
-      },
-      services: parsed.services?.map((s: any) => ({ ...s, id: s.id || Math.random().toString(36).substring(2, 9) })) || [],
-      locations: parsed.locations?.map((l: any) => ({ ...l, id: l.id || Math.random().toString(36).substring(2, 9) })) || [],
-      resources: parsed.resources?.map((r: any) => ({ ...r, id: r.id || Math.random().toString(36).substring(2, 9) })) || [],
-      integrations: {
-        firebase: true,
-        googleCalendar: true, // Default to true if AI recommends it, or fallback
-        ...(parsed.integrations || {})
-      },
-      vapi: {
-        provider: 'OpenAI',
-        model: 'gpt-4o-mini',
-        temperature: 0.3,
-        voiceProvider: 'vapi',
-        voiceId: 'Mia',
-        transcriber: { provider: 'openai', language: 'en', model: 'whisper-1' },
-        ...(parsed.vapi || {}) // Overwrite with AI generated prompt/KB if present
+      return processResult(result);
+    } catch (e: any) {
+      lastError = e;
+      const status = e.status || (e.message?.match(/\[(\d+)\]/) || [])[1];
+      if (status === '404') {
+        console.warn(`[Gemini Service] Model ${modelName} not found (404).`);
+        continue;
       }
-    };
-
-    return processed;
-  } catch (error) {
-    console.error("Gemini Generation Error:", error);
-    throw error;
+      if (status === '429') {
+        console.warn(`[Gemini Service] Quota exceeded for ${modelName}.`);
+        continue;
+      }
+      console.error(`[Gemini Service] Unexpected error with ${modelName}:`, e.message);
+      continue;
+    }
   }
+
+  throw lastError || new Error("All Gemini models failed.");
+}
+
+function processResult(result: any) {
+  const jsonText = result.response.text();
+  const parsed = JSON.parse(jsonText);
+  return {
+    ...parsed,
+    metadata: { ...(parsed.metadata || {}), createdAt: new Date().toISOString() },
+    services: parsed.services?.map((s: any) => ({ ...s, id: s.id || Math.random().toString(36).substring(2, 9) })) || [],
+    locations: parsed.locations?.map((l: any) => ({ ...l, id: l.id || Math.random().toString(36).substring(2, 9) })) || [],
+    resources: parsed.resources?.map((r: any) => ({ ...r, id: r.id || Math.random().toString(36).substring(2, 9) })) || [],
+    integrations: { firebase: true, googleCalendar: true, ...(parsed.integrations || {}) },
+    vapi: {
+      provider: 'OpenAI',
+      model: 'gpt-4o-mini',
+      temperature: 0.3,
+      voiceProvider: 'vapi',
+      voiceId: 'Mia',
+      transcriber: { provider: 'openai', language: 'en', model: 'whisper-1' },
+      ...(parsed.vapi || {})
+    }
+  } as Partial<AgentConfiguration>;
 }
