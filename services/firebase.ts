@@ -22,7 +22,7 @@ export const GOOGLE_CALENDAR_TOKEN_FALLBACK = getEnv('VITE_GOOGLE_CALENDAR_TOKEN
 // Explicit configuration provided by user
 // Firebase configuration using environment variables
 const firebaseConfig = {
-  apiKey: getEnv('VITE_FIREBASE_API_KEY') || "AIzaSy0UJ6JWI2F9UNaj4fySRU4-MBqgHTUCwRc",
+  apiKey: getEnv('VITE_FIREBASE_API_KEY') || "AIzaSyDUj6JWI2F9UNaj4fySRU4-MBqgHTUCwRc",
   authDomain: getEnv('VITE_FIREBASE_AUTH_DOMAIN') || "ai-voice-agent-c2a2b.firebaseapp.com",
   projectId: getEnv('VITE_FIREBASE_PROJECT_ID') || "ai-voice-agent-c2a2b",
   storageBucket: getEnv('VITE_FIREBASE_STORAGE_BUCKET') || "ai-voice-agent-c2a2b.firebasestorage.app",
