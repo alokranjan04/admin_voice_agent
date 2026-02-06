@@ -12,7 +12,9 @@ import {
   CheckCircle2,
   Lock,
   Loader2,
-  ExternalLink
+  ExternalLink,
+  ChevronDown,
+  LayoutGrid
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -24,6 +26,9 @@ interface SidebarProps {
   isSaving?: boolean;
   isLocked?: boolean;
   isLaunching?: boolean;
+  agents: any[];
+  onSelectAgent: (agentId: string) => void;
+  currentAgentId?: string;
 }
 
 const NAV_ITEMS = [
@@ -47,7 +52,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
   isValid,
   isSaving,
   isLocked,
-  isLaunching
+  isLaunching,
+  agents,
+  onSelectAgent,
+  currentAgentId
 }) => {
   return (
     <aside className="w-64 bg-slate-900 text-slate-300 flex flex-col h-screen fixed left-0 top-0 overflow-y-auto border-r border-slate-800">
@@ -60,6 +68,30 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </h1>
         <p className="text-xs text-slate-500 mt-1">Configurator v1.0</p>
       </div>
+
+      {/* Agents Selection Section */}
+      {agents.length > 0 && (
+        <div className="px-6 py-4 border-b border-slate-800 bg-slate-900/50">
+          <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-2 block">
+            Organization Agents
+          </label>
+          <div className="space-y-1">
+            {agents.map((agent) => (
+              <button
+                key={agent.id}
+                onClick={() => onSelectAgent(agent.id)}
+                className={`w-full text-left px-2 py-1.5 rounded text-xs transition-colors flex items-center gap-2 ${agent.id === currentAgentId
+                  ? 'bg-slate-800 text-white font-medium border border-slate-700'
+                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
+                  }`}
+              >
+                <LayoutGrid className="w-3 h-3 text-brand-500" />
+                <span className="truncate">{agent.metadata?.businessName || agent.id}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       <nav className="flex-1 py-4">
         <ul className="space-y-1">

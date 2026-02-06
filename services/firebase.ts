@@ -1,5 +1,5 @@
 import { initializeApp } from "firebase/app";
-import { getFirestore, doc, setDoc } from "firebase/firestore";
+import { getFirestore, doc, setDoc, getDoc, collection, getDocs } from "firebase/firestore";
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut } from "firebase/auth";
 import { AgentConfiguration } from "../types";
 
@@ -123,20 +123,46 @@ export const logoutUser = async () => {
   }
 };
 
+/**
+ * Derives a stable organization ID from user metadata.
+ * For professional emails, uses the domain. For generic emails, uses the UID.
+ */
+export const getOrgId = (user: any): string => {
+  if (!user) return 'anonymous_org';
+  const email = user.email || '';
+  const domain = email.split('@')[1];
+  const genericDomains = ['gmail.com', 'outlook.com', 'yahoo.com', 'hotmail.com', 'icloud.com'];
+
+  if (domain && !genericDomains.includes(domain.toLowerCase())) {
+    return `org_${domain.replace(/[^a-z0-9]+/g, '_')}`;
+  }
+  return `user_${user.uid.substring(0, 10)}`;
+};
+
 export const saveConfiguration = async (config: AgentConfiguration) => {
   if (!db) {
     throw new Error("Firestore is not initialized.");
   }
 
   try {
-    const safeName = config.metadata.businessName
-      ? config.metadata.businessName.trim().toLowerCase().replace(/[^a-z0-9]+/g, '_')
-      : 'default_config';
-
-    const docId = `config_${safeName}`;
-    const docRef = doc(db, "agent_configurations", docId);
-
     const currentUser = auth?.currentUser;
+    const orgId = getOrgId(currentUser);
+    const companyName = config.metadata.businessName || "Default Company";
+
+    // 1. Ensure Organization Document exists
+    const orgRef = doc(db, "organizations", orgId);
+    await setDoc(orgRef, {
+      id: orgId,
+      name: companyName,
+      lastUpdated: new Date().toISOString(),
+      ownerUid: currentUser?.uid || null,
+      status: 'ACTIVE'
+    }, { merge: true });
+
+    // 2. Save Agent Configuration under Organization
+    const safeName = companyName.trim().toLowerCase().replace(/[^a-z0-9]+/g, '_');
+    const agentId = `agent_${safeName}`;
+    const agentRef = doc(db, `organizations/${orgId}/agents`, agentId);
 
     // Safety fallback: Deep merge defaults to ensure no required fields are missing
     const defaultIntegrations = { firebase: true, googleCalendar: false };
@@ -145,18 +171,60 @@ export const saveConfiguration = async (config: AgentConfiguration) => {
       integrations: { ...defaultIntegrations, ...(config.integrations || {}) }
     };
 
-    await setDoc(docRef, {
+    await setDoc(agentRef, {
       ...finalConfig,
+      orgId: orgId,
       savedAt: new Date().toISOString(),
       updatedBy: currentUser ? currentUser.email : 'anonymous',
       ownerUid: currentUser ? currentUser.uid : null,
       status: 'LOCKED'
     });
 
-    console.log("Configuration saved with ID: ", docId);
-    return docId;
+    console.log(`Configuration saved for Org: ${orgId}, Agent: ${agentId}`);
+    return agentId;
   } catch (error) {
     console.error("Error saving configuration to Firebase:", error);
     throw error;
   }
+};
+
+/**
+ * Retrieves all agents belonging to the user's organization.
+ */
+export const getAgents = async () => {
+  if (!db || !auth.currentUser) return [];
+
+  const orgId = getOrgId(auth.currentUser);
+  const agentsRef = collection(db, `organizations/${orgId}/agents`);
+
+  try {
+    const querySnapshot = await getDocs(agentsRef);
+    return querySnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+  } catch (error) {
+    console.error("Error fetching agents:", error);
+    return [];
+  }
+};
+
+/**
+ * Retrieves a specific agent configuration.
+ */
+export const getAgentConfig = async (agentId: string) => {
+  if (!db || !auth.currentUser) return null;
+
+  const orgId = getOrgId(auth.currentUser);
+  const agentRef = doc(db, `organizations/${orgId}/agents`, agentId);
+
+  try {
+    const docSnap = await getDoc(agentRef);
+    if (docSnap.exists()) {
+      return docSnap.data() as AgentConfiguration;
+    }
+  } catch (error) {
+    console.error("Error fetching agent config:", error);
+  }
+  return null;
 };

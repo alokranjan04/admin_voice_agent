@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Sidebar } from './components/Sidebar';
 import { LoginScreen } from './components/LoginScreen';
 import { generateConfigFromDescription } from './services/geminiService';
-import { saveConfiguration, auth, loginWithGoogle, logoutUser } from './services/firebase';
+import { saveConfiguration, auth, loginWithGoogle, logoutUser, getOrgId } from './services/firebase';
 import { createVapiAssistant } from './services/vapiService';
 import { researchBusiness } from './services/researchService';
 import { AgentConfiguration, INITIAL_CONFIG, DeliveryModeType } from './types';
@@ -166,8 +166,9 @@ export default function App() {
   const [isLocked, setIsLocked] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isResearching, setIsResearching] = useState(false);
-  const [isLaunching, setIsLaunching] = useState(false); // New state for launch process
+  const [isLaunching, setIsLaunching] = useState(false);
   const [copySuccess, setCopySuccess] = useState(false);
+  const [agents, setAgents] = useState<any[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Auth Listener
@@ -178,6 +179,7 @@ export default function App() {
       setIsLoggingIn(false);
       if (currentUser) {
         setIsDemoMode(false);
+        loadAgents();
         // Automatically enable calendar integration if logged in, but PRESERVE existing keys
         setConfig(prev => ({
           ...prev,
@@ -187,6 +189,8 @@ export default function App() {
             googleCalendar: true
           }
         }));
+      } else {
+        setAgents([]);
       }
     });
     return () => unsubscribe();
@@ -220,6 +224,29 @@ export default function App() {
       setConfig(INITIAL_CONFIG);
     } catch (error) {
       console.error("Logout Error", error);
+    }
+  };
+
+  const loadAgents = async () => {
+    try {
+      const { getAgents } = await import('./services/firebase');
+      const list = await getAgents();
+      setAgents(list);
+    } catch (error) {
+      console.error("Failed to load agents", error);
+    }
+  };
+
+  const selectAgent = async (agentId: string) => {
+    try {
+      const { getAgentConfig } = await import('./services/firebase');
+      const loadedConfig = await getAgentConfig(agentId);
+      if (loadedConfig) {
+        setConfig(loadedConfig);
+        setIsLocked(true);
+      }
+    } catch (error) {
+      console.error("Failed to select agent", error);
     }
   };
 
@@ -266,8 +293,11 @@ export default function App() {
       const token = await user.getIdToken(true);
 
       // Step 3: Open Client
-      // We also pass 'role=admin' to help the client context (optional usage)
-      const url = `https://voice-agent-eight-delta.vercel.app?authtoken=${encodeURIComponent(token)}&role=admin`;
+      const orgId = getOrgId(user);
+      const safeName = config.metadata.businessName.trim().toLowerCase().replace(/[^a-z0-9]+/g, '_');
+      const agentId = `agent_${safeName}`;
+
+      const url = `https://voice-agent-eight-delta.vercel.app?authtoken=${encodeURIComponent(token)}&orgId=${orgId}&agentId=${agentId}&role=admin`;
       window.open(url, '_blank');
     } catch (error) {
       console.error("Failed to launch client", error);
@@ -356,6 +386,7 @@ export default function App() {
     try {
       // 1. Save to Firebase
       await saveConfiguration(config);
+      await loadAgents(); // Refresh the list
 
       // 2. Create in VAPI (if in Production or standard mode)
       if (!isDemoMode && config.vapi.provider) {
@@ -525,6 +556,8 @@ export default function App() {
         isSaving={isSaving}
         isLocked={isLocked}
         isLaunching={isLaunching}
+        agents={agents}
+        onSelectAgent={selectAgent}
       />
 
       <main className="ml-64 flex-1 p-8 max-w-5xl mx-auto space-y-16 pb-32">
