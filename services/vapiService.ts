@@ -38,7 +38,7 @@ export const createVapiAssistant = async (config: AgentConfiguration) => {
         .replace(/{{COMPANY_NAME}}/g, companyName)
         .replace(/{{Company name}}/gi, companyName);
 
-    // Construct VAPI Payload
+    // Construct VAPI Payload - Explicitly defining fields to avoid accidental pollution
     const payload = {
         name: companyName,
         model: {
@@ -53,17 +53,19 @@ export const createVapiAssistant = async (config: AgentConfiguration) => {
             temperature: config.vapi.temperature || 0.3,
         },
         voice: {
-            provider: (config.vapi.voiceProvider === 'Azure' || config.vapi.voiceProvider === 'azure' || !config.vapi.voiceProvider ? 'vapi' : config.vapi.voiceProvider).toLowerCase(),
-            voiceId: (['Andrew', 'Lily', 'asteria', 'luna'].includes(config.vapi.voiceId) || !config.vapi.voiceId ? 'Mia' : config.vapi.voiceId),
+            provider: (config.vapi.voiceProvider || 'vapi').toLowerCase(),
+            voiceId: config.vapi.voiceId || 'Mia',
         },
         transcriber: {
             provider: (config.vapi.transcriber.provider || 'openai').toLowerCase(),
             model: (config.vapi.transcriber.model || 'whisper-1').toLowerCase(),
             language: config.vapi.transcriber.language || 'en'
         },
-        backgroundSound: config.vapi.backgroundSound || 'default',
+        backgroundSound: config.vapi.backgroundSound || 'off',
         firstMessage: firstMessage,
     };
+
+    console.log("VAPI Payload being sent:", JSON.stringify(payload, null, 2));
 
     // Append Knowledge Base to System Prompt if present
     if (config.vapi.knowledgeBase) {
