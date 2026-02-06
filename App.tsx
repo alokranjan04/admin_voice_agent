@@ -169,6 +169,7 @@ export default function App() {
   const [isLaunching, setIsLaunching] = useState(false);
   const [copySuccess, setCopySuccess] = useState(false);
   const [agents, setAgents] = useState<any[]>([]);
+  const [activeAgentId, setActiveAgentId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Auth Listener
@@ -243,6 +244,7 @@ export default function App() {
       const loadedConfig = await getAgentConfig(agentId);
       if (loadedConfig) {
         setConfig(loadedConfig);
+        setActiveAgentId(agentId);
         setIsLocked(true);
       }
     } catch (error) {
@@ -295,7 +297,7 @@ export default function App() {
       // Step 3: Open Client
       const orgId = getOrgId(user);
       const safeName = config.metadata.businessName.trim().toLowerCase().replace(/[^a-z0-9]+/g, '_');
-      const agentId = `agent_${safeName}`;
+      const agentId = activeAgentId || `agent_${safeName}`;
 
       const url = `https://voice-agent-eight-delta.vercel.app?authtoken=${encodeURIComponent(token)}&orgId=${orgId}&agentId=${agentId}&role=admin`;
       window.open(url, '_blank');
@@ -385,7 +387,8 @@ export default function App() {
     setIsSaving(true);
     try {
       // 1. Save to Firebase
-      await saveConfiguration(config);
+      const savedAgentId = await saveConfiguration(config);
+      setActiveAgentId(savedAgentId);
       await loadAgents(); // Refresh the list
 
       // 2. Create in VAPI (if in Production or standard mode)
@@ -558,6 +561,7 @@ export default function App() {
         isLaunching={isLaunching}
         agents={agents}
         onSelectAgent={selectAgent}
+        currentAgentId={activeAgentId || undefined}
       />
 
       <main className="ml-64 flex-1 p-8 max-w-5xl mx-auto space-y-16 pb-32">
