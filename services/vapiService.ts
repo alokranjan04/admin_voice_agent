@@ -56,14 +56,23 @@ export const createVapiAssistant = async (config: AgentConfiguration) => {
             provider: (config.vapi.voiceProvider || 'vapi').toLowerCase(),
             voiceId: config.vapi.voiceId || 'Mia',
         },
-        transcriber: {
-            provider: (config.vapi.transcriber.provider || 'openai').toLowerCase(),
-            model: (config.vapi.transcriber.model || 'whisper-1').toLowerCase(),
-            language: config.vapi.transcriber.language || 'en'
-        },
-        backgroundSound: config.vapi.backgroundSound || 'off',
+        transcriber: (config.vapi.transcriber.provider || 'openai').toLowerCase() === 'openai'
+            ? { provider: 'openai' }
+            : {
+                provider: config.vapi.transcriber.provider.toLowerCase(),
+                model: (config.vapi.transcriber.model || 'whisper-1').toLowerCase(),
+                language: config.vapi.transcriber.language || 'en'
+            },
+        backgroundSound: (config.vapi.backgroundSound === 'default' || !config.vapi.backgroundSound) ? 'off' : config.vapi.backgroundSound,
         firstMessage: firstMessage,
     };
+
+    // Final scrub: Ensure 'punctuation' is not in the transcriber object
+    // @ts-ignore
+    if (payload.transcriber && typeof payload.transcriber === 'object') {
+        // @ts-ignore
+        delete payload.transcriber.punctuation;
+    }
 
     console.log("VAPI Payload being sent:", JSON.stringify(payload, null, 2));
 
