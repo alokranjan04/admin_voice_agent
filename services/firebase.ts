@@ -75,8 +75,8 @@ export const loginWithGoogle = async () => {
     console.error("Login failed", error);
 
     // Detailed Error Handling
-    if (error.code === 'auth/api-key-not-valid' || error.message.includes('api-key-not-valid')) {
-      throw new Error("API_KEY_ERROR: The API Key is rejected by Firebase. Check Google Cloud Console > APIs & Services > Credentials.");
+    if (error.code === 'auth/api-key-not-valid' || error.message.includes('api-key-not-valid') || error.message.includes('API_KEY_ERROR')) {
+      throw new Error("API_KEY_ERROR: The API Key is rejected by Firebase. This usually happens if the Identity Toolkit API is disabled or if there's a project mismatch.");
     }
     if (error.code === 'auth/operation-not-allowed') {
       throw new Error("AUTH_ERROR: Google Sign-In is not enabled in the Firebase Console.");
