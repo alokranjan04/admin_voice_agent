@@ -275,7 +275,8 @@ export default function App() {
     const clientBaseUrl = config.vapi.clientUrl || 'https://voice-agent-eight-delta.vercel.app';
 
     if (isDemoMode) {
-      const url = `${clientBaseUrl}?orgId=${orgId}&agentId=${agentId}&role=admin&demo=true`;
+      const customerParams = `&cName=${encodeURIComponent(config.vapi.customerName || '')}&cEmail=${encodeURIComponent(config.vapi.customerEmail || '')}&cPhone=${encodeURIComponent(config.vapi.customerPhone || '')}`;
+      const url = `${clientBaseUrl}?orgId=${orgId}&agentId=${agentId}&role=admin&demo=true${customerParams}`;
       window.open(url, '_blank');
       return;
     }
@@ -296,8 +297,9 @@ export default function App() {
       // Step 2: Get Fresh Token
       const token = await user.getIdToken(true);
 
-      // Step 3: Open Client
-      const url = `${clientBaseUrl}?authtoken=${encodeURIComponent(token)}&orgId=${orgId}&agentId=${agentId}&role=admin`;
+      // 3. Open Client
+      const customerParams = `&cName=${encodeURIComponent(config.vapi.customerName || '')}&cEmail=${encodeURIComponent(config.vapi.customerEmail || '')}&cPhone=${encodeURIComponent(config.vapi.customerPhone || '')}`;
+      const url = `${clientBaseUrl}?authtoken=${encodeURIComponent(token)}&orgId=${orgId}&agentId=${agentId}&role=admin${customerParams}`;
       window.open(url, '_blank');
     } catch (error) {
       console.error("Failed to launch client", error);
@@ -1092,6 +1094,44 @@ export default function App() {
                     onChange={(e) => setConfig(prev => ({ ...prev, vapi: { ...prev.vapi, clientUrl: e.target.value } }))}
                   />
                   <p className="text-[10px] text-slate-400 italic">Target URL for the 'Launch Agent Interface' button.</p>
+                </div>
+
+                {/* Test Customer Context */}
+                <div className="space-y-4 pt-4 border-t border-slate-200">
+                  <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Test Customer Context</h4>
+                  <div className="grid grid-cols-3 gap-3">
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-semibold text-slate-500 uppercase">Customer Name</label>
+                      <input
+                        type="text"
+                        placeholder="John Doe"
+                        className="w-full p-2 border rounded bg-white text-xs"
+                        value={config.vapi.customerName || ''}
+                        onChange={(e) => setConfig(prev => ({ ...prev, vapi: { ...prev.vapi, customerName: e.target.value } }))}
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-semibold text-slate-500 uppercase">Customer Email</label>
+                      <input
+                        type="email"
+                        placeholder="john@example.com"
+                        className="w-full p-2 border rounded bg-white text-xs"
+                        value={config.vapi.customerEmail || ''}
+                        onChange={(e) => setConfig(prev => ({ ...prev, vapi: { ...prev.vapi, customerEmail: e.target.value } }))}
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-semibold text-slate-500 uppercase">Customer Phone</label>
+                      <input
+                        type="tel"
+                        placeholder="+1234567890"
+                        className="w-full p-2 border rounded bg-white text-xs"
+                        value={config.vapi.customerPhone || ''}
+                        onChange={(e) => setConfig(prev => ({ ...prev, vapi: { ...prev.vapi, customerPhone: e.target.value } }))}
+                      />
+                    </div>
+                  </div>
+                  <p className="text-[10px] text-slate-400 italic">Provide these details to skip basic info gathering during the call.</p>
                 </div>
               </div>
             </div>

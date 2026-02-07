@@ -39,7 +39,14 @@ export const createVapiAssistant = async (config: AgentConfiguration) => {
         messages: [
             {
                 role: 'system',
-                content: systemPrompt
+                content: `${systemPrompt}\n\n# CUSTOMER CONTEXT\n${(config.vapi.customerName || config.vapi.customerEmail || config.vapi.customerPhone)
+                        ? `Information about the customer is already known:\n` +
+                        (config.vapi.customerName ? `- Name: ${config.vapi.customerName}\n` : '') +
+                        (config.vapi.customerEmail ? `- Email: ${config.vapi.customerEmail}\n` : '') +
+                        (config.vapi.customerPhone ? `- Phone: ${config.vapi.customerPhone}\n` : '') +
+                        `DO NOT ask the customer for these details as they have already been provided.`
+                        : "No specific customer information provided yet. Collect Name, Email, and Phone if required by the workflow."
+                    }`
             }
         ],
         temperature: Number(config.vapi.temperature || 0.3),
