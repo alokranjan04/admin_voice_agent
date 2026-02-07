@@ -9,7 +9,7 @@ import { createVapiAssistant } from '../services/vapiService';
 import { researchBusiness } from '../services/researchService';
 import { getTemplateByIndustry } from '../services/templateService';
 import { AgentConfiguration, INITIAL_CONFIG, DeliveryModeType, SUPPORTED_INDUSTRIES, BrandingConfig, DEFAULT_BRANDING } from '../types';
-import { Wand2, Plus, Trash2, Loader2, AlertCircle, Copy, Check, Database, Calendar, Rocket, Braces, Search, Upload, Palette, Image as ImageIcon } from 'lucide-react';
+import { Wand2, Plus, Trash2, Loader2, AlertCircle, Copy, Check, Database, Calendar, Rocket, Braces, Search, Upload, Palette, Image as ImageIcon, Phone, PhoneCall } from 'lucide-react';
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { loadStripe } from '@stripe/stripe-js';
 
@@ -178,6 +178,8 @@ export default function AdminPage() {
     const [isBrandingLoading, setIsBrandingLoading] = useState(false);
     const [plan, setPlan] = useState<'BASIC' | 'PRO'>('BASIC');
     const [isBillingLoading, setIsBillingLoading] = useState(false);
+    const [isCalling, setIsCalling] = useState(false);
+    const [vapiAssistantId, setVapiAssistantId] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     // Fetch organization data (branding & plan)
@@ -412,6 +414,35 @@ export default function AdminPage() {
         if (fileInputRef.current) fileInputRef.current.value = '';
     };
 
+    const handleTriggerCall = async () => {
+        if (!config.vapi.userPhone || !vapiAssistantId) {
+            alert("Assistant ID and User Phone Number are required.");
+            return;
+        }
+
+        setIsCalling(true);
+        try {
+            const response = await fetch('/api/vapi/call', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    phoneNumber: config.vapi.userPhone,
+                    assistantId: vapiAssistantId
+                }),
+            });
+
+            const data = await response.json();
+            if (data.error) throw new Error(data.error);
+
+            alert("Calling your phone now...");
+        } catch (error: any) {
+            console.error("Call failed", error);
+            alert("Call failed: " + error.message);
+        } finally {
+            setIsCalling(false);
+        }
+    };
+
     const handleUpgrade = async () => {
         if (!user) return;
         setIsBillingLoading(true);
@@ -446,7 +477,10 @@ export default function AdminPage() {
             await loadAgents();
             if (!isDemoMode && config.vapi.provider) {
                 try {
-                    await createVapiAssistant(config);
+                    const vapiRes = await createVapiAssistant(config);
+                    if (vapiRes && vapiRes.id) {
+                        setVapiAssistantId(vapiRes.id);
+                    }
                     handleLaunchClient();
                 } catch (vapiError: any) {
                     console.error("VAPI Error", vapiError);
@@ -553,6 +587,16 @@ export default function AdminPage() {
                     </div>
 
                     <div className="flex flex-wrap items-center justify-center gap-4 pt-4">
+                        {config.vapi.userPhone && vapiAssistantId && (
+                            <button
+                                onClick={handleTriggerCall}
+                                disabled={isCalling}
+                                className="px-8 py-3 bg-brand-500 hover:bg-brand-600 text-white font-bold rounded-xl flex items-center gap-3 shadow-lg shadow-brand-500/25 transition-all hover:scale-105 active:scale-95 disabled:opacity-70"
+                            >
+                                {isCalling ? <Loader2 className="w-5 h-5 animate-spin" /> : <Phone className="w-5 h-5" />}
+                                Call Me Now
+                            </button>
+                        )}
                         <button
                             onClick={handleLaunchClient}
                             disabled={isLaunching}
@@ -836,9 +880,21 @@ export default function AdminPage() {
                                 <label className="text-xs font-bold text-slate-600">User Email</label>
                                 <input className="w-full p-2 text-sm border rounded" value={config.vapi.userEmail || ''} onChange={e => setConfig(prev => ({ ...prev, vapi: { ...prev.vapi, userEmail: e.target.value } }))} />
                             </div>
-                            <div className="space-y-1">
+                            <div className="space-y-1 col-span-2">
                                 <label className="text-xs font-bold text-slate-600">User Phone</label>
-                                <input className="w-full p-2 text-sm border rounded" value={config.vapi.userPhone || ''} onChange={e => setConfig(prev => ({ ...prev, vapi: { ...prev.vapi, userPhone: e.target.value } }))} />
+                                <div className="flex gap-2">
+                                    <input className="w-full p-2 text-sm border rounded" value={config.vapi.userPhone || ''} onChange={e => setConfig(prev => ({ ...prev, vapi: { ...prev.vapi, userPhone: e.target.value } }))} />
+                                    {vapiAssistantId && (
+                                        <button
+                                            onClick={handleTriggerCall}
+                                            disabled={isCalling}
+                                            className="px-3 py-1 bg-brand-500 text-white rounded text-sm hover:bg-brand-600 disabled:opacity-50 transition-colors flex items-center gap-2 whitespace-nowrap"
+                                        >
+                                            {isCalling ? <Loader2 className="w-3 h-3 animate-spin" /> : <PhoneCall className="w-3 h-3" />}
+                                            Test Call
+                                        </button>
+                                    )}
+                                </div>
                             </div>
                         </div>
                         <div className="space-y-2">

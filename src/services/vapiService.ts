@@ -116,3 +116,30 @@ export const createVapiAssistant = async (config: AgentConfiguration) => {
         throw new Error(`VAPI Creation Failed: ${error.response?.data?.message || error.message}`);
     }
 };
+
+export const makeOutboundCall = async (phoneNumber: string, assistantId: string) => {
+    const apiKey = getVapiKey();
+    if (!apiKey) {
+        throw new Error("Missing VAPI Private Key. Cannot trigger outbound call.");
+    }
+
+    try {
+        const response = await axios.post('https://api.vapi.ai/call/phone', {
+            assistantId: assistantId,
+            customer: {
+                number: phoneNumber
+            }
+        }, {
+            headers: {
+                'Authorization': `Bearer ${apiKey}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        console.log("Outbound call triggered successfully");
+        return response.data;
+    } catch (error: any) {
+        console.error("VAPI Call Error Details:", error.response?.data);
+        throw new Error(`Outbound Call Failed: ${error.response?.data?.message || error.message}`);
+    }
+};

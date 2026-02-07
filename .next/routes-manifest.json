@@ -51,6 +51,12 @@
       "regex": "^/api/stripe/webhook(?:/)?$",
       "routeKeys": {},
       "namedRegex": "^/api/stripe/webhook(?:/)?$"
+    },
+    {
+      "page": "/api/vapi/call",
+      "regex": "^/api/vapi/call(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/vapi/call(?:/)?$"
     }
   ],
   "dataRoutes": [],
