@@ -80,9 +80,9 @@ export interface VapiConfiguration {
   backgroundSound: string;
   knowledgeBase: string; // Markdown content for FAQs etc.
   clientUrl: string; // The URL of the web client app
-  customerName?: string;
-  customerEmail?: string;
-  customerPhone?: string;
+  userName?: string;
+  userEmail?: string;
+  userPhone?: string;
 }
 
 export interface AgentConfiguration {
@@ -203,8 +203,8 @@ Yes, generic parking is available on-site for all our visitors.
 ## 10. What payment methods do you accept?
 We accept all major credit cards, debit cards, and digital payment methods like Apple Pay and Google Pay.`,
     clientUrl: 'https://voice-agent-eight-delta.vercel.app',
-    customerName: '',
-    customerEmail: '',
-    customerPhone: ''
+    userName: '',
+    userEmail: '',
+    userPhone: ''
   }
 };

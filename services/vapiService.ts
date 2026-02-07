@@ -21,7 +21,7 @@ export const createVapiAssistant = async (config: AgentConfiguration) => {
     }
 
     const companyName = config.metadata.businessName || "the company";
-    const deptName = config.metadata.industry || "customer support";
+    const deptName = config.metadata.industry || "Voice AI Support";
 
     let systemPrompt = config.vapi.systemPrompt
         .replace(/{{COMPANY_NAME}}/g, companyName)
@@ -30,7 +30,8 @@ export const createVapiAssistant = async (config: AgentConfiguration) => {
 
     let firstMessage = (config.vapi.firstMessage || `Hello, thank you for calling ${companyName}!`)
         .replace(/{{COMPANY_NAME}}/g, companyName)
-        .replace(/{{Company name}}/gi, companyName);
+        .replace(/{{Company name}}/gi, companyName)
+        .replace(/{{USER_NAME}}/gi, config.vapi.userName || 'there');
 
     // Build the payload from scratch with literal values to avoid ANY proto/hidden properties
     const modelObj: any = {
@@ -39,13 +40,13 @@ export const createVapiAssistant = async (config: AgentConfiguration) => {
         messages: [
             {
                 role: 'system',
-                content: `${systemPrompt}\n\n# CUSTOMER CONTEXT\n${(config.vapi.customerName || config.vapi.customerEmail || config.vapi.customerPhone)
-                        ? `Information about the customer is already known:\n` +
-                        (config.vapi.customerName ? `- Name: ${config.vapi.customerName}\n` : '') +
-                        (config.vapi.customerEmail ? `- Email: ${config.vapi.customerEmail}\n` : '') +
-                        (config.vapi.customerPhone ? `- Phone: ${config.vapi.customerPhone}\n` : '') +
-                        `DO NOT ask the customer for these details as they have already been provided.`
-                        : "No specific customer information provided yet. Collect Name, Email, and Phone if required by the workflow."
+                content: `${systemPrompt}\n\n# USER CONTEXT\n${(config.vapi.userName || config.vapi.userEmail || config.vapi.userPhone)
+                    ? `Information about the user is already known:\n` +
+                    (config.vapi.userName ? `- Name: ${config.vapi.userName}\n` : '') +
+                    (config.vapi.userEmail ? `- Email: ${config.vapi.userEmail}\n` : '') +
+                    (config.vapi.userPhone ? `- Phone: ${config.vapi.userPhone}\n` : '') +
+                    `DO NOT ask for these details as they have already been provided.`
+                    : "No specific user information provided yet. Collect Name, Email, and Phone if required by the workflow."
                     }`
             }
         ],

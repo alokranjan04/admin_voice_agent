@@ -264,7 +264,10 @@ export default function App() {
   const isValid =
     config.metadata.businessName.length > 0 &&
     config.services.length > 0 &&
-    config.locations.length > 0;
+    config.locations.length > 0 &&
+    !!config.vapi.userName &&
+    !!config.vapi.userEmail &&
+    !!config.vapi.userPhone;
 
   // Generates a token and opens the client app on Vercel
   const handleLaunchClient = async () => {
@@ -275,8 +278,8 @@ export default function App() {
     const clientBaseUrl = config.vapi.clientUrl || 'https://voice-agent-eight-delta.vercel.app';
 
     if (isDemoMode) {
-      const customerParams = `&cName=${encodeURIComponent(config.vapi.customerName || '')}&cEmail=${encodeURIComponent(config.vapi.customerEmail || '')}&cPhone=${encodeURIComponent(config.vapi.customerPhone || '')}`;
-      const url = `${clientBaseUrl}?orgId=${orgId}&agentId=${agentId}&role=admin&demo=true${customerParams}`;
+      const userParams = `&uName=${encodeURIComponent(config.vapi.userName || '')}&uEmail=${encodeURIComponent(config.vapi.userEmail || '')}&uPhone=${encodeURIComponent(config.vapi.userPhone || '')}`;
+      const url = `${clientBaseUrl}?orgId=${orgId}&agentId=${agentId}&role=admin&demo=true${userParams}`;
       window.open(url, '_blank');
       return;
     }
@@ -298,8 +301,8 @@ export default function App() {
       const token = await user.getIdToken(true);
 
       // 3. Open Client
-      const customerParams = `&cName=${encodeURIComponent(config.vapi.customerName || '')}&cEmail=${encodeURIComponent(config.vapi.customerEmail || '')}&cPhone=${encodeURIComponent(config.vapi.customerPhone || '')}`;
-      const url = `${clientBaseUrl}?authtoken=${encodeURIComponent(token)}&orgId=${orgId}&agentId=${agentId}&role=admin${customerParams}`;
+      const userParams = `&uName=${encodeURIComponent(config.vapi.userName || '')}&uEmail=${encodeURIComponent(config.vapi.userEmail || '')}&uPhone=${encodeURIComponent(config.vapi.userPhone || '')}`;
+      const url = `${clientBaseUrl}?authtoken=${encodeURIComponent(token)}&orgId=${orgId}&agentId=${agentId}&role=admin${userParams}`;
       window.open(url, '_blank');
     } catch (error) {
       console.error("Failed to launch client", error);
@@ -969,6 +972,46 @@ export default function App() {
             <p className="text-slate-500">Settings for the Voice AI Provider.</p>
           </div>
           <div className="bg-white p-6 border rounded-lg shadow-sm space-y-6">
+            {/* User Details (Moved to Top & Made Prominent) */}
+            <div className="p-6 bg-slate-50 border-2 border-slate-200 rounded-xl space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider">User Details (Testing Profile)</h3>
+                <span className="text-[10px] bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full font-bold">REQUIRED FOR LOCK</span>
+              </div>
+              <div className="grid grid-cols-3 gap-6">
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-slate-600 uppercase">User Name</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Alok Ranjan"
+                    className="w-full p-3 border-2 border-slate-200 rounded-lg bg-white text-sm font-medium focus:border-indigo-500 transition-colors"
+                    value={config.vapi.userName || ''}
+                    onChange={(e) => setConfig(prev => ({ ...prev, vapi: { ...prev.vapi, userName: e.target.value } }))}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-slate-600 uppercase">User Email</label>
+                  <input
+                    type="email"
+                    placeholder="john@example.com"
+                    className="w-full p-3 border-2 border-slate-200 rounded-lg bg-white text-sm font-medium focus:border-indigo-500 transition-colors"
+                    value={config.vapi.userEmail || ''}
+                    onChange={(e) => setConfig(prev => ({ ...prev, vapi: { ...prev.vapi, userEmail: e.target.value } }))}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-slate-600 uppercase">User Phone</label>
+                  <input
+                    type="tel"
+                    placeholder="+1234567890"
+                    className="w-full p-3 border-2 border-slate-200 rounded-lg bg-white text-sm font-medium focus:border-indigo-500 transition-colors"
+                    value={config.vapi.userPhone || ''}
+                    onChange={(e) => setConfig(prev => ({ ...prev, vapi: { ...prev.vapi, userPhone: e.target.value } }))}
+                  />
+                </div>
+              </div>
+              <p className="text-xs text-slate-500 italic">Enter the details of the person who will be testing the agent. These will be used for personalized greetings (use <code>{`{{USER_NAME}}`}</code> in the first message).</p>
+            </div>
 
             {/* System Prompt */}
             <div className="space-y-2">
@@ -1096,43 +1139,6 @@ export default function App() {
                   <p className="text-[10px] text-slate-400 italic">Target URL for the 'Launch Agent Interface' button.</p>
                 </div>
 
-                {/* Test Customer Context */}
-                <div className="space-y-4 pt-4 border-t border-slate-200">
-                  <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Test Customer Context</h4>
-                  <div className="grid grid-cols-3 gap-3">
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-semibold text-slate-500 uppercase">Customer Name</label>
-                      <input
-                        type="text"
-                        placeholder="John Doe"
-                        className="w-full p-2 border rounded bg-white text-xs"
-                        value={config.vapi.customerName || ''}
-                        onChange={(e) => setConfig(prev => ({ ...prev, vapi: { ...prev.vapi, customerName: e.target.value } }))}
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-semibold text-slate-500 uppercase">Customer Email</label>
-                      <input
-                        type="email"
-                        placeholder="john@example.com"
-                        className="w-full p-2 border rounded bg-white text-xs"
-                        value={config.vapi.customerEmail || ''}
-                        onChange={(e) => setConfig(prev => ({ ...prev, vapi: { ...prev.vapi, customerEmail: e.target.value } }))}
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-semibold text-slate-500 uppercase">Customer Phone</label>
-                      <input
-                        type="tel"
-                        placeholder="+1234567890"
-                        className="w-full p-2 border rounded bg-white text-xs"
-                        value={config.vapi.customerPhone || ''}
-                        onChange={(e) => setConfig(prev => ({ ...prev, vapi: { ...prev.vapi, customerPhone: e.target.value } }))}
-                      />
-                    </div>
-                  </div>
-                  <p className="text-[10px] text-slate-400 italic">Provide these details to skip basic info gathering during the call.</p>
-                </div>
               </div>
             </div>
 
