@@ -100,7 +100,7 @@ export async function generateConfigFromDescription(description: string, researc
     Always use "deepgram" for provider and "nova-2" for model by default for high accuracy. Set language to "en".
 
     FOR VAPI MESSAGE SETTINGS:
-    Generate a "firstMessage" that is personalized to the business (e.g., "Hello, thanks for calling GreenThumb Atlanta, how can I help you?"). Ensure NO placeholders like {{COMPANY_NAME}} remain in the firstMessage.
+    Generate a "firstMessage" that is personalized to the business and the user (e.g., "Hello {{USER_NAME}}, thanks for calling GreenThumb Atlanta, how can I help you today?"). Use the {{USER_NAME}} placeholder to indicate where the user's name should be inserted. Ensure NO placeholders like {{COMPANY_NAME}} remain in the firstMessage, BUT DO keep {{USER_NAME}}.
 
     Ensure strict adherence to the schema provided.
   `;

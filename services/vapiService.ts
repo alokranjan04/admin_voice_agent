@@ -31,7 +31,10 @@ export const createVapiAssistant = async (config: AgentConfiguration) => {
     let firstMessage = (config.vapi.firstMessage || `Hello, thank you for calling ${companyName}!`)
         .replace(/{{COMPANY_NAME}}/g, companyName)
         .replace(/{{Company name}}/gi, companyName)
-        .replace(/{{USER_NAME}}/gi, config.vapi.userName || 'there');
+        .replace(/{{USER_NAME}}/gi, config.vapi.userName || 'there')
+        .replace(/{{Name}}/gi, config.vapi.userName || 'there')
+        .replace(/{{User Name}}/gi, config.vapi.userName || 'there')
+        .replace(/{{First Name}}/gi, (config.vapi.userName || 'there').split(' ')[0]);
 
     // Build the payload from scratch with literal values to avoid ANY proto/hidden properties
     const modelObj: any = {

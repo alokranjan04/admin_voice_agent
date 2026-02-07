@@ -1010,7 +1010,7 @@ export default function App() {
                   />
                 </div>
               </div>
-              <p className="text-xs text-slate-500 italic">Enter the details of the person who will be testing the agent. These will be used for personalized greetings (use <code>{`{{USER_NAME}}`}</code> in the first message).</p>
+              <p className="text-xs text-slate-500 italic">Enter the details of the person who will be testing the agent. Use <code>{`{{Name}}`}</code>, <code>{`{{First Name}}`}</code>, or <code>{`{{USER_NAME}}`}</code> in the first message for personalization.</p>
             </div>
 
             {/* System Prompt */}
