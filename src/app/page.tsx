@@ -238,6 +238,11 @@ export default function AdminPage() {
                         firebase: true,
                         ...(prev.integrations || {}),
                         googleCalendar: true
+                    },
+                    vapi: {
+                        ...prev.vapi,
+                        userName: currentUser.displayName || '',
+                        userEmail: currentUser.email || ''
                     }
                 }));
             } else {
