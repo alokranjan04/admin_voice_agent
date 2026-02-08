@@ -14,7 +14,8 @@ import {
   Loader2,
   ExternalLink,
   ChevronDown,
-  LayoutGrid
+  LayoutGrid,
+  CreditCard
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -47,6 +48,7 @@ const NAV_ITEMS = [
   { id: 'safety', label: 'Safety & Boundaries', icon: ShieldAlert },
   { id: 'mode', label: 'Operation Modes', icon: Settings2 },
   { id: 'vapi', label: 'VAPI Setup', icon: Settings2 },
+  { id: 'billing', label: 'Plan & Billing', icon: CreditCard },
 ];
 
 export const Sidebar: React.FC<SidebarProps> = ({

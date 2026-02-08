@@ -1,8 +1,1 @@
-{
-  "/_global-error/page": "app/_global-error/page.js",
-  "/_not-found/page": "app/_not-found/page.js",
-  "/api/stripe/checkout/route": "app/api/stripe/checkout/route.js",
-  "/api/stripe/webhook/route": "app/api/stripe/webhook/route.js",
-  "/api/vapi/call/route": "app/api/vapi/call/route.js",
-  "/page": "app/page.js"
-}
+{}

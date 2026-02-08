@@ -3,27 +3,28 @@ import { AgentConfiguration, IndustryTemplate } from "../types";
 
 // Helper to reliably get env vars in different environments (Vite, Webpack, Node)
 const getEnv = (key: string) => {
-  // Check process.env (Node/Webpack replacement)
-  if (typeof process !== 'undefined' && process.env && process.env[key]) {
-    return process.env[key];
+  const nextKey = key.startsWith('VITE_') ? key.replace('VITE_', 'NEXT_PUBLIC_') : `NEXT_PUBLIC_${key}`;
+
+  // Check process.env (Next.js/Node)
+  if (typeof process !== 'undefined' && process.env) {
+    if (process.env[nextKey]) return process.env[nextKey];
+    if (process.env[key]) return process.env[key];
   }
+
   // Check import.meta.env (Vite)
   // @ts-ignore
-  if (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env[key]) {
+  if (typeof import.meta !== 'undefined' && import.meta.env) {
     // @ts-ignore
-    return import.meta.env[key];
+    if (import.meta.env[nextKey]) return import.meta.env[nextKey];
+    // @ts-ignore
+    if (import.meta.env[key]) return import.meta.env[key];
   }
   return null;
 };
 
 const getGeminiApiKey = (): string => {
-  let apiKey = getEnv('VITE_GEMINI_API_KEY') || '';
-
-  apiKey = apiKey ? apiKey.trim() : '';
-  if ((apiKey.startsWith('"') && apiKey.endsWith('"')) || (apiKey.startsWith("'") && apiKey.endsWith("'"))) {
-    apiKey = apiKey.slice(1, -1);
-  }
-  return apiKey;
+  const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY || "";
+  return apiKey.trim().replace(/^["']|["']$/g, "");
 };
 
 export async function generateConfigFromDescription(description: string, researchData?: any, template?: IndustryTemplate): Promise<Partial<AgentConfiguration>> {

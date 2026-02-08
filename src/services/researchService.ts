@@ -4,13 +4,7 @@ import axios from 'axios';
 const SERPER_API_URL = 'https://google.serper.dev/search';
 
 const getSerperApiKey = () => {
-    // Check process.env (Next.js/Node)
-    if (typeof process !== 'undefined' && process.env && process.env.VITE_SERPER_API_KEY) {
-        return process.env.VITE_SERPER_API_KEY;
-    }
-    // Check import.meta.env (Vite)
-    // @ts-ignore
-    return (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_SERPER_API_KEY) || null;
+    return process.env.NEXT_PUBLIC_SERPER_API_KEY || null;
 };
 
 export interface ResearchContext {

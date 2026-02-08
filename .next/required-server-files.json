@@ -2,29 +2,30 @@
   "version": 1,
   "config": {
     "env": {
-      "VITE_GEMINI_API_KEY": "AIzaSyDSxn-D1F6GoTO0oKi3Kyo6_DLRRF0I5_8",
-      "VITE_VAPI_PUBLIC_KEY": "4df84dd4-7172-430e-9af2-1b4c77a1c3bc",
-      "VITE_VAPI_PRIVATE_KEY": "bacd6347-5d42-44a5-be80-b6cdf89e4967",
-      "VITE_GOOGLE_CLIENT_ID": "536573436709-umao78u2lctqc17neoh0f8rl68cso3du.apps.googleusercontent.com",
-      "VITE_GOOGLE_CALENDAR_TOKEN": "536573436709-umao78u2lctqc17neoh0f8rl68cso3du.apps.googleusercontent.com",
-      "VITE_FIREBASE_API_KEY": "AIzaSyDUj6JWI2f9UNaj4fySRU4-MBqgHTUceRc",
-      "VITE_FIREBASE_AUTH_DOMAIN": "ai-voice-agent-c2a2b.firebaseapp.com",
-      "VITE_FIREBASE_PROJECT_ID": "ai-voice-agent-c2a2b",
-      "VITE_FIREBASE_STORAGE_BUCKET": "ai-voice-agent-c2a2b.firebasestorage.app",
-      "VITE_FIREBASE_MESSAGING_SENDER_ID": "536573436709",
-      "VITE_FIREBASE_APP_ID": "1:536573436709:web:7f4997b23cbdfa996070cc",
-      "VITE_SERPER_API_KEY": "752af1c25737f27fb2715563a5534b7bec87c572"
+      "NEXT_PUBLIC_GEMINI_API_KEY": "AIzaSyDSxn-D1F6GoTO0oKi3Kyo6_DLRRF0I5_8",
+      "NEXT_PUBLIC_VAPI_PUBLIC_KEY": "4df84dd4-7172-430e-9af2-1b4c77a1c3bc",
+      "NEXT_PUBLIC_GOOGLE_CLIENT_ID": "536573436709-umao78u2lctqc17neoh0f8rl68cso3du.apps.googleusercontent.com",
+      "NEXT_PUBLIC_FIREBASE_API_KEY": "AIzaSyDUj6JWI2f9UNaj4fySRU4-MBqgHTUceRc",
+      "NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN": "ai-voice-agent-c2a2b.firebaseapp.com",
+      "NEXT_PUBLIC_FIREBASE_PROJECT_ID": "ai-voice-agent-c2a2b",
+      "NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET": "ai-voice-agent-c2a2b.firebasestorage.app",
+      "NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID": "536573436709",
+      "NEXT_PUBLIC_FIREBASE_APP_ID": "1:536573436709:web:7f4997b23cbdfa996070cc"
     },
     "webpack": null,
+    "eslint": {
+      "ignoreDuringBuilds": false
+    },
     "typescript": {
-      "ignoreBuildErrors": false
+      "ignoreBuildErrors": false,
+      "tsconfigPath": "tsconfig.json"
     },
     "typedRoutes": false,
     "distDir": ".next",
     "cleanDistDir": true,
     "assetPrefix": "",
     "cacheMaxMemorySize": 52428800,
-    "configOrigin": "next.config.js",
+    "configOrigin": "next.config.mjs",
     "useFileSystemPublicRoutes": true,
     "generateEtags": true,
     "pageExtensions": [
@@ -47,6 +48,7 @@
         3840
       ],
       "imageSizes": [
+        16,
         32,
         48,
         64,
@@ -60,26 +62,15 @@
       "loaderFile": "",
       "domains": [],
       "disableStaticImages": false,
-      "minimumCacheTTL": 14400,
+      "minimumCacheTTL": 60,
       "formats": [
         "image/webp"
       ],
-      "maximumRedirects": 3,
       "maximumResponseBody": 50000000,
-      "dangerouslyAllowLocalIP": false,
       "dangerouslyAllowSVG": false,
       "contentSecurityPolicy": "script-src 'none'; frame-src 'none'; sandbox;",
       "contentDispositionType": "attachment",
-      "localPatterns": [
-        {
-          "pathname": "**",
-          "search": ""
-        }
-      ],
       "remotePatterns": [],
-      "qualities": [
-        75
-      ],
       "unoptimized": false
     },
     "devIndicators": {
@@ -89,12 +80,17 @@
       "maxInactiveAge": 60000,
       "pagesBufferLength": 5
     },
+    "amp": {
+      "canonicalBase": ""
+    },
     "basePath": "",
     "sassOptions": {},
     "trailingSlash": false,
     "i18n": null,
     "productionBrowserSourceMaps": false,
     "excludeDefaultMomentLocales": true,
+    "serverRuntimeConfig": {},
+    "publicRuntimeConfig": {},
     "reactProductionProfiling": false,
     "reactStrictMode": true,
     "reactMaxHeadersLength": 6000,
@@ -102,9 +98,7 @@
       "keepAlive": true
     },
     "logging": {},
-    "compiler": {
-      "styledComponents": true
-    },
+    "compiler": {},
     "expireTime": 31536000,
     "staticPageGenerationTimeout": 60,
     "modularizeImports": {
@@ -116,60 +110,62 @@
       }
     },
     "outputFileTracingRoot": "C:\\Users\\Alok Ranjan\\OneDrive\\Documents\\Voice_AI_Admin",
-    "cacheComponents": false,
-    "cacheLife": {
-      "default": {
-        "stale": 300,
-        "revalidate": 900,
-        "expire": 4294967294
-      },
-      "seconds": {
-        "stale": 30,
-        "revalidate": 1,
-        "expire": 60
-      },
-      "minutes": {
-        "stale": 300,
-        "revalidate": 60,
-        "expire": 3600
-      },
-      "hours": {
-        "stale": 300,
-        "revalidate": 3600,
-        "expire": 86400
-      },
-      "days": {
-        "stale": 300,
-        "revalidate": 86400,
-        "expire": 604800
-      },
-      "weeks": {
-        "stale": 300,
-        "revalidate": 604800,
-        "expire": 2592000
-      },
-      "max": {
-        "stale": 300,
-        "revalidate": 2592000,
-        "expire": 31536000
-      }
-    },
-    "cacheHandlers": {},
     "experimental": {
       "useSkewCookie": false,
+      "cacheLife": {
+        "default": {
+          "stale": 300,
+          "revalidate": 900,
+          "expire": 4294967294
+        },
+        "seconds": {
+          "stale": 30,
+          "revalidate": 1,
+          "expire": 60
+        },
+        "minutes": {
+          "stale": 300,
+          "revalidate": 60,
+          "expire": 3600
+        },
+        "hours": {
+          "stale": 300,
+          "revalidate": 3600,
+          "expire": 86400
+        },
+        "days": {
+          "stale": 300,
+          "revalidate": 86400,
+          "expire": 604800
+        },
+        "weeks": {
+          "stale": 300,
+          "revalidate": 604800,
+          "expire": 2592000
+        },
+        "max": {
+          "stale": 300,
+          "revalidate": 2592000,
+          "expire": 4294967294
+        }
+      },
+      "cacheHandlers": {},
       "cssChunking": true,
       "multiZoneDraftMode": false,
       "appNavFailHandling": false,
       "prerenderEarlyExit": true,
       "serverMinification": true,
+      "serverSourceMaps": false,
       "linkNoTouchStart": false,
       "caseSensitiveRoutes": false,
+      "clientSegmentCache": false,
+      "clientParamParsing": false,
       "dynamicOnHover": false,
       "preloadEntriesOnStart": true,
       "clientRouterFilter": true,
       "clientRouterFilterRedirects": false,
       "fetchCacheKeyPrefix": "",
-      "proxyPrefetch": "flexible",
+      "middlewarePrefetch": "flexible",
       "optimisticClientCache": true,
       "manualClientBasePath": false,
       "cpus": 27,
@@ -201,29 +197,24 @@
       "webpackMemoryOptimizations": false,
       "optimizeServerReact": true,
       "viewTransition": false,
+      "routerBFCache": false,
       "removeUncaughtErrorAndRejectionListeners": false,
       "validateRSCRequestHeaders": false,
       "staleTimes": {
         "dynamic": 0,
         "static": 300
       },
-      "reactDebugChannel": false,
       "serverComponentsHmrCache": true,
       "staticGenerationMaxConcurrency": 8,
       "staticGenerationMinPagesPerWorker": 25,
-      "transitionIndicator": false,
+      "cacheComponents": false,
       "inlineCss": false,
       "useCache": false,
       "globalNotFound": false,
+      "devtoolSegmentExplorer": true,
       "browserDebugInfoInTerminal": false,
-      "lockDistDir": true,
-      "isolatedDevBuild": true,
-      "proxyClientMaxBodySize": 10485760,
-      "hideLogsAfterAbort": false,
-      "mcpServer": true,
-      "turbopackFileSystemCacheForDev": true,
-      "turbopackFileSystemCacheForBuild": false,
-      "turbopackInferModuleSideEffects": false,
+      "optimizeRouterScrolling": false,
+      "middlewareClientMaxBodySize": 10485760,
       "optimizePackageImports": [
         "lucide-react",
         "date-fns",
@@ -306,11 +297,10 @@
     },
     "htmlLimitedBots": "[\\w-]+-Google|Google-[\\w-]+|Chrome-Lighthouse|Slurp|DuckDuckBot|baiduspider|yandex|sogou|bitlybot|tumblr|vkShare|quora link preview|redditbot|ia_archiver|Bingbot|BingPreview|applebot|facebookexternalhit|facebookcatalog|Twitterbot|LinkedInBot|Slackbot|Discordbot|WhatsApp|SkypeUriPreview|Yeti|googleweblight",
     "bundlePagesRouterDependencies": false,
-    "configFileName": "next.config.js",
+    "configFileName": "next.config.mjs",
     "turbopack": {
       "root": "C:\\Users\\Alok Ranjan\\OneDrive\\Documents\\Voice_AI_Admin"
-    },
-    "distDirRoot": ".next"
+    }
   },
   "appDir": "C:\\Users\\Alok Ranjan\\OneDrive\\Documents\\Voice_AI_Admin",
   "relativeAppDir": "",
@@ -322,8 +312,11 @@
     ".next\\server\\functions-config-manifest.json",
     ".next\\server\\middleware-manifest.json",
     ".next\\server\\middleware-build-manifest.js",
+    ".next\\server\\middleware-react-loadable-manifest.js",
+    ".next\\react-loadable-manifest.json",
     ".next\\server\\app-paths-manifest.json",
     ".next\\app-path-routes-manifest.json",
+    ".next\\app-build-manifest.json",
     ".next\\server\\server-reference-manifest.js",
     ".next\\server\\server-reference-manifest.json",
     ".next\\BUILD_ID",
@@ -331,5 +324,7 @@
     ".next\\server\\next-font-manifest.json",
     ".next\\required-server-files.json"
   ],
-  "ignore": []
+  "ignore": [
+    "node_modules\\next\\dist\\compiled\\@ampproject\\toolbox-optimizer\\**\\*"
+  ]
 }

@@ -1,9 +1,8 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
 :root {
-  --brand-primary: #0f172a; /* Default brand color */
+  --brand-primary: #0f172a;
+  /* Default brand color */
 }
 
 body {
