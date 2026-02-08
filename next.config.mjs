@@ -14,6 +14,7 @@ const nextConfig = {
         NEXT_PUBLIC_SERPER_API_KEY: process.env.NEXT_PUBLIC_SERPER_API_KEY,
     },
     // Suppress hydration warnings from Lucide/browser extensions
+    serverExternalPackages: ['firebase-admin'],
 };
 
 export default nextConfig;
