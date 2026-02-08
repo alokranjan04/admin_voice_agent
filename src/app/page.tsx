@@ -9,7 +9,7 @@ import { createVapiAssistant } from '../services/vapiService';
 import { researchBusiness } from '../services/researchService';
 import { getTemplateByIndustry } from '../services/templateService';
 import { AgentConfiguration, INITIAL_CONFIG, DeliveryModeType, SUPPORTED_INDUSTRIES, BrandingConfig, DEFAULT_BRANDING } from '../types';
-import { Wand2, Plus, Trash2, Loader2, AlertCircle, Copy, Check, Database, Calendar, Rocket, Braces, Search, Upload, Palette, Image as ImageIcon, Phone, PhoneCall } from 'lucide-react';
+import { Wand2, Plus, Trash2, Loader2, AlertCircle, Copy, Check, Database, Calendar, Rocket, Braces, Search, Upload, Palette, Image as ImageIcon, Phone, PhoneCall, Link } from 'lucide-react';
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { loadStripe } from '@stripe/stripe-js';
 
@@ -588,6 +588,47 @@ export default function AdminPage() {
                         <h1 className="text-4xl font-extrabold text-white tracking-tight">Configuration Submitted!</h1>
                         <p className="text-slate-400 text-lg max-w-md">
                             Your Voice AI Agent has been updated and the VAPI assistant is ready for action.
+                        </p>
+                    </div>
+
+                    {/* Unique Agent Link Display */}
+                    <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-6 space-y-4">
+                        <div className="flex items-center gap-3 mb-2">
+                            <Link className="w-5 h-5 text-indigo-400" />
+                            <h3 className="text-lg font-bold text-white">Your Unique Agent Link</h3>
+                        </div>
+                        <p className="text-slate-400 text-sm">
+                            Share this unique link with your customers. Each agent has its own dedicated URL.
+                        </p>
+                        <div className="flex items-center gap-2 bg-slate-900/50 border border-slate-600 rounded-lg p-3">
+                            <code className="flex-1 text-emerald-400 font-mono text-sm break-all">
+                                {(() => {
+                                    const orgId = user ? getOrgId(user) : 'anonymous_org';
+                                    const safeName = config.metadata.businessName.trim().toLowerCase().replace(/[^a-z0-9]+/g, '_');
+                                    const agentId = activeAgentId || `agent_${safeName}`;
+                                    const clientBaseUrl = config.vapi.clientUrl || 'https://voice-agent-eight-delta.vercel.app';
+                                    return `${clientBaseUrl}?orgId=${orgId}&agentId=${agentId}`;
+                                })()}
+                            </code>
+                            <button
+                                onClick={() => {
+                                    const orgId = user ? getOrgId(user) : 'anonymous_org';
+                                    const safeName = config.metadata.businessName.trim().toLowerCase().replace(/[^a-z0-9]+/g, '_');
+                                    const agentId = activeAgentId || `agent_${safeName}`;
+                                    const clientBaseUrl = config.vapi.clientUrl || 'https://voice-agent-eight-delta.vercel.app';
+                                    const url = `${clientBaseUrl}?orgId=${orgId}&agentId=${agentId}`;
+                                    navigator.clipboard.writeText(url);
+                                    setCopySuccess(true);
+                                    setTimeout(() => setCopySuccess(false), 2000);
+                                }}
+                                className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-lg transition-colors flex items-center gap-2"
+                            >
+                                {copySuccess ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                                {copySuccess ? 'Copied!' : 'Copy'}
+                            </button>
+                        </div>
+                        <p className="text-xs text-slate-500 italic">
+                            ⚠️ The base URL without orgId and agentId will not work. Each agent requires its unique parameters.
                         </p>
                     </div>
 
