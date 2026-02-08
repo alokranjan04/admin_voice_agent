@@ -2,10 +2,11 @@ import * as admin from 'firebase-admin';
 
 if (!admin.apps.length) {
     try {
+        const projectId = process.env.VITE_FIREBASE_PROJECT_ID || process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
         admin.initializeApp({
-            projectId: process.env.VITE_FIREBASE_PROJECT_ID,
+            projectId: projectId,
         });
-        console.log('[Firebase Admin] Initialized with Project ID:', process.env.VITE_FIREBASE_PROJECT_ID);
+        console.log('[Firebase Admin] Initialized with Project ID:', projectId);
     } catch (error: any) {
         console.error('[Firebase Admin] Initialization failed:', error);
     }
