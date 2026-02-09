@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation';
-import { getAgentConfig } from '@/services/firebase-admin';
+import { getAgentConfig } from '@/lib/firebase-admin';
 import { AgentConfiguration } from '@/types';
 
 interface PageProps {
