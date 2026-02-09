@@ -241,8 +241,11 @@ export default function AdminPage() {
                     },
                     vapi: {
                         ...prev.vapi,
-                        userName: currentUser.displayName || '',
-                        userEmail: currentUser.email || ''
+                        transcriber: {
+                            ...prev.vapi.transcriber,
+                            userName: currentUser.displayName || '',
+                            userEmail: currentUser.email || ''
+                        }
                     }
                 }));
             } else {
@@ -319,9 +322,9 @@ export default function AdminPage() {
         config.metadata.businessName.length > 0 &&
         config.services.length > 0 &&
         config.locations.length > 0 &&
-        !!config.vapi.userName &&
-        !!config.vapi.userEmail &&
-        !!config.vapi.userPhone;
+        !!config.vapi.transcriber?.userName &&
+        !!config.vapi.transcriber?.userEmail &&
+        !!config.vapi.transcriber?.userPhone;
 
     const handleLaunchClient = async () => {
         const orgId = user ? getOrgId(user) : 'anonymous_org';
@@ -330,7 +333,7 @@ export default function AdminPage() {
         const clientBaseUrl = config.vapi.clientUrl || 'https://voice-agent-eight-delta.vercel.app';
 
         if (isDemoMode) {
-            const userParams = `&uName=${encodeURIComponent(config.vapi.userName || '')}&uEmail=${encodeURIComponent(config.vapi.userEmail || '')}&uPhone=${encodeURIComponent(config.vapi.userPhone || '')}`;
+            const userParams = `&uName=${encodeURIComponent(config.vapi.transcriber?.userName || '')}&uEmail=${encodeURIComponent(config.vapi.transcriber?.userEmail || '')}&uPhone=${encodeURIComponent(config.vapi.transcriber?.userPhone || '')}`;
             const url = `${clientBaseUrl}?orgId=${orgId}&agentId=${agentId}&role=admin&demo=true${userParams}`;
             window.open(url, '_blank');
             return;
@@ -348,7 +351,7 @@ export default function AdminPage() {
                 setIsLocked(true);
             }
             const token = await user.getIdToken(true);
-            const userParams = `&uName=${encodeURIComponent(config.vapi.userName || '')}&uEmail=${encodeURIComponent(config.vapi.userEmail || '')}&uPhone=${encodeURIComponent(config.vapi.userPhone || '')}`;
+            const userParams = `&uName=${encodeURIComponent(config.vapi.transcriber?.userName || '')}&uEmail=${encodeURIComponent(config.vapi.transcriber?.userEmail || '')}&uPhone=${encodeURIComponent(config.vapi.transcriber?.userPhone || '')}`;
             const url = `${clientBaseUrl}?authtoken=${encodeURIComponent(token)}&orgId=${orgId}&agentId=${agentId}&role=admin${userParams}`;
             window.open(url, '_blank');
         } catch (error) {
@@ -420,7 +423,7 @@ export default function AdminPage() {
     };
 
     const handleTriggerCall = async () => {
-        if (!config.vapi.userPhone || !vapiAssistantId) {
+        if (!config.vapi.transcriber?.userPhone || !vapiAssistantId) {
             alert("Assistant ID and User Phone Number are required.");
             return;
         }
@@ -431,7 +434,7 @@ export default function AdminPage() {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    phoneNumber: config.vapi.userPhone,
+                    phoneNumber: config.vapi.transcriber?.userPhone,
                     assistantId: vapiAssistantId
                 }),
             });
@@ -633,7 +636,7 @@ export default function AdminPage() {
                     </div>
 
                     <div className="flex flex-wrap items-center justify-center gap-4 pt-4">
-                        {config.vapi.userPhone && vapiAssistantId && (
+                        {config.vapi.transcriber?.userPhone && vapiAssistantId && (
                             <button
                                 onClick={handleTriggerCall}
                                 disabled={isCalling}
@@ -920,16 +923,16 @@ export default function AdminPage() {
                         <div className="p-4 bg-slate-50 border rounded-lg grid grid-cols-3 gap-4">
                             <div className="space-y-1">
                                 <label className="text-xs font-bold text-slate-600">User Name</label>
-                                <input className="w-full p-2 text-sm border rounded" value={config.vapi.userName || ''} onChange={e => setConfig(prev => ({ ...prev, vapi: { ...prev.vapi, userName: e.target.value } }))} />
+                                <input className="w-full p-2 text-sm border rounded" value={config.vapi.transcriber?.userName || ''} onChange={e => setConfig(prev => ({ ...prev, vapi: { ...prev.vapi, transcriber: { ...prev.vapi.transcriber, userName: e.target.value } } }))} />
                             </div>
                             <div className="space-y-1">
                                 <label className="text-xs font-bold text-slate-600">User Email</label>
-                                <input className="w-full p-2 text-sm border rounded" value={config.vapi.userEmail || ''} onChange={e => setConfig(prev => ({ ...prev, vapi: { ...prev.vapi, userEmail: e.target.value } }))} />
+                                <input className="w-full p-2 text-sm border rounded" value={config.vapi.transcriber?.userEmail || ''} onChange={e => setConfig(prev => ({ ...prev, vapi: { ...prev.vapi, transcriber: { ...prev.vapi.transcriber, userEmail: e.target.value } } }))} />
                             </div>
                             <div className="space-y-1 col-span-2">
                                 <label className="text-xs font-bold text-slate-600">User Phone</label>
                                 <div className="flex gap-2">
-                                    <input className="w-full p-2 text-sm border rounded" value={config.vapi.userPhone || ''} onChange={e => setConfig(prev => ({ ...prev, vapi: { ...prev.vapi, userPhone: e.target.value } }))} />
+                                    <input className="w-full p-2 text-sm border rounded" value={config.vapi.transcriber?.userPhone || ''} onChange={e => setConfig(prev => ({ ...prev, vapi: { ...prev.vapi, transcriber: { ...prev.vapi.transcriber, userPhone: e.target.value } } }))} />
                                     {vapiAssistantId && (
                                         <button
                                             onClick={handleTriggerCall}
