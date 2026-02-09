@@ -18,6 +18,14 @@ export default function BusinessLandingPage() {
     useEffect(() => {
         async function fetchConfig() {
             try {
+                // Check if Firebase is initialized
+                if (!db) {
+                    console.error('Firebase is not initialized');
+                    setError(true);
+                    setLoading(false);
+                    return;
+                }
+
                 const docRef = doc(db, 'organizations', orgId, 'agents', agentId);
                 const docSnap = await getDoc(docRef);
 
