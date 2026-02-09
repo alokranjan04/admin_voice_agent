@@ -3,14 +3,14 @@ import { getAgentConfig } from '@/lib/firebase-admin';
 import { AgentConfiguration } from '@/types';
 
 interface PageProps {
-    params: {
+    params: Promise<{
         orgId: string;
         agentId: string;
-    };
+    }>;
 }
 
 export default async function BusinessLandingPage({ params }: PageProps) {
-    const { orgId, agentId } = params;
+    const { orgId, agentId } = await params;
 
     // Fetch agent configuration from Firestore
     let config: AgentConfiguration | null = null;
@@ -180,7 +180,7 @@ export default async function BusinessLandingPage({ params }: PageProps) {
 
 // Generate metadata for SEO
 export async function generateMetadata({ params }: PageProps) {
-    const { orgId, agentId } = params;
+    const { orgId, agentId } = await params;
 
     try {
         const config = await getAgentConfig(orgId, agentId);
