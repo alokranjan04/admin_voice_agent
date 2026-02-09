@@ -27,7 +27,7 @@ export async function getAgentConfig(orgId: string, agentId: string) {
             return null;
         }
 
-        return doc.data();
+        return doc.data() as any;
     } catch (error) {
         console.error('[Firebase Admin] Error fetching agent config:', error);
         throw error;
