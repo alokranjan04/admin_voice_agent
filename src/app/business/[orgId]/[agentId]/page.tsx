@@ -75,19 +75,21 @@ export default function BusinessLandingPage() {
         // Only attach if we have valid VAPI configuration
         if (!vapiPublicKey || !vapiAssistantId) {
             console.warn('VAPI configuration missing, voice button will not be functional');
-            return;
+            return; // Return undefined, not a function
         }
 
         // Configure the voice widget
-        (window as any).VOICE_WIDGET_CONFIG = {
-            vapiPublicKey: vapiPublicKey,
-            assistantId: vapiAssistantId,
-            orgId: orgId,
-            agentId: agentId,
-            position: 'bottom-right',
-            primaryColor: '#667eea',
-            secondaryColor: '#764ba2'
-        };
+        if (typeof window !== 'undefined') {
+            (window as any).VOICE_WIDGET_CONFIG = {
+                vapiPublicKey: vapiPublicKey,
+                assistantId: vapiAssistantId,
+                orgId: orgId,
+                agentId: agentId,
+                position: 'bottom-right',
+                primaryColor: '#667eea',
+                secondaryColor: '#764ba2'
+            };
+        }
 
         const attachVoiceHandler = () => {
             const voiceBtn = document.getElementById('voiceCallBtn');
@@ -95,29 +97,44 @@ export default function BusinessLandingPage() {
             const startBtn = document.getElementById('voiceWidgetStartBtn');
 
             if (voiceBtn && widgetBtn && startBtn) {
-                voiceBtn.addEventListener('click', () => {
+                const handleClick = () => {
                     // Click the widget button to open panel, then start call
-                    if (!document.getElementById('voiceWidgetPanel')?.classList.contains('open')) {
+                    const panel = document.getElementById('voiceWidgetPanel');
+                    if (panel && !panel.classList.contains('open')) {
                         widgetBtn.click();
                     }
                     // Start the call after a brief delay to let panel open
                     setTimeout(() => {
                         startBtn.click();
                     }, 100);
-                });
+                };
+
+                voiceBtn.addEventListener('click', handleClick);
+
+                // Return cleanup for this specific handler
+                return () => {
+                    voiceBtn.removeEventListener('click', handleClick);
+                };
             }
+            return undefined;
         };
 
         // Wait for widget to load
-        const checkWidget = setInterval(() => {
+        let checkInterval: NodeJS.Timeout | null = null;
+        let cleanupHandler: (() => void) | undefined;
+
+        checkInterval = setInterval(() => {
             if (document.getElementById('voiceWidgetBtn')) {
-                clearInterval(checkWidget);
-                attachVoiceHandler();
+                if (checkInterval) clearInterval(checkInterval);
+                cleanupHandler = attachVoiceHandler();
             }
         }, 100);
 
-        // Cleanup
-        return () => clearInterval(checkWidget);
+        // Cleanup function
+        return () => {
+            if (checkInterval) clearInterval(checkInterval);
+            if (cleanupHandler) cleanupHandler();
+        };
     }, [vapiPublicKey, vapiAssistantId, orgId, agentId]);
 
     return (
