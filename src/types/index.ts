@@ -110,13 +110,13 @@ export interface VapiConfiguration {
     provider: string;
     language: string;
     model: string;
+    userName?: string;
+    userEmail?: string;
+    userPhone?: string;
   };
   backgroundSound: string;
   knowledgeBase: string; // Markdown content for FAQs etc.
   clientUrl: string; // The URL of the web client app
-  userName?: string;
-  userEmail?: string;
-  userPhone?: string;
 }
 
 export interface AgentConfiguration {
@@ -202,7 +202,10 @@ AI Assistant must not use numeric characters in any response.`,
     transcriber: {
       provider: 'deepgram',
       language: 'en',
-      model: 'nova-2'
+      model: 'nova-2',
+      userName: '',
+      userEmail: '',
+      userPhone: ''
     },
     backgroundSound: 'default',
     knowledgeBase: `# FAQs for {{Company Name}}
@@ -236,9 +239,6 @@ Yes, generic parking is available on-site for all our visitors.
 
 ## 10. What payment methods do you accept?
 We accept all major credit cards, debit cards, and digital payment methods like Apple Pay and Google Pay.`,
-    clientUrl: 'https://voice-agent-eight-delta.vercel.app',
-    userName: '',
-    userEmail: '',
-    userPhone: ''
+    clientUrl: 'https://voice-agent-eight-delta.vercel.app'
   }
 };
