@@ -1,37 +1,65 @@
-import { notFound } from 'next/navigation';
-import { getAgentConfig } from '@/lib/firebase-admin';
+'use client';
+
+import { useEffect, useState } from 'react';
+import { useParams } from 'next/navigation';
+import { db } from '@/services/firebase';
+import { doc, getDoc } from 'firebase/firestore';
 import { AgentConfiguration } from '@/types';
 
-interface PageProps {
-    params: Promise<{
-        orgId: string;
-        agentId: string;
-    }>;
-}
+export default function BusinessLandingPage() {
+    const params = useParams();
+    const orgId = params.orgId as string;
+    const agentId = params.agentId as string;
 
-export default async function BusinessLandingPage({ params }: PageProps) {
-    const { orgId, agentId } = await params;
+    const [config, setConfig] = useState<AgentConfiguration | null>(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(false);
 
-    // Fetch agent configuration from Firestore
-    let config: AgentConfiguration | null = null;
-    try {
-        config = await getAgentConfig(orgId, agentId);
-    } catch (error) {
-        console.error('Failed to fetch agent config:', error);
-        notFound();
+    useEffect(() => {
+        async function fetchConfig() {
+            try {
+                const docRef = doc(db, 'organizations', orgId, 'agents', agentId);
+                const docSnap = await getDoc(docRef);
+
+                if (docSnap.exists()) {
+                    setConfig(docSnap.data() as AgentConfiguration);
+                } else {
+                    setError(true);
+                }
+            } catch (err) {
+                console.error('Error fetching config:', err);
+                setError(true);
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        fetchConfig();
+    }, [orgId, agentId]);
+
+    if (loading) {
+        return (
+            <div className="min-h-screen bg-gradient-to-br from-slate-900 via-indigo-900 to-slate-900 flex items-center justify-center">
+                <div className="text-white text-2xl">Loading...</div>
+            </div>
+        );
     }
 
-    if (!config) {
-        notFound();
+    if (error || !config) {
+        return (
+            <div className="min-h-screen bg-gradient-to-br from-slate-900 via-indigo-900 to-slate-900 flex items-center justify-center">
+                <div className="text-center">
+                    <h1 className="text-4xl font-bold text-white mb-4">Business Not Found</h1>
+                    <p className="text-indigo-200">The requested business page could not be found.</p>
+                </div>
+            </div>
+        );
     }
 
     const businessName = config.metadata.businessName || 'Our Business';
     const description = config.metadata.description || 'Welcome to our business';
-    const industry = config.metadata.industry || 'Business';
     const services = config.services || [];
     const locations = config.locations || [];
-
-    // VAPI configuration for voice bot
     const vapiPublicKey = process.env.NEXT_PUBLIC_VAPI_PUBLIC_KEY || '';
     const vapiAssistantId = (config.vapi as any)?.assistantId || '';
 
@@ -176,32 +204,4 @@ export default async function BusinessLandingPage({ params }: PageProps) {
             <script src="/voice-widget.js" async></script>
         </div>
     );
-}
-
-// Generate metadata for SEO
-export async function generateMetadata({ params }: PageProps) {
-    const { orgId, agentId } = await params;
-
-    try {
-        const config = await getAgentConfig(orgId, agentId);
-        if (!config) {
-            return {
-                title: 'Business Not Found',
-            };
-        }
-
-        return {
-            title: `${config.metadata.businessName} - ${config.metadata.industry}`,
-            description: config.metadata.description,
-            keywords: [
-                config.metadata.industry,
-                config.metadata.businessName,
-                ...config.services.map(s => s.name),
-            ].join(', '),
-        };
-    } catch (error) {
-        return {
-            title: 'Business Landing Page',
-        };
-    }
 }
