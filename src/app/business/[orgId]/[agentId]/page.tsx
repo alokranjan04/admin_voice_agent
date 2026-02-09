@@ -63,6 +63,39 @@ export default function BusinessLandingPage() {
     const vapiPublicKey = process.env.NEXT_PUBLIC_VAPI_PUBLIC_KEY || '';
     const vapiAssistantId = (config.vapi as any)?.assistantId || '';
 
+    // Attach click handler to voice button after widget loads
+    useEffect(() => {
+        const attachVoiceHandler = () => {
+            const voiceBtn = document.getElementById('voiceCallBtn');
+            const widgetBtn = document.getElementById('voiceWidgetBtn');
+            const startBtn = document.getElementById('voiceWidgetStartBtn');
+
+            if (voiceBtn && widgetBtn && startBtn) {
+                voiceBtn.addEventListener('click', () => {
+                    // Click the widget button to open panel, then start call
+                    if (!document.getElementById('voiceWidgetPanel')?.classList.contains('open')) {
+                        widgetBtn.click();
+                    }
+                    // Start the call after a brief delay to let panel open
+                    setTimeout(() => {
+                        startBtn.click();
+                    }, 100);
+                });
+            }
+        };
+
+        // Wait for widget to load
+        const checkWidget = setInterval(() => {
+            if (document.getElementById('voiceWidgetBtn')) {
+                clearInterval(checkWidget);
+                attachVoiceHandler();
+            }
+        }, 100);
+
+        // Cleanup
+        return () => clearInterval(checkWidget);
+    }, []);
+
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-900 via-indigo-900 to-slate-900">
             {/* Hero Section */}
@@ -79,7 +112,7 @@ export default function BusinessLandingPage() {
                         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
                             <button
                                 id="voiceCallBtn"
-                                className="px-8 py-4 bg-white text-indigo-900 font-bold rounded-xl hover:bg-indigo-50 transition-all hover:scale-105 shadow-2xl shadow-indigo-500/50 flex items-center gap-3"
+                                className="px-8 py-4 bg-white text-indigo-900 font-bold rounded-xl hover:bg-indigo-50 transition-all hover:scale-105 shadow-2xl shadow-indigo-500/50 flex items-center gap-3 cursor-pointer"
                             >
                                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"></path>
