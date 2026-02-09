@@ -831,6 +831,17 @@ export default function AdminPage() {
                         <textarea className="w-full p-2 border rounded-md h-24"
                             value={config.metadata.description} onChange={(e) => updateMetadata('description', e.target.value)} />
                     </div>
+                    <div className="space-y-2">
+                        <label className="text-sm font-medium text-slate-700">Website URL (Optional)</label>
+                        <input
+                            type="url"
+                            className="w-full p-2 border rounded-md"
+                            placeholder="https://www.yourcompany.com"
+                            value={config.metadata.websiteUrl || ''}
+                            onChange={(e) => updateMetadata('websiteUrl', e.target.value)}
+                        />
+                        <p className="text-xs text-slate-500">This will add a "Visit Website" button on the success screen</p>
+                    </div>
 
                     <div className="mt-8 bg-slate-50 border border-slate-200 rounded-xl p-6">
                         <div className="flex items-center gap-2 mb-6">
