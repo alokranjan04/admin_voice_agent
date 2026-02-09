@@ -391,7 +391,17 @@ export default function AdminPage() {
                 conversation: { ...prev.conversation, ...generated.conversation },
                 safety: { ...prev.safety, ...generated.safety },
                 integrations: { ...prev.integrations, ...generated.integrations },
-                vapi: { ...prev.vapi, ...(generated.vapi || {}) }
+                vapi: {
+                    ...prev.vapi,
+                    ...(generated.vapi || {}),
+                    transcriber: {
+                        ...(generated.vapi?.transcriber || prev.vapi.transcriber),
+                        // Preserve user context fields from Gmail login
+                        userName: prev.vapi.transcriber?.userName || generated.vapi?.transcriber?.userName || '',
+                        userEmail: prev.vapi.transcriber?.userEmail || generated.vapi?.transcriber?.userEmail || '',
+                        userPhone: prev.vapi.transcriber?.userPhone || generated.vapi?.transcriber?.userPhone || ''
+                    }
+                }
             }));
         } catch (error: any) {
             console.error("AI Generation failed", error);
