@@ -2,8 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
-import { db } from '@/services/firebase';
-import { doc, getDoc } from 'firebase/firestore';
 import { AgentConfiguration } from '@/types';
 
 export default function BusinessLandingPage() {
@@ -18,22 +16,16 @@ export default function BusinessLandingPage() {
     useEffect(() => {
         async function fetchConfig() {
             try {
-                // Check if Firebase is initialized
-                if (!db) {
-                    console.error('Firebase is not initialized');
+                const response = await fetch(`/api/agent/${orgId}/${agentId}`);
+
+                if (!response.ok) {
                     setError(true);
                     setLoading(false);
                     return;
                 }
 
-                const docRef = doc(db, 'organizations', orgId, 'agents', agentId);
-                const docSnap = await getDoc(docRef);
-
-                if (docSnap.exists()) {
-                    setConfig(docSnap.data() as AgentConfiguration);
-                } else {
-                    setError(true);
-                }
+                const data = await response.json();
+                setConfig(data as AgentConfiguration);
             } catch (err) {
                 console.error('Error fetching config:', err);
                 setError(true);
