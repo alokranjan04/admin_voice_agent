@@ -56,15 +56,27 @@ export default function BusinessLandingPage() {
         );
     }
 
-    const businessName = config.metadata.businessName || 'Our Business';
-    const description = config.metadata.description || 'Welcome to our business';
-    const services = config.services || [];
-    const locations = config.locations || [];
-    const vapiPublicKey = process.env.NEXT_PUBLIC_VAPI_PUBLIC_KEY || '';
-    const vapiAssistantId = (config.vapi as any)?.assistantId || '';
+    // Safely extract data with fallbacks
+    const businessName = config?.metadata?.businessName || 'Our Business';
+    const description = config?.metadata?.description || 'Welcome to our business';
+    const services = Array.isArray(config?.services) ? config.services : [];
+    const locations = Array.isArray(config?.locations) ? config.locations : [];
+
+    // Get environment variables safely
+    const vapiPublicKey = typeof window !== 'undefined'
+        ? (window as any).NEXT_PUBLIC_VAPI_PUBLIC_KEY || process.env.NEXT_PUBLIC_VAPI_PUBLIC_KEY || ''
+        : process.env.NEXT_PUBLIC_VAPI_PUBLIC_KEY || '';
+
+    const vapiAssistantId = config?.vapi?.assistantId || '';
 
     // Attach click handler to voice button after widget loads
     useEffect(() => {
+        // Only attach if we have valid VAPI configuration
+        if (!vapiPublicKey || !vapiAssistantId) {
+            console.warn('VAPI configuration missing, voice button will not be functional');
+            return;
+        }
+
         const attachVoiceHandler = () => {
             const voiceBtn = document.getElementById('voiceCallBtn');
             const widgetBtn = document.getElementById('voiceWidgetBtn');
@@ -94,7 +106,7 @@ export default function BusinessLandingPage() {
 
         // Cleanup
         return () => clearInterval(checkWidget);
-    }, []);
+    }, [vapiPublicKey, vapiAssistantId]);
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-900 via-indigo-900 to-slate-900">
