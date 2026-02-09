@@ -41,6 +41,7 @@ export interface BusinessMetadata {
   primaryUseCase: string;
   targetUsers: string;
   description: string;
+  websiteUrl?: string;
   createdAt: string;
 }
 
@@ -139,6 +140,7 @@ export const INITIAL_CONFIG: AgentConfiguration = {
     primaryUseCase: '',
     targetUsers: '',
     description: '',
+    websiteUrl: '',
     createdAt: new Date().toISOString()
   },
   services: [],

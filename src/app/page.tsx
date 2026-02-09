@@ -9,7 +9,7 @@ import { createVapiAssistant } from '../services/vapiService';
 import { researchBusiness } from '../services/researchService';
 import { getTemplateByIndustry } from '../services/templateService';
 import { AgentConfiguration, INITIAL_CONFIG, DeliveryModeType, SUPPORTED_INDUSTRIES, BrandingConfig, DEFAULT_BRANDING } from '../types';
-import { Wand2, Plus, Trash2, Loader2, AlertCircle, Copy, Check, Database, Calendar, Rocket, Braces, Search, Upload, Palette, Image as ImageIcon, Phone, PhoneCall, Link } from 'lucide-react';
+import { Wand2, Plus, Trash2, Loader2, AlertCircle, Copy, Check, Database, Calendar, Rocket, Braces, Search, Upload, Palette, Image as ImageIcon, Phone, PhoneCall, Link, Globe } from 'lucide-react';
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { loadStripe } from '@stripe/stripe-js';
 
@@ -654,6 +654,17 @@ export default function AdminPage() {
                             <Rocket className="w-5 h-5 font-bold" />
                             Launch Agent Interface
                         </button>
+                        {config.metadata.websiteUrl && (
+                            <a
+                                href={config.metadata.websiteUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="px-8 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl flex items-center gap-3 shadow-lg shadow-emerald-500/25 transition-all hover:scale-105 active:scale-95"
+                            >
+                                <Globe className="w-5 h-5" />
+                                Visit Website
+                            </a>
+                        )}
                         <button
                             onClick={() => setIsLocked(false)}
                             className="px-8 py-3 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-xl border border-slate-700 transition-all hover:bg-slate-700/80"
