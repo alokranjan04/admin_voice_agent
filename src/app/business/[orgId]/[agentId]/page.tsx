@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
+import Script from 'next/script';
 import { AgentConfiguration } from '@/types';
 
 export default function BusinessLandingPage() {
@@ -77,6 +78,17 @@ export default function BusinessLandingPage() {
             return;
         }
 
+        // Configure the voice widget
+        (window as any).VOICE_WIDGET_CONFIG = {
+            vapiPublicKey: vapiPublicKey,
+            assistantId: vapiAssistantId,
+            orgId: orgId,
+            agentId: agentId,
+            position: 'bottom-right',
+            primaryColor: '#667eea',
+            secondaryColor: '#764ba2'
+        };
+
         const attachVoiceHandler = () => {
             const voiceBtn = document.getElementById('voiceCallBtn');
             const widgetBtn = document.getElementById('voiceWidgetBtn');
@@ -106,7 +118,7 @@ export default function BusinessLandingPage() {
 
         // Cleanup
         return () => clearInterval(checkWidget);
-    }, [vapiPublicKey, vapiAssistantId]);
+    }, [vapiPublicKey, vapiAssistantId, orgId, agentId]);
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-900 via-indigo-900 to-slate-900">
@@ -230,23 +242,8 @@ export default function BusinessLandingPage() {
                 </div>
             </footer>
 
-            {/* Voice Bot Widget Script */}
-            <script
-                dangerouslySetInnerHTML={{
-                    __html: `
-            window.VOICE_WIDGET_CONFIG = {
-              vapiPublicKey: '${vapiPublicKey}',
-              assistantId: '${vapiAssistantId}',
-              orgId: '${orgId}',
-              agentId: '${agentId}',
-              position: 'bottom-right',
-              primaryColor: '#667eea',
-              secondaryColor: '#764ba2'
-            };
-          `,
-                }}
-            />
-            <script src="/voice-widget.js" async></script>
+            {/* Voice Bot Widget Script - Using Next.js Script component */}
+            <Script src="/voice-widget.js" strategy="afterInteractive" />
         </div>
     );
 }
