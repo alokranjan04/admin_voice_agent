@@ -664,17 +664,28 @@ export default function AdminPage() {
                             <Rocket className="w-5 h-5 font-bold" />
                             Launch Agent Interface
                         </button>
-                        {config.metadata.websiteUrl && (
-                            <a
-                                href={config.metadata.websiteUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="px-8 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl flex items-center gap-3 shadow-lg shadow-emerald-500/25 transition-all hover:scale-105 active:scale-95"
-                            >
-                                <Globe className="w-5 h-5" />
-                                Visit Website
-                            </a>
-                        )}
+                        {/* Visit Website or Auto-Generated Landing Page */}
+                        {(() => {
+                            const orgId = user ? getOrgId(user) : 'anonymous_org';
+                            const safeName = config.metadata.businessName.trim().toLowerCase().replace(/[^a-z0-9]+/g, '_');
+                            const agentId = activeAgentId || `agent_${safeName}`;
+                            const websiteUrl = config.metadata.websiteUrl;
+                            const generatedUrl = `${window.location.origin}/business/${orgId}/${agentId}`;
+                            const finalUrl = websiteUrl || generatedUrl;
+                            const isGenerated = !websiteUrl;
+
+                            return (
+                                <a
+                                    href={finalUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="px-8 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl flex items-center gap-3 shadow-lg shadow-emerald-500/25 transition-all hover:scale-105 active:scale-95"
+                                >
+                                    <Globe className="w-5 h-5" />
+                                    {isGenerated ? 'View Generated Website' : 'Visit Website'}
+                                </a>
+                            );
+                        })()}
                         <button
                             onClick={() => setIsLocked(false)}
                             className="px-8 py-3 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-xl border border-slate-700 transition-all hover:bg-slate-700/80"
