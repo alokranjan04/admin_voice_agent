@@ -333,8 +333,8 @@ export default function AdminPage() {
         const clientBaseUrl = config.vapi.clientUrl || 'https://voice-agent-eight-delta.vercel.app';
 
         if (isDemoMode) {
-            const userParams = `&uName=${encodeURIComponent(config.vapi.transcriber?.userName || '')}&uEmail=${encodeURIComponent(config.vapi.transcriber?.userEmail || '')}&uPhone=${encodeURIComponent(config.vapi.transcriber?.userPhone || '')}`;
-            const url = `${clientBaseUrl}?orgId=${orgId}&agentId=${agentId}&role=admin&demo=true${userParams}`;
+            const userParams = `uName=${encodeURIComponent(config.vapi.transcriber?.userName || '')}&uEmail=${encodeURIComponent(config.vapi.transcriber?.userEmail || '')}&uPhone=${encodeURIComponent(config.vapi.transcriber?.userPhone || '')}`;
+            const url = `${clientBaseUrl}/${orgId}/${agentId}?role=admin&demo=true&${userParams}`;
             window.open(url, '_blank');
             return;
         }
@@ -351,8 +351,8 @@ export default function AdminPage() {
                 setIsLocked(true);
             }
             const token = await user.getIdToken(true);
-            const userParams = `&uName=${encodeURIComponent(config.vapi.transcriber?.userName || '')}&uEmail=${encodeURIComponent(config.vapi.transcriber?.userEmail || '')}&uPhone=${encodeURIComponent(config.vapi.transcriber?.userPhone || '')}`;
-            const url = `${clientBaseUrl}?authtoken=${encodeURIComponent(token)}&orgId=${orgId}&agentId=${agentId}&role=admin${userParams}`;
+            const userParams = `uName=${encodeURIComponent(config.vapi.transcriber?.userName || '')}&uEmail=${encodeURIComponent(config.vapi.transcriber?.userEmail || '')}&uPhone=${encodeURIComponent(config.vapi.transcriber?.userPhone || '')}`;
+            const url = `${clientBaseUrl}/${orgId}/${agentId}?authtoken=${encodeURIComponent(token)}&role=admin&${userParams}`;
             window.open(url, '_blank');
         } catch (error) {
             console.error("Failed to launch client", error);
