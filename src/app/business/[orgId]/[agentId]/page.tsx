@@ -67,7 +67,7 @@ export default function BusinessLandingPage() {
         ? (window as any).NEXT_PUBLIC_VAPI_PUBLIC_KEY || process.env.NEXT_PUBLIC_VAPI_PUBLIC_KEY || ''
         : process.env.NEXT_PUBLIC_VAPI_PUBLIC_KEY || '';
 
-    const vapiAssistantId = config?.vapi?.assistantId || '';
+    const vapiAssistantId = (config?.vapi as any)?.assistantId || '';
 
     // Attach click handler to voice button after widget loads
     useEffect(() => {
