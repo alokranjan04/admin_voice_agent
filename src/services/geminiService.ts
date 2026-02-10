@@ -130,7 +130,7 @@ export async function generateConfigFromDescription(description: string, researc
           targetUsers: { type: SchemaType.STRING },
           description: { type: SchemaType.STRING },
         },
-        required: ["businessName", "industry", "primaryUseCase", "description", "locations"]
+        required: ["businessName", "industry", "primaryUseCase", "description"]
       },
       services: {
         type: SchemaType.ARRAY,
@@ -223,7 +223,8 @@ export async function generateConfigFromDescription(description: string, researc
         },
         required: ["systemPrompt", "knowledgeBase", "firstMessage"]
       }
-    }
+    },
+    required: ["metadata", "locations", "vapi"]
   };
 
   const userContent = researchData
