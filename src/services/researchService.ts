@@ -4,7 +4,7 @@ import axios from 'axios';
 const SERPER_API_URL = 'https://google.serper.dev/search';
 
 const getSerperApiKey = () => {
-    return process.env.NEXT_PUBLIC_SERPER_API_KEY || null;
+    return process.env.NEXT_PUBLIC_SERPER_API_KEY || process.env.VITE_SERPER_API_KEY || null;
 };
 
 export interface ResearchContext {
@@ -20,31 +20,36 @@ export const researchBusiness = async (query: string): Promise<ResearchContext> 
     const apiKey = getSerperApiKey();
 
     if (!apiKey) {
-        console.warn("VITE_SERPER_API_KEY missing in .env. Falling back to AI only.");
+        console.warn("SERPER_API_KEY (NEXT_PUBLIC_ or VITE_) missing in .env. Falling back to AI only.");
         return { searchQuery: query, webResults: [] };
     }
 
     try {
         console.log(`Researching: ${query}...`);
-        const response = await axios.post(SERPER_API_URL, {
-            q: query,
-            gl: 'us', // Geography: US (can be tuned)
-            hl: 'en', // Language: English
-            autocorrect: true
-        }, {
-            headers: {
-                'X-API-KEY': apiKey,
-                'Content-Type': 'application/json'
-            }
-        });
+        const [webRes, placesRes] = await Promise.allSettled([
+            axios.post('https://google.serper.dev/search', {
+                q: query,
+                gl: 'us',
+                hl: 'en',
+                autocorrect: true
+            }, { headers: { 'X-API-KEY': apiKey, 'Content-Type': 'application/json' } }),
+            axios.post('https://google.serper.dev/places', {
+                q: query,
+                gl: 'us',
+                hl: 'en'
+            }, { headers: { 'X-API-KEY': apiKey, 'Content-Type': 'application/json' } })
+        ]);
 
-        // Serper returns organic results, knowledge graph, and sometimes places
-        const data = response.data;
+        const webData = webRes.status === 'fulfilled' ? webRes.value.data : {};
+        const placesData = placesRes.status === 'fulfilled' ? placesRes.value.data : { places: [] };
+
+        const knowledgeGraph = webData.knowledgeGraph ? [webData.knowledgeGraph] : [];
+        const specificPlaces = placesData.places || [];
 
         return {
             searchQuery: query,
-            webResults: data.organic || [],
-            placesResults: data.knowledgeGraph ? [data.knowledgeGraph] : []
+            webResults: webData.organic || [],
+            placesResults: [...knowledgeGraph, ...specificPlaces]
         };
     } catch (error) {
         console.error("Research Phase Failed:", error);

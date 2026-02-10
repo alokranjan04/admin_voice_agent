@@ -130,7 +130,7 @@ export async function generateConfigFromDescription(description: string, researc
           targetUsers: { type: SchemaType.STRING },
           description: { type: SchemaType.STRING },
         },
-        required: ["businessName", "industry", "primaryUseCase", "description"]
+        required: ["businessName", "industry", "primaryUseCase", "description", "locations"]
       },
       services: {
         type: SchemaType.ARRAY,
@@ -158,7 +158,8 @@ export async function generateConfigFromDescription(description: string, researc
             operatingHours: { type: SchemaType.STRING },
             timeZone: { type: SchemaType.STRING },
             address: { type: SchemaType.STRING },
-          }
+          },
+          required: ["name", "address", "mode"]
         }
       },
       resources: {
@@ -250,13 +251,13 @@ export async function generateConfigFromDescription(description: string, researc
       return processResult(result);
     } catch (e: any) {
       lastError = e;
-      const status = e.status || (e.message?.match(/\[(\d+)\]/) || [])[1];
+      const status = e.status || (e.message?.match(/\[(\d+)\s*\]/) || [])[1];
       if (status === '404') {
         console.warn(`[Gemini Service] Model ${modelName} not found (404).`);
         continue;
       }
       if (status === '429') {
-        console.warn(`[Gemini Service] Quota exceeded for ${modelName}.`);
+        console.warn(`[Gemini Service] Quota exceeded for ${modelName}. Trying next model...`);
         continue;
       }
       console.error(`[Gemini Service] Unexpected error with ${modelName}:`, e.message);
