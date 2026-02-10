@@ -56,6 +56,7 @@ export interface Service {
 export interface Location {
   id: string;
   name: string;
+  address?: string;
   mode: DeliveryModeType;
   operatingDays: string[];
   operatingHours: string;

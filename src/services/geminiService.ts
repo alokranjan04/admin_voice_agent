@@ -52,7 +52,7 @@ export async function generateConfigFromDescription(description: string, researc
     Populate the following sections:
     - Business Metadata
         - Services (Invent plausible services with durations)
-    - Locations (Invent a plausible location)
+    - Locations (Invent a plausible location, including address)
         - Resources (Invent staff or rooms if applicable)
     - Data Fields (Recommend mandatory fields)
     - Conversation Rules (Match the tone to the business type)
@@ -157,6 +157,7 @@ export async function generateConfigFromDescription(description: string, researc
             operatingDays: { type: SchemaType.ARRAY, items: { type: SchemaType.STRING } },
             operatingHours: { type: SchemaType.STRING },
             timeZone: { type: SchemaType.STRING },
+            address: { type: SchemaType.STRING },
           }
         }
       },

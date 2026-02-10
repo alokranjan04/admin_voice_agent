@@ -556,6 +556,7 @@ export default function AdminPage() {
             locations: [...prev.locations, {
                 id: Math.random().toString(36).substring(2, 9),
                 name: '',
+                address: '',
                 mode: 'Physical' as DeliveryModeType,
                 operatingDays: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
                 operatingHours: '09:00 - 17:00',
@@ -950,6 +951,11 @@ export default function AdminPage() {
                                             <option value="Virtual">Virtual</option>
                                             <option value="Hybrid">Hybrid</option>
                                         </select>
+                                    </div>
+                                    <div className="space-y-2 col-span-2">
+                                        <label className="text-xs font-semibold text-slate-500 uppercase">Address</label>
+                                        <input type="text" className="w-full p-2 border rounded" placeholder="123 Business St, City, State"
+                                            value={loc.address || ''} onChange={(e) => updateLocation(loc.id, 'address', e.target.value)} />
                                     </div>
                                 </div>
                             </div>
