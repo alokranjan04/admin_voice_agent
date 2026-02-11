@@ -9,7 +9,7 @@ import { createVapiAssistant } from '../services/vapiService';
 import { researchBusiness } from '../services/researchService';
 import { getTemplateByIndustry } from '../services/templateService';
 import { AgentConfiguration, INITIAL_CONFIG, DeliveryModeType, SUPPORTED_INDUSTRIES, BrandingConfig, DEFAULT_BRANDING } from '../types';
-import { Wand2, Plus, Trash2, Loader2, AlertCircle, Copy, Check, Database, Calendar, Rocket, Braces, Search, Upload, Palette, Image as ImageIcon, Phone, PhoneCall, Link, Globe } from 'lucide-react';
+import { Wand2, Plus, Trash2, Loader2, AlertCircle, Copy, Check, Database, Calendar, Rocket, Braces, Search, Upload, Palette, Image as ImageIcon, Phone, PhoneCall, Link, Globe, ShieldCheck } from 'lucide-react';
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { loadStripe } from '@stripe/stripe-js';
 
@@ -723,6 +723,22 @@ export default function AdminPage() {
                             DEMO MODE
                         </span>
                     )}
+
+                    {/* Prominent Validate & Lock Button */}
+                    {!isLocked && (
+                        <button
+                            onClick={handleLock}
+                            disabled={!isValid || isSaving}
+                            className={`flex items-center gap-2 px-6 py-2 rounded-lg font-bold transition-all shadow-md ${isValid
+                                ? 'bg-emerald-600 hover:bg-emerald-500 text-white hover:scale-105 active:scale-95'
+                                : 'bg-slate-200 text-slate-400 cursor-not-allowed'
+                                }`}
+                        >
+                            {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <ShieldCheck className="w-4 h-4" />}
+                            {isSaving ? 'Validating...' : 'Validate and Lock'}
+                        </button>
+                    )}
+
                     <button onClick={handleLogout} className="text-sm text-slate-500 hover:text-red-500 px-3 py-1">
                         {isDemoMode ? 'Exit Demo' : `Sign Out (${user?.email})`}
                     </button>
@@ -1006,7 +1022,23 @@ export default function AdminPage() {
                                 <textarea className="w-full p-2 border rounded text-sm h-20" value={config.vapi.firstMessage} onChange={e => setConfig(prev => ({ ...prev, vapi: { ...prev.vapi, firstMessage: e.target.value } }))} />
                             </div>
                             <div className="space-y-2">
-                                <label className="text-xs font-bold uppercase text-slate-500">Knowledge Base</label>
+                                <div className="flex items-center justify-between">
+                                    <label className="text-xs font-bold uppercase text-slate-500">Knowledge Base</label>
+                                    <button
+                                        onClick={() => fileInputRef.current?.click()}
+                                        className="text-[10px] font-bold text-indigo-600 hover:text-indigo-700 flex items-center gap-1 uppercase tracking-wider"
+                                    >
+                                        <Upload className="w-3 h-3" />
+                                        Upload Text/Docs
+                                    </button>
+                                    <input
+                                        type="file"
+                                        ref={fileInputRef}
+                                        onChange={handleFileUpload}
+                                        accept=".txt,.md,.doc,.docx"
+                                        className="hidden"
+                                    />
+                                </div>
                                 <textarea className="w-full p-2 border rounded text-xs font-mono h-20" value={config.vapi.knowledgeBase} onChange={e => setConfig(prev => ({ ...prev, vapi: { ...prev.vapi, knowledgeBase: e.target.value } }))} />
                             </div>
                         </div>

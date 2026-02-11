@@ -128,30 +128,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </ul>
       </nav>
 
-      <div className="p-6 border-t border-slate-800 space-y-3">
-        {/* Launch Client Button (Auth Bridge) */}
-        <button
-          onClick={onLaunchClient}
-          disabled={isLaunching}
-          className="w-full flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold bg-slate-800 text-indigo-400 hover:bg-slate-700 hover:text-indigo-300 border border-slate-700 transition-all disabled:opacity-70 disabled:cursor-wait"
-          title="Open Live Agent Interface"
-        >
-          {isLaunching ? <Loader2 className="w-4 h-4 animate-spin" /> : <ExternalLink className="w-4 h-4" />}
-          {isLaunching ? 'Launching...' : 'Launch Web Client'}
-        </button>
-
-        {/* Lock/Save Button */}
-        <button
-          onClick={onLock}
-          disabled={!isValid || isSaving || isLocked}
-          className={`w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-sm font-bold transition-all ${isValid && !isLocked
-            ? 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-900/20'
-            : 'bg-slate-800 text-slate-500 cursor-not-allowed'
-            } ${isSaving ? 'opacity-80 cursor-wait' : ''}`}
-        >
-          {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : (isValid && !isLocked ? <CheckCircle2 className="w-4 h-4" /> : <Lock className="w-4 h-4" />)}
-          {isSaving ? 'Saving...' : (isValid && !isLocked ? 'Validate & Lock' : (isLocked ? 'Locked' : 'Incomplete'))}
-        </button>
+      <div className="p-6 border-t border-slate-800 text-center">
+        <p className="text-[10px] text-slate-600 uppercase tracking-widest">
+          Configuration Dashboard
+        </p>
       </div>
     </aside>
   );
