@@ -80,7 +80,9 @@ export async function generateConfigFromDescription(description: string, researc
     CRITICAL TOOL USAGE:
     - When you call a tool to check availability or find slots, and the tool returns available times or data, you MUST present these specific options to the user clearly.
     - Ask the user to confirm a specific time before proceeding to book.
-    - Do not simply say 'there are no slots' if the tool result indicates that slots were found.
+    - Do not simply say 'there are no slots' or 'I couldn't retrieve info' if the tool result indicates that slots were found. Read the slots from the tool response.
+    - If a slot is unavailable, explain why (e.g., 'Outside business hours') based on the tool result.
+    - NEVER hallucinate times. Only use times explicitly returned by tools.
     
     Primary Mode: Voice interaction. Ensure your responses are concise and optimized for spoken conversation."
     
