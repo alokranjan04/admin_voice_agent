@@ -16,12 +16,12 @@ export async function POST(req: Request) {
         }
 
         const companyName = config.metadata.businessName || "the company";
-        const deptName = config.metadata.industry || "Voice AI Support";
+        const roleDesc = config.metadata.primaryUseCase || "Voice AI Support Assistant";
 
         let systemPrompt = config.vapi.systemPrompt
             .replace(/{{COMPANY_NAME}}/g, companyName)
             .replace(/{{Company name}}/gi, companyName)
-            .replace(/{{DEPARTMENT_NAME}}/g, deptName);
+            .replace(/{{ROLE_DESCRIPTION}}/g, roleDesc);
 
         let firstMessage = (config.vapi.firstMessage || `Hello, thank you for calling ${companyName}!`)
             .replace(/{{COMPANY_NAME}}/g, companyName)
