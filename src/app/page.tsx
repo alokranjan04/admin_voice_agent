@@ -724,21 +724,6 @@ export default function AdminPage() {
                         </span>
                     )}
 
-                    {/* Prominent Validate & Lock Button */}
-                    {!isLocked && (
-                        <button
-                            onClick={handleLock}
-                            disabled={!isValid || isSaving}
-                            className={`flex items-center gap-2 px-6 py-2 rounded-lg font-bold transition-all shadow-md ${isValid
-                                ? 'bg-emerald-600 hover:bg-emerald-500 text-white hover:scale-105 active:scale-95'
-                                : 'bg-slate-200 text-slate-400 cursor-not-allowed'
-                                }`}
-                        >
-                            {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <ShieldCheck className="w-4 h-4" />}
-                            {isSaving ? 'Validating...' : 'Validate and Lock'}
-                        </button>
-                    )}
-
                     <button onClick={handleLogout} className="text-sm text-slate-500 hover:text-red-500 px-3 py-1">
                         {isDemoMode ? 'Exit Demo' : `Sign Out (${user?.email})`}
                     </button>
@@ -988,16 +973,31 @@ export default function AdminPage() {
                         <div className="p-4 bg-slate-50 border rounded-lg grid grid-cols-3 gap-4">
                             <div className="space-y-1">
                                 <label className="text-xs font-bold text-slate-600">User Name</label>
-                                <input className="w-full p-2 text-sm border rounded" value={config.vapi.transcriber?.userName || ''} onChange={e => setConfig(prev => ({ ...prev, vapi: { ...prev.vapi, transcriber: { ...prev.vapi.transcriber, userName: e.target.value } } }))} />
+                                <input
+                                    className={`w-full p-2 text-sm border rounded transition-colors ${!config.vapi.transcriber?.userName ? 'border-red-300 bg-red-50 focus:border-red-500 ring-1 ring-red-200' : ''}`}
+                                    placeholder="Required"
+                                    value={config.vapi.transcriber?.userName || ''}
+                                    onChange={e => setConfig(prev => ({ ...prev, vapi: { ...prev.vapi, transcriber: { ...prev.vapi.transcriber, userName: e.target.value } } }))}
+                                />
                             </div>
                             <div className="space-y-1">
                                 <label className="text-xs font-bold text-slate-600">User Email</label>
-                                <input className="w-full p-2 text-sm border rounded" value={config.vapi.transcriber?.userEmail || ''} onChange={e => setConfig(prev => ({ ...prev, vapi: { ...prev.vapi, transcriber: { ...prev.vapi.transcriber, userEmail: e.target.value } } }))} />
+                                <input
+                                    className={`w-full p-2 text-sm border rounded transition-colors ${!config.vapi.transcriber?.userEmail ? 'border-red-300 bg-red-50 focus:border-red-500 ring-1 ring-red-200' : ''}`}
+                                    placeholder="Required"
+                                    value={config.vapi.transcriber?.userEmail || ''}
+                                    onChange={e => setConfig(prev => ({ ...prev, vapi: { ...prev.vapi, transcriber: { ...prev.vapi.transcriber, userEmail: e.target.value } } }))}
+                                />
                             </div>
                             <div className="space-y-1 col-span-2">
                                 <label className="text-xs font-bold text-slate-600">User Phone</label>
                                 <div className="flex gap-2">
-                                    <input className="w-full p-2 text-sm border rounded" value={config.vapi.transcriber?.userPhone || ''} onChange={e => setConfig(prev => ({ ...prev, vapi: { ...prev.vapi, transcriber: { ...prev.vapi.transcriber, userPhone: e.target.value } } }))} />
+                                    <input
+                                        className={`w-full p-2 text-sm border rounded transition-colors ${!config.vapi.transcriber?.userPhone ? 'border-red-300 bg-red-50 focus:border-red-500 ring-1 ring-red-200' : ''}`}
+                                        placeholder="Required (e.g. +1234567890)"
+                                        value={config.vapi.transcriber?.userPhone || ''}
+                                        onChange={e => setConfig(prev => ({ ...prev, vapi: { ...prev.vapi, transcriber: { ...prev.vapi.transcriber, userPhone: e.target.value } } }))}
+                                    />
                                     {vapiAssistantId && (
                                         <button
                                             onClick={handleTriggerCall}
@@ -1046,7 +1046,7 @@ export default function AdminPage() {
                 </section>
 
                 {/* Section K: Plan & Billing */}
-                <section id="billing" className="space-y-6 scroll-mt-24 pb-20">
+                <section id="billing" className="space-y-6 scroll-mt-24 pb-12">
                     <div className="border-b border-slate-200 pb-4">
                         <h2 className="text-2xl font-bold text-slate-800">Section K: Plan & Billing</h2>
                         <p className="text-slate-500">Manage your organization's subscription and usage.</p>
@@ -1086,6 +1086,31 @@ export default function AdminPage() {
                         )}
                     </div>
                 </section>
+
+                {/* Sticky Action Footer */}
+                {!isLocked && (
+                    <div className="fixed bottom-0 left-64 right-0 p-6 bg-white/80 backdrop-blur-md border-t border-slate-200 flex items-center justify-between z-20 shadow-[0_-10px_20px_rgba(0,0,0,0.05)]">
+                        <div className="flex items-center gap-3">
+                            <div className={`w-3 h-3 rounded-full ${isValid ? 'bg-emerald-500' : 'bg-red-500'}`} />
+                            <span className="text-sm font-medium text-slate-600">
+                                {isValid
+                                    ? 'Configuration complete and ready for deployment.'
+                                    : 'Please complete all required fields (highlighted in red) to proceed.'}
+                            </span>
+                        </div>
+                        <button
+                            onClick={handleLock}
+                            disabled={!isValid || isSaving}
+                            className={`flex items-center gap-3 px-12 py-4 rounded-2xl font-bold text-lg transition-all shadow-xl ${isValid
+                                ? 'bg-emerald-600 hover:bg-emerald-500 text-white hover:scale-105 active:scale-95 shadow-emerald-500/25'
+                                : 'bg-slate-200 text-slate-400 cursor-not-allowed'
+                                }`}
+                        >
+                            {isSaving ? <Loader2 className="w-6 h-6 animate-spin" /> : <ShieldCheck className="w-6 h-6" />}
+                            {isSaving ? 'Validating...' : 'Validate and Lock Configuration'}
+                        </button>
+                    </div>
+                )}
             </main>
         </div>
     );
