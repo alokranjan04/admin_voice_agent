@@ -41,7 +41,16 @@ export async function generateConfigFromDescription(description: string, researc
   }
 
   const genAI = new GoogleGenerativeAI(apiKey);
-  const modelNames = ["gemini-2.0-flash", "gemini-flash-latest", "gemini-1.5-flash-8b", "gemini-pro-latest"];
+  // Comprehensive list of models to fallback through
+  const modelNames = [
+    "gemini-2.0-flash",
+    "gemini-2.0-flash-lite",
+    "gemini-1.5-flash",
+    "gemini-flash-latest",
+    "gemini-1.5-flash-8b",
+    "gemini-1.5-pro",
+    "gemini-pro-latest"
+  ];
 
   const systemInstruction = `
     You are an expert Voice AI Configuration Admin.
@@ -245,7 +254,8 @@ export async function generateConfigFromDescription(description: string, researc
         continue;
       }
       if (status === '429') {
-        console.warn(`[Gemini Service] Quota exceeded for ${modelName}. Trying next model...`);
+        const resetMsg = e.message?.includes('49s') ? " Wait ~50s." : " Daily/Minute cap reached.";
+        console.warn(`[Gemini Service] Quota exceeded for ${modelName}.${resetMsg} Trying next model...`);
         continue;
       }
       console.error(`[Gemini Service] Unexpected error with ${modelName}:`, e.message);
@@ -253,6 +263,10 @@ export async function generateConfigFromDescription(description: string, researc
     }
   }
 
+  if (lastError?.status === '429' || lastError?.message?.includes('429')) {
+    const isFreeTierErr = lastError.message.includes('free_tier');
+    throw new Error(`Gemini API Quota Exceeded. ${isFreeTierErr ? "Error reports 'Free Tier' usage even if you have a Pro plan. Please verify that your API Key in .env matches a project with 'Pay-as-you-go' enabled in Google AI Studio." : "Rate limit reached."} Visit ai.google.dev to check your plan and project settings.`);
+  }
   throw lastError || new Error("All Gemini models failed.");
 }
 
