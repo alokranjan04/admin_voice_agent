@@ -18,7 +18,7 @@ export function getCalendarClient() {
             scopes: ['https://www.googleapis.com/auth/calendar'],
         });
 
-        return google.calendar({ version: 'v3', auth });
+        return google.calendar({ version: 'v3', auth: auth as any });
     }
 
     // Fallback to OAuth 2.0 (for development/testing)
