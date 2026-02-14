@@ -233,7 +233,7 @@ export const saveConfiguration = async (config: AgentConfiguration) => {
     const agentRef = doc(db, `organizations/${orgId}/agents`, agentId);
 
     // Safety fallback: Deep merge defaults to ensure no required fields are missing
-    const defaultIntegrations = { firebase: true, googleCalendar: false };
+    const defaultIntegrations = { firebase: true, googleCalendar: true };
     const finalConfig = {
       ...config,
       integrations: { ...defaultIntegrations, ...(config.integrations || {}) }
