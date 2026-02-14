@@ -84,6 +84,66 @@ export async function POST(req: Request) {
             payload.model.messages[0].content += `\n\n# KNOWLEDGE BASE / FAQs\n${kb}`;
         }
 
+        // Add calendar tools if enabled
+        if (config.integrations?.googleCalendar) {
+            const serverUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3001';
+
+            payload.serverUrl = `${serverUrl}/api/vapi/tools`;
+            payload.model.tools = [
+                {
+                    type: "function",
+                    function: {
+                        name: "checkAvailability",
+                        description: "Check if a specific date and time is available for an appointment",
+                        parameters: {
+                            type: "object",
+                            properties: {
+                                date: { type: "string", description: "Date in YYYY-MM-DD format" },
+                                time: { type: "string", description: "Time in HH:MM format (24-hour)" },
+                                service: { type: "string", description: "Type of service/appointment" }
+                            },
+                            required: ["date", "time"]
+                        }
+                    }
+                },
+                {
+                    type: "function",
+                    function: {
+                        name: "findAvailableSlots",
+                        description: "Find all available appointment slots for a given date. Returns actual times that can be presented to the user. ALWAYS use this to show available times to the user.",
+                        parameters: {
+                            type: "object",
+                            properties: {
+                                date: { type: "string", description: "Date in YYYY-MM-DD format" },
+                                service: { type: "string", description: "Type of service/appointment" },
+                                duration: { type: "number", description: "Appointment duration in minutes (default: 60)" }
+                            },
+                            required: ["date"]
+                        }
+                    }
+                },
+                {
+                    type: "function",
+                    function: {
+                        name: "createEvent",
+                        description: "Create a calendar appointment after confirming all details with the user",
+                        parameters: {
+                            type: "object",
+                            properties: {
+                                date: { type: "string", description: "Date in YYYY-MM-DD format" },
+                                time: { type: "string", description: "Time in HH:MM format (24-hour)" },
+                                service: { type: "string", description: "Type of service" },
+                                customerName: { type: "string", description: "Customer name" },
+                                customerEmail: { type: "string", description: "Customer email" },
+                                customerPhone: { type: "string", description: "Customer phone" }
+                            },
+                            required: ["date", "time", "customerName"]
+                        }
+                    }
+                }
+            ];
+        }
+
         const response = await axios.post('https://api.vapi.ai/assistant', payload, {
             headers: {
                 'Authorization': `Bearer ${apiKey}`,
