@@ -37,7 +37,7 @@ export async function POST(req: Request) {
             messages: [
                 {
                     role: 'system',
-                    content: `${systemPrompt}\n\n# USER CONTEXT\n${(config.vapi.userName || config.vapi.userEmail || config.vapi.userPhone)
+                    content: `${systemPrompt}\n\n# DATE CHECK REQUIRED\nYou do not know the current date. To schedule ANY appointment, you MUST first call the "getCurrentDateTime" tool to get the current date and time. Do not guess or assume the date.\n\n# USER CONTEXT\n${(config.vapi.userName || config.vapi.userEmail || config.vapi.userPhone)
                         ? `Information about the user is already known:\n` +
                         (config.vapi.userName ? `- Name: ${config.vapi.userName}\n` : '') +
                         (config.vapi.userEmail ? `- Email: ${config.vapi.userEmail}\n` : '') +
@@ -138,6 +138,18 @@ export async function POST(req: Request) {
                                 customerPhone: { type: "string", description: "Customer phone" }
                             },
                             required: ["date", "time", "customerName"]
+                        }
+                    }
+                },
+                {
+                    type: "function",
+                    function: {
+                        name: "getCurrentDateTime",
+                        description: "Get the current date, time, and day of the week. Call this tool immediately if you need to know 'today' or 'now' to schedule appointments accurately.",
+                        parameters: {
+                            type: "object",
+                            properties: {},
+                            required: []
                         }
                     }
                 }

@@ -51,6 +51,7 @@ export async function POST(req: NextRequest) {
                             };
                             break;
 
+
                         case 'createEvent':
                             result = await createEvent({
                                 date: args.date,
@@ -61,6 +62,24 @@ export async function POST(req: NextRequest) {
                                 customerPhone: args.customerPhone,
                                 duration: args.duration
                             });
+                            break;
+
+                        case 'getCurrentDateTime':
+                            const now = new Date();
+                            result = {
+                                success: true,
+                                dateTime: now.toISOString(),
+                                humanReadable: now.toLocaleString('en-US', {
+                                    weekday: 'long',
+                                    year: 'numeric',
+                                    month: 'long',
+                                    day: 'numeric',
+                                    hour: 'numeric',
+                                    minute: 'numeric',
+                                    timeZone: process.env.TIMEZONE || 'UTC'
+                                }),
+                                timeZone: process.env.TIMEZONE || 'UTC'
+                            };
                             break;
 
                         default:
