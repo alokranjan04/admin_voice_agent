@@ -172,6 +172,7 @@ export default function AdminPage() {
     const [isResearching, setIsResearching] = useState(false);
     const [isLaunching, setIsLaunching] = useState(false);
     const [copySuccess, setCopySuccess] = useState(false);
+    const [showEmbedCode, setShowEmbedCode] = useState(false);
     const [agents, setAgents] = useState<any[]>([]);
     const [activeAgentId, setActiveAgentId] = useState<string | null>(null);
     const [branding, setBranding] = useState<BrandingConfig>(DEFAULT_BRANDING);
@@ -605,23 +606,35 @@ export default function AdminPage() {
                         </p>
                     </div>
 
-                    {/* Unique Agent Link Display */}
+                    {/* Embed Voice Bot Code */}
                     <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-6 space-y-4">
                         <div className="flex items-center gap-3 mb-2">
-                            <Link className="w-5 h-5 text-indigo-400" />
-                            <h3 className="text-lg font-bold text-white">Your Unique Agent Link</h3>
+                            <Braces className="w-5 h-5 text-indigo-400" />
+                            <h3 className="text-lg font-bold text-white">Embed Voice Bot on Your Website</h3>
                         </div>
                         <p className="text-slate-400 text-sm">
-                            Share this unique link with your customers. Each agent has its own dedicated URL.
+                            Copy and paste this code into your website to add the voice assistant widget.
                         </p>
-                        <div className="flex items-center gap-2 bg-slate-900/50 border border-slate-600 rounded-lg p-3">
-                            <code className="flex-1 text-emerald-400 font-mono text-sm break-all">
+                        <div className="bg-slate-900/50 border border-slate-600 rounded-lg p-4 space-y-3">
+                            <code className="block text-emerald-400 font-mono text-xs break-all whitespace-pre-wrap">
                                 {(() => {
                                     const orgId = user ? getOrgId(user) : 'anonymous_org';
                                     const safeName = config.metadata.businessName.trim().toLowerCase().replace(/[^a-z0-9]+/g, '_');
                                     const agentId = activeAgentId || `agent_${safeName}`;
                                     const clientBaseUrl = config.vapi.clientUrl || 'https://voice-agent-eight-delta.vercel.app';
-                                    return `${clientBaseUrl}?orgId=${orgId}&agentId=${agentId}`;
+                                    return `<!-- Voice AI Widget -->
+<script>
+  window.VOICE_WIDGET_CONFIG = {
+    vapiPublicKey: "${process.env.NEXT_PUBLIC_VAPI_PUBLIC_KEY || 'your-vapi-public-key'}",
+    assistantId: "${vapiAssistantId || 'your-assistant-id'}",
+    orgId: "${orgId}",
+    agentId: "${agentId}",
+    position: "bottom-right",
+    primaryColor: "#667eea",
+    secondaryColor: "#764ba2"
+  };
+</script>
+<script src="${clientBaseUrl}/voice-widget.js"></script>`;
                                 })()}
                             </code>
                             <button
@@ -630,19 +643,31 @@ export default function AdminPage() {
                                     const safeName = config.metadata.businessName.trim().toLowerCase().replace(/[^a-z0-9]+/g, '_');
                                     const agentId = activeAgentId || `agent_${safeName}`;
                                     const clientBaseUrl = config.vapi.clientUrl || 'https://voice-agent-eight-delta.vercel.app';
-                                    const url = `${clientBaseUrl}?orgId=${orgId}&agentId=${agentId}`;
-                                    navigator.clipboard.writeText(url);
+                                    const embedCode = `<!-- Voice AI Widget -->
+<script>
+  window.VOICE_WIDGET_CONFIG = {
+    vapiPublicKey: "${process.env.NEXT_PUBLIC_VAPI_PUBLIC_KEY || 'your-vapi-public-key'}",
+    assistantId: "${vapiAssistantId || 'your-assistant-id'}",
+    orgId: "${orgId}",
+    agentId: "${agentId}",
+    position: "bottom-right",
+    primaryColor: "#667eea",
+    secondaryColor: "#764ba2"
+  };
+</script>
+<script src="${clientBaseUrl}/voice-widget.js"></script>`;
+                                    navigator.clipboard.writeText(embedCode);
                                     setCopySuccess(true);
                                     setTimeout(() => setCopySuccess(false), 2000);
                                 }}
-                                className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-lg transition-colors flex items-center gap-2"
+                                className="w-full px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-lg transition-colors flex items-center justify-center gap-2"
                             >
                                 {copySuccess ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-                                {copySuccess ? 'Copied!' : 'Copy'}
+                                {copySuccess ? 'Copied to Clipboard!' : 'Copy Embed Code'}
                             </button>
                         </div>
                         <p className="text-xs text-slate-500 italic">
-                            ⚠️ The base URL without orgId and agentId will not work. Each agent requires its unique parameters.
+                            💡 Paste this code before the closing &lt;/body&gt; tag of your website.
                         </p>
                     </div>
 
@@ -665,28 +690,7 @@ export default function AdminPage() {
                             <Rocket className="w-5 h-5 font-bold" />
                             Launch Agent Interface
                         </button>
-                        {/* Visit Website or Auto-Generated Landing Page */}
-                        {(() => {
-                            const orgId = user ? getOrgId(user) : 'anonymous_org';
-                            const safeName = config.metadata.businessName.trim().toLowerCase().replace(/[^a-z0-9]+/g, '_');
-                            const agentId = activeAgentId || `agent_${safeName}`;
-                            const websiteUrl = config.metadata.websiteUrl;
-                            const generatedUrl = `${window.location.origin}/business/${orgId}/${agentId}`;
-                            const finalUrl = websiteUrl || generatedUrl;
-                            const isGenerated = !websiteUrl;
 
-                            return (
-                                <a
-                                    href={finalUrl}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="px-8 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl flex items-center gap-3 shadow-lg shadow-emerald-500/25 transition-all hover:scale-105 active:scale-95"
-                                >
-                                    <Globe className="w-5 h-5" />
-                                    {isGenerated ? 'View Generated Website' : 'Visit Website'}
-                                </a>
-                            );
-                        })()}
                         <button
                             onClick={() => setIsLocked(false)}
                             className="px-8 py-3 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-xl border border-slate-700 transition-all hover:bg-slate-700/80"
