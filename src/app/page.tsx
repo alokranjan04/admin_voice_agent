@@ -351,9 +351,21 @@ export default function AdminPage() {
                 await saveConfiguration(config);
                 setIsLocked(true);
             }
-            const token = await user.getIdToken(true);
+
+            // Generate custom token for SSO
+            const customTokenResponse = await fetch('/api/auth/create-custom-token', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ uid: user.uid })
+            });
+
+            if (!customTokenResponse.ok) {
+                throw new Error('Failed to generate authentication token');
+            }
+
+            const { customToken } = await customTokenResponse.json();
             const userParams = `&uName=${encodeURIComponent(config.vapi.transcriber?.userName || '')}&uEmail=${encodeURIComponent(config.vapi.transcriber?.userEmail || '')}&uPhone=${encodeURIComponent(config.vapi.transcriber?.userPhone || '')}`;
-            const url = `${clientBaseUrl}?authtoken=${encodeURIComponent(token)}&orgId=${orgId}&agentId=${agentId}&role=admin${userParams}`;
+            const url = `${clientBaseUrl}?authtoken=${encodeURIComponent(customToken)}&orgId=${orgId}&agentId=${agentId}&role=admin${userParams}`;
             window.open(url, '_blank');
         } catch (error) {
             console.error("Failed to launch client", error);
