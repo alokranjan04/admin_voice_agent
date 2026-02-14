@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/services/firebase';
 
 // Initialize Firebase Admin (server-side only)
 let adminAuth: any = null;
@@ -11,19 +10,26 @@ async function getAdminAuth() {
         const admin = await import('firebase-admin');
 
         if (!admin.apps.length) {
-            // Initialize with service account or default credentials
-            const serviceAccount = process.env.FIREBASE_SERVICE_ACCOUNT_KEY
-                ? JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY)
-                : undefined;
+            const serviceAccountKey = process.env.FIREBASE_SERVICE_ACCOUNT_KEY;
 
-            if (serviceAccount) {
-                admin.initializeApp({
-                    credential: admin.credential.cert(serviceAccount)
-                });
-            } else {
-                // Use application default credentials (works on Cloud Run, etc.)
-                admin.initializeApp();
+            if (!serviceAccountKey) {
+                throw new Error('FIREBASE_SERVICE_ACCOUNT_KEY environment variable is not set');
             }
+
+            // Parse the service account JSON
+            let serviceAccount;
+            try {
+                serviceAccount = JSON.parse(serviceAccountKey);
+            } catch (parseError) {
+                console.error('Failed to parse FIREBASE_SERVICE_ACCOUNT_KEY:', parseError);
+                throw new Error('Invalid FIREBASE_SERVICE_ACCOUNT_KEY format');
+            }
+
+            admin.initializeApp({
+                credential: admin.credential.cert(serviceAccount)
+            });
+
+            console.log('Firebase Admin initialized successfully');
         }
 
         adminAuth = admin.auth();
@@ -36,7 +42,7 @@ async function getAdminAuth() {
 
 export async function POST(request: NextRequest) {
     try {
-        // Get the current user's ID token from the request
+        // Get the current user's ID from the request
         const { uid } = await request.json();
 
         if (!uid) {
