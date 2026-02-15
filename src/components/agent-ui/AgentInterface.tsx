@@ -197,7 +197,7 @@ const AgentInterface: React.FC<AgentInterfaceProps> = ({ initialOrgId, initialAg
                     setIsCalendarAuth(true);
                     setConnectedEmail(email);
                     setError(null);
-                    setAuthError(null);
+                    setAuthError(undefined);
                     setLogs(prev => [...prev, { type: 'system', text: `Google Workspace connected as ${email}`, timestamp: new Date() }]);
 
                     // PERSIST TOKENS TO FIREBASE

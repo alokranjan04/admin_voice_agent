@@ -72,7 +72,7 @@ async function fetchWithTimeout(resource: string, options: any = {}) {
 }
 
 export const calendarService = {
-    initializeGoogleAuth(clientId: string, onAuthSuccess: (email: string) => void, onAuthError?: (error: string) => void) {
+    initializeGoogleAuth(clientId: string, onAuthSuccess: (email: string, tokens: any) => void, onAuthError?: (error: string) => void) {
         if (typeof google === 'undefined') {
             if (initRetryCount < 5) {
                 initRetryCount++;
@@ -117,7 +117,7 @@ export const calendarService = {
                                 grantedScopes = "calendar.events"; // Assumed success for UI
 
                                 const profile = await this.getUserProfile();
-                                onAuthSuccess(profile.email);
+                                onAuthSuccess(profile.email, data);
 
                             } catch (err: any) {
                                 console.error("[Auth] Backend Exchange Error:", err);
@@ -356,7 +356,8 @@ export const calendarService = {
             }
 
             const data = await res.json();
-            const busy = data.items && data.items.length > 0;
+            const busyEvents = data.items || [];
+            const busy = busyEvents.length > 0;
 
             if (!busy) {
                 return {
@@ -377,6 +378,8 @@ export const calendarService = {
                     wasCorrected
                 };
             }
+
+            const result: string[] = [];
 
             for (let d = 0; d < 7; d++) {
                 const dayDate = new Date(start);
