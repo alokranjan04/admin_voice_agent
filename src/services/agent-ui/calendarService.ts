@@ -72,7 +72,13 @@ async function fetchWithTimeout(resource: string, options: any = {}) {
 }
 
 export const calendarService = {
+    // Store init params for late initialization
+    _initParams: null as { clientId: string, onAuthSuccess: Function, onAuthError?: Function } | null,
+
     initializeGoogleAuth(clientId: string, onAuthSuccess: (email: string, tokens: any) => void, onAuthError?: (error: string) => void) {
+        // Store for JIT re-init
+        this._initParams = { clientId, onAuthSuccess, onAuthError };
+
         if (typeof google === 'undefined') {
             if (initRetryCount < 20) { // Increased to 10 seconds total
                 initRetryCount++;
@@ -176,8 +182,24 @@ export const calendarService = {
             console.log("[GoogleAuth] Requesting access popup...");
             tokenClient.requestAccessToken({ prompt: 'consent' });
         } else {
-            console.error("[GoogleAuth] requestAccess called but tokenClient is null.");
-            alert("System not ready: Google Sign-In script is still loading or failed. Please refresh the page.");
+            // JIT Initialization Attempt
+            if (this._initParams && typeof google !== 'undefined') {
+                console.log("[GoogleAuth] JIT Initialization triggered by user click...");
+                this.initializeGoogleAuth(this._initParams.clientId, this._initParams.onAuthSuccess, this._initParams.onAuthError);
+
+                // Small delay to allow init to complete (it's synchronous if script is loaded)
+                setTimeout(() => {
+                    if (tokenClient) {
+                        console.log("[GoogleAuth] JIT Init success, requesting popup...");
+                        tokenClient.requestAccessToken({ prompt: 'consent' });
+                    } else {
+                        alert("System not ready: Google Sign-In script failed to initialize. Please refresh.");
+                    }
+                }, 500);
+            } else {
+                console.error("[GoogleAuth] requestAccess called but tokenClient is null.");
+                alert("System not ready: Google Sign-In script is still loading or failed. Please refresh the page.");
+            }
         }
     },
 
