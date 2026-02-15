@@ -184,30 +184,35 @@ const AdminSettings: React.FC<AdminSettingsProps> = ({
                                 </div>
                             </div>
                             {isCalendarAuth || config.integrations?.googleCalendar?.isConnected ? (
-                                <div className="flex flex-col items-end gap-1">
+                                <div className="flex flex-col items-end gap-2">
                                     <div className="flex items-center gap-2">
                                         <button
                                             onClick={() => {
-                                                // Force disconnect logic
-                                                const newConfig = { ...config };
-                                                if (newConfig.integrations?.googleCalendar) {
-                                                    newConfig.integrations.googleCalendar.isConnected = false;
-                                                    newConfig.integrations.googleCalendar.accessToken = "";
+                                                if (window.confirm("Disconnect Google Calendar? The agent will no longer be able to check real-time availability.")) {
+                                                    // Force disconnect logic
+                                                    calendarService.disconnect();
+                                                    const newConfig = { ...config };
+                                                    if (newConfig.integrations?.googleCalendar) {
+                                                        newConfig.integrations.googleCalendar.isConnected = false;
+                                                        newConfig.integrations.googleCalendar.accessToken = "";
+                                                        newConfig.integrations.googleCalendar.refreshToken = ""; // Clear refresh token
+                                                    }
+                                                    setConfig(newConfig);
+                                                    handleAutoSave(newConfig);
+                                                    window.location.reload();
                                                 }
-                                                setConfig(newConfig);
-                                                handleAutoSave(newConfig);
-                                                window.location.reload(); // Simple way to reset local state
                                             }}
-                                            className="text-[10px] text-rose-500 hover:text-rose-700 font-bold underline decoration-dotted mr-2"
+                                            className="px-3 py-1.5 bg-rose-50 text-rose-600 hover:bg-rose-100 hover:text-rose-700 border border-rose-200 rounded-md text-xs font-bold transition-all flex items-center gap-1.5"
                                         >
+                                            <X className="w-3 h-3" />
                                             Disconnect
                                         </button>
-                                        <span className="text-[10px] font-bold text-green-600 bg-green-50 px-2.5 py-1 rounded-full border border-green-100 flex items-center gap-1">
+                                        <span className="text-[10px] font-bold text-green-600 bg-green-50 px-2.5 py-1.5 rounded-full border border-green-200 flex items-center gap-1 shadow-sm">
                                             <Check className="w-3 h-3" /> ACTIVE
                                         </span>
                                     </div>
                                     {/* DEBUG INFO */}
-                                    <div className="text-[9px] text-slate-400 font-mono text-right mt-1">
+                                    <div className="text-[9px] text-slate-400 font-mono text-right">
                                         Status: {calendarService.getTokenDebugInfo()}<br />
                                         <span title={calendarService.getGrantedScopes()} className="cursor-help underline decoration-dotted">
                                             Hover for Scopes

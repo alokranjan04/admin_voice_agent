@@ -232,11 +232,34 @@ export const saveConfiguration = async (config: AgentConfiguration) => {
     const agentId = `agent_${safeName}`;
     const agentRef = doc(db, `organizations/${orgId}/agents`, agentId);
 
-    // Safety fallback: Deep merge defaults to ensure no required fields are missing
-    const defaultIntegrations = { firebase: true, googleCalendar: true };
+    // Fetch existing config to preserve tokens
+    let existingData: any = {};
+    try {
+      const existingDoc = await getDoc(agentRef);
+      if (existingDoc.exists()) {
+        existingData = existingDoc.data();
+      }
+    } catch (e) {
+      console.warn("Could not fetch existing agent config for merge", e);
+    }
+
+    // Preserve Google Calendar tokens if they exist and incoming is just 'true'
+    let integrations = { ...(config.integrations || {}) };
+
+    // Default fallback
+    if (integrations.firebase === undefined) integrations.firebase = true;
+    if (integrations.googleCalendar === undefined) integrations.googleCalendar = true;
+
+    // Critical: Do not overwrite object with boolean
+    if (existingData.integrations?.googleCalendar && typeof existingData.integrations.googleCalendar === 'object') {
+      if (integrations.googleCalendar === true) {
+        integrations.googleCalendar = existingData.integrations.googleCalendar;
+      }
+    }
+
     const finalConfig = {
       ...config,
-      integrations: { ...defaultIntegrations, ...(config.integrations || {}) }
+      integrations: integrations
     };
 
     await setDoc(agentRef, {
@@ -246,7 +269,7 @@ export const saveConfiguration = async (config: AgentConfiguration) => {
       updatedBy: currentUser ? currentUser.email : 'anonymous',
       ownerUid: currentUser ? currentUser.uid : null,
       status: 'LOCKED'
-    });
+    }, { merge: true });
 
     console.log(`Configuration saved for Org: ${orgId}, Agent: ${agentId}`);
     return agentId;

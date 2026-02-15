@@ -74,61 +74,71 @@ async function fetchWithTimeout(resource: string, options: any = {}) {
 export const calendarService = {
     initializeGoogleAuth(clientId: string, onAuthSuccess: (email: string, tokens: any) => void, onAuthError?: (error: string) => void) {
         if (typeof google === 'undefined') {
-            if (initRetryCount < 5) {
+            if (initRetryCount < 20) { // Increased to 10 seconds total
                 initRetryCount++;
+                console.log(`[GoogleAuth] Script not loaded yet, retrying (${initRetryCount}/20)...`);
                 setTimeout(() => this.initializeGoogleAuth(clientId, onAuthSuccess, onAuthError), 500);
                 return;
             }
+            console.error("[GoogleAuth] Critical: 'google' global not found after 10 seconds. Script may have failed to load.");
+            if (onAuthError) onAuthError("Google Sign-In script failed to load. Check your network connection or ad blockers.");
             return;
         }
 
         try {
-            try {
-                // BACKEND MIGRATION: Use initCodeClient to get an Authorization Code (offline access)
-                tokenClient = google.accounts.oauth2.initCodeClient({
-                    client_id: clientId,
-                    scope: 'https://www.googleapis.com/auth/calendar.events https://www.googleapis.com/auth/gmail.send https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/spreadsheets',
-                    ux_mode: 'popup',
-                    callback: async (response: any) => {
-                        if (response.code) {
-                            console.log("[Auth] Auth Code received. Exchanging for tokens via Backend...");
+            console.log("[GoogleAuth] Initializing Token Client...");
+            // BACKEND MIGRATION: Use initCodeClient to get an Authorization Code (offline access)
+            tokenClient = google.accounts.oauth2.initCodeClient({
+                client_id: clientId,
+                scope: 'https://www.googleapis.com/auth/calendar.events https://www.googleapis.com/auth/gmail.send https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/spreadsheets',
+                ux_mode: 'popup',
+                callback: async (response: any) => {
+                    if (response.code) {
+                        console.log("[Auth] Auth Code received. Exchanging for tokens via Backend...");
 
-                            try {
-                                // Exchange code for tokens (Access + Refresh) via our Backend API
-                                const res = await fetch('/api/auth/google', {
-                                    method: 'POST',
-                                    headers: { 'Content-Type': 'application/json' },
-                                    body: JSON.stringify({ code: response.code })
-                                });
+                        try {
+                            // Exchange code for tokens (Access + Refresh) via our Backend API
+                            const res = await fetch('/api/auth/google', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ code: response.code })
+                            });
 
-                                if (!res.ok) {
-                                    const errData = await res.json().catch(() => ({}));
-                                    throw new Error(errData.error || 'Token exchange failed');
-                                }
-
-                                const data = await res.json();
-                                console.log("[Auth] Backend sync success. Access Token received.");
-
-                                // Store the access token in memory for immediate use
-                                accessToken = data.access_token;
-
-                                // Note: Granted scopes are implicit in the backend token, but we can't easily check them here 
-                                // without decoding the token or trusting the backend. We assume success.
-                                grantedScopes = "calendar.events"; // Assumed success for UI
-
-                                const profile = await this.getUserProfile();
-                                onAuthSuccess(profile.email, data);
-
-                            } catch (err: any) {
-                                console.error("[Auth] Backend Exchange Error:", err);
-                                if (onAuthError) onAuthError(err.message);
-                                else alert("Authentication failed during server sync: " + err.message);
+                            if (!res.ok) {
+                                const errData = await res.json().catch(() => ({}));
+                                throw new Error(errData.error || 'Token exchange failed');
                             }
+
+                            const data = await res.json();
+                            console.log("[Auth] Backend sync success. Access Token received.");
+
+                            // Store the access token in memory for immediate use
+                            accessToken = data.access_token;
+                            grantedScopes = "calendar.events"; // Assumed success for UI
+
+                            const profile = await this.getUserProfile();
+                            onAuthSuccess(profile.email, data);
+
+                        } catch (err: any) {
+                            console.error("[Auth] Backend Exchange Error:", err);
+                            if (onAuthError) onAuthError(err.message);
+                            else alert("Authentication failed during server sync: " + err.message);
                         }
-                    },
-                });
-            } catch (e) { }
-        } catch (e) { }
+                    } else if (response.error) {
+                        console.error("[Auth] Google Popup Error:", response.error);
+                        if (onAuthError) onAuthError(response.error);
+                    }
+                },
+                error_callback: (err: any) => {
+                    console.error("[Auth] System Error:", err);
+                    if (onAuthError) onAuthError("System Error: " + err.message);
+                }
+            });
+            console.log("[GoogleAuth] Token Client initialized successfully.");
+        } catch (e: any) {
+            console.error("[GoogleAuth] Exception during init:", e);
+            if (onAuthError) onAuthError("Initialization Exception: " + e.message);
+        }
     },
 
     async setManualToken(token: string) {
@@ -150,18 +160,34 @@ export const calendarService = {
 
     async getUserProfile() {
         if (!accessToken) return { email: 'unknown' };
-        const res = await fetchWithTimeout('https://www.googleapis.com/oauth2/v1/userinfo?alt=json', {
-            headers: { Authorization: `Bearer ${accessToken}` }
-        });
-        return await res.json();
+        try {
+            const res = await fetchWithTimeout('https://www.googleapis.com/oauth2/v1/userinfo?alt=json', {
+                headers: { Authorization: `Bearer ${accessToken}` }
+            });
+            if (!res.ok) return { email: 'unknown' };
+            return await res.json();
+        } catch (e) {
+            return { email: 'unknown' };
+        }
     },
 
     requestAccess() {
-        if (tokenClient) tokenClient.requestAccessToken({ prompt: 'consent' });
+        if (tokenClient) {
+            console.log("[GoogleAuth] Requesting access popup...");
+            tokenClient.requestAccessToken({ prompt: 'consent' });
+        } else {
+            console.error("[GoogleAuth] requestAccess called but tokenClient is null.");
+            alert("System not ready: Google Sign-In script is still loading or failed. Please refresh the page.");
+        }
     },
 
     isAuthenticated() {
         return !!accessToken;
+    },
+
+    disconnect() {
+        accessToken = null;
+        grantedScopes = "";
     },
 
 
