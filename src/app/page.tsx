@@ -331,7 +331,9 @@ export default function AdminPage() {
         const orgId = user ? getOrgId(user) : 'anonymous_org';
         const safeName = config.metadata.businessName.trim().toLowerCase().replace(/[^a-z0-9]+/g, '_');
         const agentId = activeAgentId || `agent_${safeName}`;
-        const clientBaseUrl = config.vapi.clientUrl || 'https://voice-agent-eight-delta.vercel.app';
+        const origin = typeof window !== 'undefined' ? window.location.origin : '';
+        // Force local route for the launch button to ensure it opens the internal agent interface
+        const clientBaseUrl = `${origin}/agentUI`;
 
         if (isDemoMode) {
             const userParams = `&uName=${encodeURIComponent(config.vapi.transcriber?.userName || '')}&uEmail=${encodeURIComponent(config.vapi.transcriber?.userEmail || '')}&uPhone=${encodeURIComponent(config.vapi.transcriber?.userPhone || '')}`;
@@ -621,7 +623,7 @@ export default function AdminPage() {
                                     const orgId = user ? getOrgId(user) : 'anonymous_org';
                                     const safeName = config.metadata.businessName.trim().toLowerCase().replace(/[^a-z0-9]+/g, '_');
                                     const agentId = activeAgentId || `agent_${safeName}`;
-                                    const clientBaseUrl = config.vapi.clientUrl || 'https://voice-agent-eight-delta.vercel.app';
+                                    const clientBaseUrl = config.vapi.clientUrl || (typeof window !== 'undefined' ? window.location.origin : '');
                                     return `<!-- Voice AI Widget -->
 <script>
   window.VOICE_WIDGET_CONFIG = {
@@ -642,7 +644,7 @@ export default function AdminPage() {
                                     const orgId = user ? getOrgId(user) : 'anonymous_org';
                                     const safeName = config.metadata.businessName.trim().toLowerCase().replace(/[^a-z0-9]+/g, '_');
                                     const agentId = activeAgentId || `agent_${safeName}`;
-                                    const clientBaseUrl = config.vapi.clientUrl || 'https://voice-agent-eight-delta.vercel.app';
+                                    const clientBaseUrl = config.vapi.clientUrl || (typeof window !== 'undefined' ? window.location.origin : '');
                                     const embedCode = `<!-- Voice AI Widget -->
 <script>
   window.VOICE_WIDGET_CONFIG = {
@@ -974,6 +976,59 @@ export default function AdminPage() {
                         <h2 className="text-2xl font-bold text-slate-800">Section J: VAPI Configuration</h2>
                     </div>
                     <div className="bg-white p-6 border rounded-lg shadow-sm space-y-6">
+
+                        {/* New Vapi Settings Grid */}
+                        <div className="grid grid-cols-2 gap-6 p-4 bg-slate-50 border rounded-lg">
+                            <div className="space-y-1">
+                                <label className="text-xs font-bold text-slate-600 uppercase">Provider</label>
+                                <select
+                                    className="w-full p-2 text-sm border rounded bg-white"
+                                    value={config.vapi.provider || "OpenAI"}
+                                    onChange={e => setConfig(prev => ({ ...prev, vapi: { ...prev.vapi, provider: e.target.value } }))}
+                                >
+                                    {["OpenAI", "Azure OpenAI", "Anthropic", "Anthropic bedrock", "Google", "Custom llm", "Groq", "Cerebras", "Deep seek", "Xai", "Mistral"].map(opt => (
+                                        <option key={opt} value={opt}>{opt}</option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div className="space-y-1">
+                                <label className="text-xs font-bold text-slate-600 uppercase">Model</label>
+                                <select
+                                    className="w-full p-2 text-sm border rounded bg-white"
+                                    value={config.vapi.model || "GPT 4o Mini Cluster"}
+                                    onChange={e => setConfig(prev => ({ ...prev, vapi: { ...prev.vapi, model: e.target.value } }))}
+                                >
+                                    {["GPT 4o Mini Cluster", "GPT 4.1", "GPT 4.1 Mini", "GPT 4.1 Nano", "gpt-4o", "gpt-4-turbo", "gpt-3.5-turbo"].map(opt => (
+                                        <option key={opt} value={opt}>{opt}</option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div className="space-y-1">
+                                <label className="text-xs font-bold text-slate-600 uppercase">Voice Provider</label>
+                                <select
+                                    className="w-full p-2 text-sm border rounded bg-white"
+                                    value={config.vapi.voiceProvider || "OpenAI"}
+                                    onChange={e => setConfig(prev => ({ ...prev, vapi: { ...prev.vapi, voiceProvider: e.target.value } }))}
+                                >
+                                    {["OpenAI", "Vapi", "Cartesia", "11labs", "Rime AI", "LMNT", "Deepgram", "Azure", "MiniMax", "Neuphonic", "Smallest AI"].map(opt => (
+                                        <option key={opt} value={opt}>{opt}</option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div className="space-y-1">
+                                <label className="text-xs font-bold text-slate-600 uppercase">Voice</label>
+                                <select
+                                    className="w-full p-2 text-sm border rounded bg-white"
+                                    value={config.vapi.voiceId || "alloy"}
+                                    onChange={e => setConfig(prev => ({ ...prev, vapi: { ...prev.vapi, voiceId: e.target.value } }))}
+                                >
+                                    {["alloy", "echo", "fable", "onyx", "nova", "shimmer"].map(opt => (
+                                        <option key={opt} value={opt} className="capitalize">{opt}</option>
+                                    ))}
+                                </select>
+                            </div>
+                        </div>
+
                         <div className="p-4 bg-slate-50 border rounded-lg grid grid-cols-3 gap-4">
                             <div className="space-y-1">
                                 <label className="text-xs font-bold text-slate-600">User Name</label>

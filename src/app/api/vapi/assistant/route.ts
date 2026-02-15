@@ -86,9 +86,17 @@ export async function POST(req: Request) {
 
         // Add calendar tools if enabled
         if (config.integrations?.googleCalendar) {
-            const serverUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3001';
+            // CRITICAL: Vapi needs a public URL. Localhost will likely fail unless tunneled.
+            let baseUrl = process.env.NEXT_PUBLIC_APP_URL;
 
-            payload.serverUrl = `${serverUrl}/api/vapi/tools`;
+            if (baseUrl) {
+                // Remove trailing slash if present to avoid double slashes
+                baseUrl = baseUrl.replace(/\/$/, "");
+                payload.serverUrl = `${baseUrl}/api/vapi/webhook`;
+                console.log("[Vapi Config] Setting Server URL to:", payload.serverUrl);
+            } else {
+                console.warn("[Vapi Config] NEXT_PUBLIC_APP_URL is missing. Server URL (Webhook) will NOT be set for this assistant.");
+            }
             payload.model.tools = [
                 {
                     type: "function",
@@ -156,13 +164,30 @@ export async function POST(req: Request) {
             ];
         }
 
-        const response = await axios.post('https://api.vapi.ai/assistant', payload, {
+        let method = 'POST';
+        let url = 'https://api.vapi.ai/assistant';
+        let logMsg = "[Vapi Assistant] Creating NEW assistant...";
+
+        // If assistantID exists, use PATCH to update
+        if (config.vapi.assistantId) {
+            method = 'PATCH';
+            url = `https://api.vapi.ai/assistant/${config.vapi.assistantId}`;
+            logMsg = `[Vapi Assistant] Updating EXISTING assistant (${config.vapi.assistantId})...`;
+        }
+
+        console.log(logMsg);
+
+        const response = await axios({
+            method: method,
+            url: url,
+            data: payload,
             headers: {
                 'Authorization': `Bearer ${apiKey}`,
                 'Content-Type': 'application/json'
             }
         });
 
+        console.log("[Vapi Assistant] Operation successful:", response.data?.id);
         return NextResponse.json(response.data);
     } catch (error: any) {
         console.error('[VAPI Assistant API Error]', error.response?.data || error.message);
