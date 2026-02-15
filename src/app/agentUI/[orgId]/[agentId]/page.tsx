@@ -1,14 +1,15 @@
 import AgentInterface from '@/components/agent-ui/AgentInterface';
 
 interface PageProps {
-    params: {
+    params: Promise<{
         orgId: string;
         agentId: string;
-    };
+    }>;
 }
 
-export default async function AgentTenantPage({ params }: PageProps) {
-    const { orgId, agentId } = await params;
+export default async function AgentTenantPage(props: PageProps) {
+    const params = await props.params;
+    const { orgId, agentId } = params;
     return (
         <AgentInterface initialOrgId={orgId} initialAgentId={agentId} />
     );
