@@ -397,11 +397,7 @@ export class VapiService {
                 transcriber: {
                     provider: (vapiConf?.transcriber?.provider || "deepgram") as any,
                     model: vapiConf?.transcriber?.model || "nova-2",
-                    language: "en-US",
-                    smart_format: true,
-                    punctuate: true,
-                    utterance_end_ms: 1000,
-                    vad_events: true
+                    language: "en-US"
                 },
                 clientMessages: ["transcript", "hang", "function-call", "tool-calls", "speech-update", "metadata", "conversation-update"],
                 // Enable Server URL for Backend Tool Handling (if configured)

@@ -64,12 +64,7 @@ export async function POST(req: Request) {
             transcriberObj = {
                 provider: tProvider,
                 model: String(config.vapi.transcriber.model || 'nova-2').toLowerCase(),
-                language: String(config.vapi.transcriber.language || 'en').toLowerCase(),
-                // Enhanced Deepgram Settings
-                smart_format: true,    // better number/date formatting
-                punctuate: true,       // sentence punctuation
-                utterance_end_ms: 1000, // wait 1s before considering speech ended (prevents cutting off)
-                vad_events: true       // Voice Activity Detection events
+                language: String(config.vapi.transcriber.language || 'en').toLowerCase()
             };
         }
 
