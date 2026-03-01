@@ -1,6 +1,19 @@
 import { getCalendarClient, getCalendarId, getBusinessHours, getAppointmentDuration } from '../lib/googleAuth';
 
 /**
+ * Helper to ensure local Date objects from UTC servers securely format into absolute ISO strings with exact timezone offsets.
+ */
+function buildTargetTzString(date: Date, tzOffset: string): string {
+    const yyyy = date.getFullYear();
+    const mm = String(date.getMonth() + 1).padStart(2, '0');
+    const dd = String(date.getDate()).padStart(2, '0');
+    const hh = String(date.getHours()).padStart(2, '0');
+    const min = String(date.getMinutes()).padStart(2, '0');
+    const ss = String(date.getSeconds()).padStart(2, '0');
+    return `${yyyy}-${mm}-${dd}T${hh}:${min}:${ss}${tzOffset}`;
+}
+
+/**
  * Check if a specific date/time is available
  */
 export async function checkAvailability(date: string, time?: string, service?: string) {
@@ -57,8 +70,11 @@ export async function checkAvailability(date: string, time?: string, service?: s
 
         // Check Google Calendar for conflicts
         const duration = getAppointmentDuration();
-        const startTime = requestedDate.toISOString();
-        const endTime = new Date(requestedDate.getTime() + duration * 60000).toISOString();
+        const tzOffset = '+05:30'; // Hardcoded for IST, can be dynamic later
+
+        const startTime = buildTargetTzString(requestedDate, tzOffset);
+        const endTimeDate = new Date(requestedDate.getTime() + duration * 60000);
+        const endTime = buildTargetTzString(endTimeDate, tzOffset);
 
         const response = await calendar.events.list({
             calendarId,
@@ -145,12 +161,15 @@ export async function findAvailableSlots(date: string, service?: string, duratio
             const slotStart = new Date(currentDate);
             const slotEnd = new Date(currentDate.getTime() + slotDuration * 60000);
 
+            const absoluteSlotStartTime = new Date(buildTargetTzString(slotStart, tzOffset)).getTime();
+            const absoluteSlotEndTime = new Date(buildTargetTzString(slotEnd, tzOffset)).getTime();
+
             // Check if this slot conflicts with any booked event
             const hasConflict = bookedEvents.some(event => {
-                const eventStart = new Date(event.start?.dateTime || event.start?.date || '');
-                const eventEnd = new Date(event.end?.dateTime || event.end?.date || '');
+                const eventStart = new Date(event.start?.dateTime || event.start?.date || '').getTime();
+                const eventEnd = new Date(event.end?.dateTime || event.end?.date || '').getTime();
 
-                return (slotStart.getTime() < eventEnd.getTime() && slotEnd.getTime() > eventStart.getTime());
+                return (absoluteSlotStartTime < eventEnd && absoluteSlotEndTime > eventStart);
             });
 
             if (!hasConflict && slotEnd.getHours() <= businessHours.end) {
@@ -256,29 +275,43 @@ export async function createEvent(details: {
 
         const finalName = details.customerName && details.customerName !== 'undefined' ? details.customerName : 'Client';
 
-        // Check for duplicate/existing event at the exact same time
-        const checkStartOffset = new Date(startString);
-        checkStartOffset.setMinutes(checkStartOffset.getMinutes() - 1);
-        const checkEndOffset = new Date(startString);
-        checkEndOffset.setMinutes(checkEndOffset.getMinutes() + 1);
+        // Check for any prior event on the SAME DAY for the SAME RESCHEDULING CUSTOMER, or duplicate overlap
+        const fullDayStart = new Date(startDateTime);
+        fullDayStart.setHours(0, 0, 0, 0);
+        const fullDayEnd = new Date(startDateTime);
+        fullDayEnd.setHours(23, 59, 59, 999);
 
-        const tzOffsetCreate = '+05:30'; // Hardcoded fallback or use TIMEZONE
+        const tzOffsetCreate = '+05:30';
 
         const existingEvents = await calendar.events.list({
             calendarId,
-            timeMin: `${checkStartOffset.toISOString().split('.')[0]}${tzOffsetCreate}`,
-            timeMax: `${checkEndOffset.toISOString().split('.')[0]}${tzOffsetCreate}`,
+            timeMin: buildTargetTzString(fullDayStart, tzOffsetCreate),
+            timeMax: buildTargetTzString(fullDayEnd, tzOffsetCreate),
             singleEvents: true
         });
 
         if (existingEvents.data.items && existingEvents.data.items.length > 0) {
-            const existingEvent = existingEvents.data.items[0];
+            // Delete overlaps OR previous appointments by the same name
+            const overlapsOrPrevious = existingEvents.data.items.filter(evt => {
+                const summary = evt.summary?.toLowerCase() || '';
+                const nameMatch = finalName !== 'Client' && summary.includes(finalName.toLowerCase());
 
-            // Delete the old duplicate event since we are updating the title
-            await calendar.events.delete({
-                calendarId,
-                eventId: existingEvent.id!
+                const evtStart = new Date(evt.start?.dateTime || evt.start?.date || '').getTime();
+                const evtEnd = new Date(evt.end?.dateTime || evt.end?.date || '').getTime();
+                const newStart = new Date(buildTargetTzString(startDateTime, tzOffsetCreate)).getTime();
+                const newEnd = new Date(buildTargetTzString(endDateTime, tzOffsetCreate)).getTime();
+
+                const isExactOverlap = (newStart < evtEnd && newEnd > evtStart);
+
+                return nameMatch || isExactOverlap;
             });
+
+            for (const oldEvent of overlapsOrPrevious) {
+                await calendar.events.delete({
+                    calendarId,
+                    eventId: oldEvent.id!
+                });
+            }
         }
 
         // Create event

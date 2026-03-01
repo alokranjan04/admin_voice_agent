@@ -616,9 +616,8 @@ ${faqs}
 
             console.log("[Email] Final customer details:", { customerName, customerEmail, customerPhone });
 
-            // Point to the Next.js Nodemailer API route instead of EmailJS
-            const baseUrl = this.getEnvVar('NEXT_PUBLIC_APP_URL') || '';
-            const apiUrl = `${baseUrl.replace(/\/$/, '')}/api/email`;
+            // Point to the Next.js Nodemailer API using a relative path to avoid CORS
+            const apiUrl = '/api/email';
 
             const payload = {
                 summary,
