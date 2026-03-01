@@ -289,7 +289,7 @@ ${details.customerPhone ? `Phone: ${details.customerPhone}` : ''}
                 dateTime: endString,
                 timeZone: getBusinessHours().timezone,
             },
-            attendees: details.customerEmail ? [{ email: details.customerEmail }] : [],
+            attendees: (details.customerEmail && details.customerEmail.includes('@')) ? [{ email: details.customerEmail }] : [],
             reminders: {
                 useDefault: false,
                 overrides: [
