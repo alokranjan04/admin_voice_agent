@@ -344,8 +344,11 @@ export class VapiService {
                                 description: "Check if a specific date and time is available for an appointment.",
                                 parameters: {
                                     type: "object",
-                                    properties: { dateTimeStr: { type: "string", description: "The date and time string to check." } },
-                                    required: ["dateTimeStr"]
+                                    properties: {
+                                        date: { type: "string", description: "The date to check (YYYY-MM-DD)." },
+                                        time: { type: "string", description: "The specific time to check (e.g. 11:00 AM)." }
+                                    },
+                                    required: ["date"]
                                 }
                             }
                         },
@@ -356,8 +359,8 @@ export class VapiService {
                                 description: "Find available appointment slots for a given date.",
                                 parameters: {
                                     type: "object",
-                                    properties: { startDateStr: { type: "string", description: "The date to check." } },
-                                    required: ["startDateStr"]
+                                    properties: { date: { type: "string", description: "The date to check (YYYY-MM-DD)." } },
+                                    required: ["date"]
                                 }
                             }
                         },

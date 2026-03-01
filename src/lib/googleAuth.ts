@@ -12,13 +12,16 @@ export function getCalendarClient() {
 
     if (serviceAccountEmail && serviceAccountKey) {
         // Service Account authentication
-        const auth = new JWT({
+        // Fix escaped newlines and remove surrounding quotes that dotenv might stringify
+        const privateKey = serviceAccountKey.replace(/\\n/g, '\n').replace(/"/g, '');
+
+        const auth = new google.auth.JWT({
             email: serviceAccountEmail,
-            key: serviceAccountKey.replace(/\\n/g, '\n'), // Handle escaped newlines
+            key: privateKey,
             scopes: ['https://www.googleapis.com/auth/calendar'],
         });
 
-        return google.calendar({ version: 'v3', auth: auth as any });
+        return google.calendar({ version: 'v3', auth });
     }
 
     // Fallback to OAuth 2.0 (for development/testing)

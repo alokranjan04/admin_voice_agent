@@ -1,0 +1,15 @@
+
+> voice-ai-admin-configurator@0.0.0 build
+> next build
+
+   Γû▓ Next.js 15.5.12
+   - Environments: .env.local, .env
+
+
+> Build error occurred
+[Error: EINVAL: invalid argument, readlink 'C:\Users\Alok Ranjan\OneDrive\Documents\Voice_AI_Admin\.next\server\app\page'] {
+  errno: -4071,
+  code: 'EINVAL',
+  syscall: 'readlink',
+  path: 'C:\\Users\\Alok Ranjan\\OneDrive\\Documents\\Voice_AI_Admin\\.next\\server\\app\\page'
+}

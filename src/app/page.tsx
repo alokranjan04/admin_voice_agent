@@ -3,6 +3,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Sidebar } from '../components/Sidebar';
 import { LoginScreen } from '../components/LoginScreen';
+import { CalendarView } from '../components/CalendarView';
 import { generateConfigFromDescription } from '../services/geminiService';
 import { saveConfiguration, auth, loginWithGoogle, logoutUser, getOrgId, getBranding, saveBranding } from '../services/firebase';
 import { createVapiAssistant } from '../services/vapiService';
@@ -322,10 +323,7 @@ export default function AdminPage() {
     const isValid =
         config.metadata.businessName.length > 0 &&
         config.services.length > 0 &&
-        config.locations.length > 0 &&
-        !!config.vapi.transcriber?.userName &&
-        !!config.vapi.transcriber?.userEmail &&
-        !!config.vapi.transcriber?.userPhone;
+        config.locations.length > 0;
 
     const handleLaunchClient = async () => {
         const orgId = user ? getOrgId(user) : 'anonymous_org';
@@ -1033,8 +1031,8 @@ export default function AdminPage() {
                             <div className="space-y-1">
                                 <label className="text-xs font-bold text-slate-600">User Name</label>
                                 <input
-                                    className={`w-full p-2 text-sm border rounded transition-colors ${!config.vapi.transcriber?.userName ? 'border-red-300 bg-red-50 focus:border-red-500 ring-1 ring-red-200' : ''}`}
-                                    placeholder="Required"
+                                    className="w-full p-2 text-sm border border-slate-300 rounded focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-colors"
+                                    placeholder="Optional"
                                     value={config.vapi.transcriber?.userName || ''}
                                     onChange={e => setConfig(prev => ({ ...prev, vapi: { ...prev.vapi, transcriber: { ...prev.vapi.transcriber, userName: e.target.value } } }))}
                                 />
@@ -1042,8 +1040,8 @@ export default function AdminPage() {
                             <div className="space-y-1">
                                 <label className="text-xs font-bold text-slate-600">User Email</label>
                                 <input
-                                    className={`w-full p-2 text-sm border rounded transition-colors ${!config.vapi.transcriber?.userEmail ? 'border-red-300 bg-red-50 focus:border-red-500 ring-1 ring-red-200' : ''}`}
-                                    placeholder="Required"
+                                    className="w-full p-2 text-sm border border-slate-300 rounded focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-colors"
+                                    placeholder="Optional"
                                     value={config.vapi.transcriber?.userEmail || ''}
                                     onChange={e => setConfig(prev => ({ ...prev, vapi: { ...prev.vapi, transcriber: { ...prev.vapi.transcriber, userEmail: e.target.value } } }))}
                                 />
@@ -1052,8 +1050,8 @@ export default function AdminPage() {
                                 <label className="text-xs font-bold text-slate-600">User Phone</label>
                                 <div className="flex gap-2">
                                     <input
-                                        className={`w-full p-2 text-sm border rounded transition-colors ${!config.vapi.transcriber?.userPhone ? 'border-red-300 bg-red-50 focus:border-red-500 ring-1 ring-red-200' : ''}`}
-                                        placeholder="Required (e.g. +1234567890)"
+                                        className="w-full p-2 text-sm border border-slate-300 rounded focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-colors"
+                                        placeholder="Optional (e.g. +1234567890)"
                                         value={config.vapi.transcriber?.userPhone || ''}
                                         onChange={e => setConfig(prev => ({ ...prev, vapi: { ...prev.vapi, transcriber: { ...prev.vapi.transcriber, userPhone: e.target.value } } }))}
                                     />
@@ -1102,6 +1100,15 @@ export default function AdminPage() {
                             </div>
                         </div>
                     </div>
+                </section>
+
+                {/* Section J: Calendar & Bookings */}
+                <section id="calendar" className="space-y-6 scroll-mt-24 pb-12">
+                    <div className="border-b border-slate-200 pb-4">
+                        <h2 className="text-2xl font-bold text-slate-800">Section J: Calendar & Bookings</h2>
+                        <p className="text-slate-500">Book meetings and send automated email invitations directly.</p>
+                    </div>
+                    <CalendarView />
                 </section>
 
                 {/* Section K: Plan & Billing */}
@@ -1171,6 +1178,6 @@ export default function AdminPage() {
                     </div>
                 )}
             </main>
-        </div>
+        </div >
     );
 }

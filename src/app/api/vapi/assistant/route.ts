@@ -109,10 +109,9 @@ export async function POST(req: Request) {
                             type: "object",
                             properties: {
                                 date: { type: "string", description: "Date in YYYY-MM-DD format" },
-                                time: { type: "string", description: "Time in HH:MM format (24-hour)" },
-                                service: { type: "string", description: "Type of service/appointment" }
+                                time: { type: "string", description: "Time in HH:MM format (24-hour) to check" }
                             },
-                            required: ["date", "time"]
+                            required: ["date"]
                         }
                     }
                 },
@@ -125,7 +124,6 @@ export async function POST(req: Request) {
                             type: "object",
                             properties: {
                                 date: { type: "string", description: "Date in YYYY-MM-DD format" },
-                                service: { type: "string", description: "Type of service/appointment" },
                                 duration: { type: "number", description: "Appointment duration in minutes (default: 60)" }
                             },
                             required: ["date"]
