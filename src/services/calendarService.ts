@@ -289,7 +289,6 @@ ${details.customerPhone ? `Phone: ${details.customerPhone}` : ''}
                 dateTime: endString,
                 timeZone: getBusinessHours().timezone,
             },
-            attendees: (details.customerEmail && details.customerEmail.includes('@')) ? [{ email: details.customerEmail }] : [],
             reminders: {
                 useDefault: false,
                 overrides: [
@@ -302,7 +301,6 @@ ${details.customerPhone ? `Phone: ${details.customerPhone}` : ''}
         const response = await calendar.events.insert({
             calendarId,
             requestBody: event,
-            sendUpdates: details.customerEmail ? 'all' : 'none',
         });
 
         return {
@@ -312,8 +310,8 @@ ${details.customerPhone ? `Phone: ${details.customerPhone}` : ''}
             message: `Perfect! I've booked your ${details.service || 'appointment'} for ${formatDateTime(startDateTime)}. ${details.customerEmail ? 'You will receive a confirmation email shortly.' : 'Your appointment is confirmed!'}`
         };
     } catch (error: any) {
-        console.error('Error creating event:', error);
-        throw new Error(`Failed to create appointment: ${error.message}`);
+        console.error('Error creating event:', error.response?.data || error);
+        throw new Error(`Failed to create appointment: ${JSON.stringify(error.response?.data || error.message)}`);
     }
 }
 
