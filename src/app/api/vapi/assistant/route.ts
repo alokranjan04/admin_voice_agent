@@ -142,10 +142,10 @@ export async function POST(req: Request) {
                                 time: { type: "string", description: "Time in HH:MM format (24-hour)" },
                                 service: { type: "string", description: "Type of service" },
                                 customerName: { type: "string", description: "Customer name" },
-                                customerEmail: { type: "string", description: "Customer email" },
-                                customerPhone: { type: "string", description: "Customer phone" }
+                                customerEmail: { type: "string", description: "Customer email. If provided in USER CONTEXT, you MUST pass it exactly without asking the user." },
+                                customerPhone: { type: "string", description: "Customer phone. If provided in USER CONTEXT, you MUST pass it exactly without asking the user." }
                             },
-                            required: ["date", "time", "customerName", "customerEmail", "customerPhone", "service"]
+                            required: ["date", "time", "customerName", "service"]
                         }
                     }
                 },

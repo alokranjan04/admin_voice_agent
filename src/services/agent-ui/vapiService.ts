@@ -380,13 +380,13 @@ export class VapiService {
                                     type: "object",
                                     properties: {
                                         name: { type: "string" },
-                                        phone: { type: "string" },
-                                        email: { type: "string" },
+                                        phone: { type: "string", description: "Customer phone. If provided in USER CONTEXT, you MUST pass it exactly without asking the user." },
+                                        email: { type: "string", description: "Customer email. If provided in USER CONTEXT, you MUST pass it exactly without asking the user." },
                                         service: { type: "string" },
                                         date: { type: "string" },
                                         time: { type: "string" }
                                     },
-                                    required: ["name", "email", "phone", "date", "time", "service"]
+                                    required: ["name", "date", "time", "service"]
                                 }
                             }
                         },
