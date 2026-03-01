@@ -20,8 +20,19 @@ export async function checkAvailability(date: string, time?: string, service?: s
         }
 
         if (time) {
-            const [hours, minutes] = time.split(':').map(Number);
-            requestedDate.setHours(hours, minutes, 0, 0);
+            const timeStr = time.toUpperCase();
+            const isPM = timeStr.includes('PM');
+            const isAM = timeStr.includes('AM');
+            const parts = timeStr.replace(/[^\d:]/g, '').split(':');
+
+            let hours = parseInt(parts[0], 10);
+            let minutes = parts.length > 1 ? parseInt(parts[1], 10) : 0;
+
+            if (!isNaN(hours)) {
+                if (isPM && hours < 12) hours += 12;
+                if (isAM && hours === 12) hours = 0;
+                requestedDate.setHours(hours, minutes, 0, 0);
+            }
         }
 
         // Check if it's within business hours
@@ -195,14 +206,31 @@ export async function createEvent(details: {
         const slotDuration = details.duration || getAppointmentDuration();
 
         // Parse date and time
-        if (!details.time || !details.time.includes(':')) {
+        if (!details.time) {
             return {
                 success: false,
                 message: "I need a specific time like 11:00 AM to book the appointment. What time works best?"
             };
         }
 
-        const [hours, minutes] = details.time.split(':').map(Number);
+        const timeStr = details.time.toUpperCase();
+        const isPM = timeStr.includes('PM');
+        const isAM = timeStr.includes('AM');
+        const parts = timeStr.replace(/[^\d:]/g, '').split(':');
+
+        let hours = parseInt(parts[0], 10);
+        let minutes = parts.length > 1 ? parseInt(parts[1], 10) : 0;
+
+        if (isNaN(hours)) {
+            return {
+                success: false,
+                message: "I need a specific numerical time like 11:00 AM to book the appointment. What time works best?"
+            };
+        }
+
+        if (isPM && hours < 12) hours += 12;
+        if (isAM && hours === 12) hours = 0;
+
         const startDateTime = new Date(details.date);
 
         if (isNaN(startDateTime.getTime())) {
