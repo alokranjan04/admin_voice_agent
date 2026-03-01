@@ -582,54 +582,28 @@ ${faqs}
     }
 
     private async sendEmailSummary(summary: string, transcript: string): Promise<{ success: boolean; error?: string }> {
-        const serviceId = this.getEnvVar('NEXT_PUBLIC_EMAILJS_SERVICE_ID') || this.getEnvVar('VITE_EMAILJS_SERVICE_ID');
-        const templateId = this.getEnvVar('NEXT_PUBLIC_EMAILJS_TEMPLATE_ID') || this.getEnvVar('VITE_EMAILJS_TEMPLATE_ID');
-        const publicKey = this.getEnvVar('NEXT_PUBLIC_EMAILJS_PUBLIC_KEY') || this.getEnvVar('VITE_EMAILJS_PUBLIC_KEY');
         const targetEmail = this.getEnvVar('NEXT_PUBLIC_NOTIFICATION_EMAIL') || this.getEnvVar('VITE_NOTIFICATION_EMAIL');
 
-        console.log("[Email] Checking credentials...", { serviceId: !!serviceId, templateId: !!templateId, publicKey: !!publicKey });
-
-        if (!serviceId || !templateId || !publicKey) {
-            console.warn("[PostCall] Email credentials missing.");
-            return { success: false, error: 'Missing credentials' };
-        }
-
         try {
-            const emailjsModule = await import('@emailjs/browser');
-            // Handle both ESM and CJS patterns
-            const emailjs = (emailjsModule as any).default || emailjsModule;
+            this.onLog({ type: 'system', text: 'Sending summary email via Server API...', timestamp: new Date() });
 
-            this.onLog({ type: 'system', text: 'Sending summary email...', timestamp: new Date() });
-
-            // Multi-layer fallback for customer details (support both old and new schema)
+            // Multi-layer fallback for customer details
             const urlParams = new URLSearchParams(window.location.search);
 
-            // Debug: Log all potential sources
-            console.log("[Email] Customer detail sources:");
-            console.log("  - sessionMetadata:", this.sessionMetadata);
-            console.log("  - config.vapi.transcriber:", this.currentConfig?.vapi?.transcriber);
-            console.log("  - config.vapi (root):", {
-                userName: (this.currentConfig?.vapi as any)?.userName,
-                userEmail: (this.currentConfig?.vapi as any)?.userEmail,
-                userPhone: (this.currentConfig?.vapi as any)?.userPhone
-            });
-            console.log("  - URL params:", {
-                uName: urlParams.get('uName'),
-                uEmail: urlParams.get('uEmail'),
-                uPhone: urlParams.get('uPhone')
-            });
-
             const customerName = this.sessionMetadata?.userName
+                || this.sessionMetadata?.name
                 || this.currentConfig?.vapi?.transcriber?.userName
                 || (this.currentConfig?.vapi as any)?.userName
                 || urlParams.get('uName')
                 || 'N/A';
             const customerEmail = this.sessionMetadata?.userEmail
+                || this.sessionMetadata?.email
                 || this.currentConfig?.vapi?.transcriber?.userEmail
                 || (this.currentConfig?.vapi as any)?.userEmail
                 || urlParams.get('uEmail')
                 || 'N/A';
             const customerPhone = this.sessionMetadata?.userPhone
+                || this.sessionMetadata?.phone
                 || this.currentConfig?.vapi?.transcriber?.userPhone
                 || (this.currentConfig?.vapi as any)?.userPhone
                 || urlParams.get('uPhone')
@@ -637,33 +611,40 @@ ${faqs}
 
             console.log("[Email] Final customer details:", { customerName, customerEmail, customerPhone });
 
-            const templateParams = {
-                to_email: targetEmail || 'admin@example.com',
-                cc_email: customerEmail !== 'N/A' ? customerEmail : '', // Send copy to customer
-                business_name: this.currentConfig?.metadata?.businessName || 'AI Agent',
+            // Point to the Next.js Nodemailer API route instead of EmailJS
+            const baseUrl = this.getEnvVar('NEXT_PUBLIC_APP_URL') || '';
+            const apiUrl = `${baseUrl.replace(/\/$/, '')}/api/email`;
+
+            const payload = {
                 summary,
                 transcript,
-                customer_name: customerName,
-                customer_email: customerEmail,
-                customer_phone: customerPhone,
-                booking_details: this.sessionMetadata?.dateTime || 'N/A'
+                targetEmail: targetEmail || 'admin@example.com',
+                ccEmail: customerEmail !== 'N/A' && customerEmail !== 'Unknown' && customerEmail !== 'undefined' ? customerEmail : '',
+                customerName: customerName !== 'N/A' && customerName !== 'Unknown' && customerName !== 'undefined' ? customerName : 'Customer',
             };
 
-            console.log("[Email] Sending with params:", { to: templateParams.to_email, name: templateParams.customer_name });
-            const result = await emailjs.send(serviceId, templateId, templateParams, publicKey);
+            const response = await fetch(apiUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
 
-            if (result.status === 200) {
-                this.onLog({ type: 'system', text: 'Email sent.', timestamp: new Date() });
-                console.log("[Email] Success!");
-                return { success: true };
-            } else {
-                console.error("[Email] Non-200 response:", result);
-                throw new Error(result.text || `Status: ${result.status}`);
+            const data = await response.json();
+
+            if (!response.ok) {
+                console.error('[PostCall] Server Email API Error:', data.error);
+                return { success: false, error: data.error };
             }
+
+            console.log("[PostCall] Email successfully delivered via Nodemailer API");
+            this.onLog({ type: 'system', text: 'Email summary delivered successfully.', timestamp: new Date() });
+
+            return { success: true };
+
         } catch (error: any) {
-            console.error("[PostCall] Email Error details:", error);
-            this.onLog({ type: 'system', text: 'Email failed.', timestamp: new Date() });
-            return { success: false, error: error.text || error.message || 'Unknown error' };
+            console.error("[PostCall] Network Error sending Email API request:", error);
+            this.onLog({ type: 'system', text: `Failed to send email: ${error.message || 'Unknown error'}`, timestamp: new Date() });
+            return { success: false, error: error.message || 'Unknown error' };
         }
     }
 
