@@ -57,9 +57,9 @@ export async function POST(req: NextRequest) {
                                 date: args.date,
                                 time: args.time,
                                 service: args.service,
-                                customerName: args.customerName,
-                                customerEmail: args.customerEmail,
-                                customerPhone: args.customerPhone,
+                                customerName: args.name || args.customerName || "Customer",
+                                customerEmail: args.email || args.customerEmail,
+                                customerPhone: args.phone || args.customerPhone,
                                 duration: args.duration
                             });
                             break;

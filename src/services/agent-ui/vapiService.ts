@@ -376,9 +376,10 @@ export class VapiService {
                                         phone: { type: "string" },
                                         email: { type: "string" },
                                         service: { type: "string" },
-                                        dateTime: { type: "string" }
+                                        date: { type: "string" },
+                                        time: { type: "string" }
                                     },
-                                    required: ["name", "phone", "email", "service", "dateTime"]
+                                    required: ["name", "phone", "email", "date", "time"]
                                 }
                             }
                         },

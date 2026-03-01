@@ -11,6 +11,13 @@ export async function checkAvailability(date: string, time?: string, service?: s
 
         // Parse the date and time
         const requestedDate = new Date(date);
+        if (isNaN(requestedDate.getTime())) {
+            return {
+                available: false,
+                reason: 'Invalid date',
+                message: 'I could not understand the date. Could you please provide a specific date, like March 3rd or Tomorrow?'
+            };
+        }
 
         if (time) {
             const [hours, minutes] = time.split(':').map(Number);
@@ -81,6 +88,13 @@ export async function findAvailableSlots(date: string, service?: string, duratio
 
         // Parse the date
         const requestedDate = new Date(date);
+        if (isNaN(requestedDate.getTime())) {
+            return {
+                success: false,
+                availableSlots: [],
+                message: 'I could not understand the date. Could you please provide a specific date, like March 3rd or Tomorrow?'
+            };
+        }
         const dayOfWeek = requestedDate.getDay();
 
         // Check if it's a business day
@@ -181,8 +195,23 @@ export async function createEvent(details: {
         const slotDuration = details.duration || getAppointmentDuration();
 
         // Parse date and time
+        if (!details.time || !details.time.includes(':')) {
+            return {
+                success: false,
+                message: "I need a specific time like 11:00 AM to book the appointment. What time works best?"
+            };
+        }
+
         const [hours, minutes] = details.time.split(':').map(Number);
         const startDateTime = new Date(details.date);
+
+        if (isNaN(startDateTime.getTime())) {
+            return {
+                success: false,
+                message: "I couldn't understand the specific date. Please provide a full date, like March 3rd 2026."
+            };
+        }
+
         startDateTime.setHours(hours, minutes, 0, 0);
 
         const endDateTime = new Date(startDateTime.getTime() + slotDuration * 60000);
