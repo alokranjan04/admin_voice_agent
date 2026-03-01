@@ -244,21 +244,49 @@ export async function createEvent(details: {
 
         const endDateTime = new Date(startDateTime.getTime() + slotDuration * 60000);
 
+        // Format times locally without 'Z' suffix so Google uses the given timeZone
+        const startString = `${details.date}T${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:00`;
+
+        const endHours = endDateTime.getHours();
+        const endMinutes = endDateTime.getMinutes();
+        // Handle overflow to next day natively
+        const endString = `${endDateTime.toISOString().split('T')[0]}T${String(endHours).padStart(2, '0')}:${String(endMinutes).padStart(2, '0')}:00`;
+
+        const finalName = details.customerName && details.customerName !== 'undefined' ? details.customerName : 'Client';
+
+        // Check for duplicate/existing event at the exact same time to prevent double-booking
+        const existingEvents = await calendar.events.list({
+            calendarId,
+            timeMin: new Date(startDateTime.getTime() - 60000).toISOString(),
+            timeMax: new Date(startDateTime.getTime() + 60000).toISOString(),
+            singleEvents: true
+        });
+
+        if (existingEvents.data.items && existingEvents.data.items.length > 0) {
+            const existingEvent = existingEvents.data.items[0];
+
+            // Delete the old duplicate event since we are updating the title
+            await calendar.events.delete({
+                calendarId,
+                eventId: existingEvent.id!
+            });
+        }
+
         // Create event
         const event = {
-            summary: `${details.service || 'Appointment'} - ${details.customerName}`,
+            summary: `${details.service || 'Appointment'} - ${finalName}`,
             description: `
 Service: ${details.service || 'General Appointment'}
-Customer: ${details.customerName}
+Customer: ${finalName}
 ${details.customerEmail ? `Email: ${details.customerEmail}` : ''}
 ${details.customerPhone ? `Phone: ${details.customerPhone}` : ''}
       `.trim(),
             start: {
-                dateTime: startDateTime.toISOString(),
+                dateTime: startString,
                 timeZone: getBusinessHours().timezone,
             },
             end: {
-                dateTime: endDateTime.toISOString(),
+                dateTime: endString,
                 timeZone: getBusinessHours().timezone,
             },
             attendees: details.customerEmail ? [{ email: details.customerEmail }] : [],
