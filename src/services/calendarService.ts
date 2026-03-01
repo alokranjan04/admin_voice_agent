@@ -117,17 +117,19 @@ export async function findAvailableSlots(date: string, service?: string, duratio
             };
         }
 
-        // Get all events for the day
-        const startOfDay = new Date(requestedDate);
-        startOfDay.setHours(0, 0, 0, 0);
+        // Get all events for the day (Manually construct the ISO strings in the given timezone)
+        const tzOffset = '+05:30'; // Hardcoded fallback or use process.env.TIMEZONE logic
+        const yyyy = requestedDate.getFullYear();
+        const mm = String(requestedDate.getMonth() + 1).padStart(2, '0');
+        const dd = String(requestedDate.getDate()).padStart(2, '0');
 
-        const endOfDay = new Date(requestedDate);
-        endOfDay.setHours(23, 59, 59, 999);
+        const startOfDayStr = `${yyyy}-${mm}-${dd}T00:00:00${tzOffset}`;
+        const endOfDayStr = `${yyyy}-${mm}-${dd}T23:59:59${tzOffset}`;
 
         const response = await calendar.events.list({
             calendarId,
-            timeMin: startOfDay.toISOString(),
-            timeMax: endOfDay.toISOString(),
+            timeMin: startOfDayStr,
+            timeMax: endOfDayStr,
             singleEvents: true,
             orderBy: 'startTime',
         });
@@ -148,7 +150,7 @@ export async function findAvailableSlots(date: string, service?: string, duratio
                 const eventStart = new Date(event.start?.dateTime || event.start?.date || '');
                 const eventEnd = new Date(event.end?.dateTime || event.end?.date || '');
 
-                return (slotStart < eventEnd && slotEnd > eventStart);
+                return (slotStart.getTime() < eventEnd.getTime() && slotEnd.getTime() > eventStart.getTime());
             });
 
             if (!hasConflict && slotEnd.getHours() <= businessHours.end) {
@@ -254,11 +256,18 @@ export async function createEvent(details: {
 
         const finalName = details.customerName && details.customerName !== 'undefined' ? details.customerName : 'Client';
 
-        // Check for duplicate/existing event at the exact same time to prevent double-booking
+        // Check for duplicate/existing event at the exact same time
+        const checkStartOffset = new Date(startString);
+        checkStartOffset.setMinutes(checkStartOffset.getMinutes() - 1);
+        const checkEndOffset = new Date(startString);
+        checkEndOffset.setMinutes(checkEndOffset.getMinutes() + 1);
+
+        const tzOffsetCreate = '+05:30'; // Hardcoded fallback or use TIMEZONE
+
         const existingEvents = await calendar.events.list({
             calendarId,
-            timeMin: new Date(startDateTime.getTime() - 60000).toISOString(),
-            timeMax: new Date(startDateTime.getTime() + 60000).toISOString(),
+            timeMin: `${checkStartOffset.toISOString().split('.')[0]}${tzOffsetCreate}`,
+            timeMax: `${checkEndOffset.toISOString().split('.')[0]}${tzOffsetCreate}`,
             singleEvents: true
         });
 

@@ -31,7 +31,12 @@ export class VapiService {
     }
 
     private getEnvVar(key: string): string {
-        // Fallback for non-standard environments, but direct access is preferred in Next.js
+        // Next.js requires static string references for process.env.NEXT_PUBLIC_* replacements
+        if (key === 'NEXT_PUBLIC_GEMINI_API_KEY') return process.env.NEXT_PUBLIC_GEMINI_API_KEY || '';
+        if (key === 'NEXT_PUBLIC_NOTIFICATION_EMAIL') return process.env.NEXT_PUBLIC_NOTIFICATION_EMAIL || '';
+        if (key === 'NEXT_PUBLIC_APP_URL') return process.env.NEXT_PUBLIC_APP_URL || '';
+
+        // Fallback for non-standard environments
         if (typeof process !== 'undefined' && process.env && process.env[key]) {
             return process.env[key] as string;
         }
@@ -582,7 +587,7 @@ ${faqs}
     }
 
     private async sendEmailSummary(summary: string, transcript: string): Promise<{ success: boolean; error?: string }> {
-        const targetEmail = this.getEnvVar('NEXT_PUBLIC_NOTIFICATION_EMAIL') || this.getEnvVar('VITE_NOTIFICATION_EMAIL');
+        const targetEmail = this.getEnvVar('NEXT_PUBLIC_NOTIFICATION_EMAIL') || this.getEnvVar('VITE_NOTIFICATION_EMAIL') || this.getEnvVar('GMAIL_USER');
 
         try {
             this.onLog({ type: 'system', text: 'Sending summary email via Server API...', timestamp: new Date() });
