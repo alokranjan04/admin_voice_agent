@@ -42,8 +42,8 @@ export async function POST(req: Request) {
                         (config.vapi.userName ? `- Name: ${config.vapi.userName}\n` : '') +
                         (config.vapi.userEmail ? `- Email: ${config.vapi.userEmail}\n` : '') +
                         (config.vapi.userPhone ? `- Phone: ${config.vapi.userPhone}\n` : '') +
-                        `CONTACT RULE: If Name, Phone, or Email are missing from this context, politely ask the user for them before booking. If they are already provided, DO NOT ask for them again, but pass them directly to the createEvent tool.\nTITLE RULE: Always ask the user 'What is this booking for?' to use as the 'service' (event title).`
-                        : "No specific user information provided yet. You MUST ask the user for their Name, Email, and Phone before booking the appointment.\nTITLE RULE: Always ask the user 'What is this booking for?' to use as the 'service' (event title)."
+                        `CONTACT RULE: If Name, Phone, or Email are missing from this context, politely ask the user for them before booking. If they are already provided, DO NOT ask for them again, but pass them directly to the createEvent tool.\nTITLE RULE: Always ask the user 'What is this booking for?' to use as the 'service' (event title).\nAVAILABILITY RULE: You MUST NEVER book an appointment (call createEvent) without FIRST checking if the time is open using 'checkAvailability' or 'findAvailableSlots'.`
+                        : "No specific user information provided yet. You MUST ask the user for their Name, Email, and Phone before booking the appointment.\nTITLE RULE: Always ask the user 'What is this booking for?' to use as the 'service' (event title).\nAVAILABILITY RULE: You MUST NEVER book an appointment (call createEvent) without FIRST checking if the time is open using 'checkAvailability' or 'findAvailableSlots'."
                         }`
                 }
             ],

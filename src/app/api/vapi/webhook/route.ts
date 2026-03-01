@@ -47,7 +47,7 @@ export async function POST(req: NextRequest) {
                             // Simple confirmation - just echo back the details
                             result = {
                                 success: true,
-                                message: `Let me confirm: ${args.service || 'appointment'} on ${args.date} at ${args.time} for ${args.customerName}. Is this correct?`
+                                message: `Let me confirm: ${args.service || 'appointment'} on ${args.date} at ${args.time} for ${args.name || args.customerName}. Is this correct?`
                             };
                             break;
 
@@ -57,9 +57,9 @@ export async function POST(req: NextRequest) {
                                 date: args.date,
                                 time: args.time,
                                 service: args.service,
-                                customerName: args.customerName,
-                                customerEmail: args.customerEmail,
-                                customerPhone: args.customerPhone,
+                                customerName: args.name || args.customerName || "Customer",
+                                customerEmail: args.email || args.customerEmail,
+                                customerPhone: args.phone || args.customerPhone,
                                 duration: args.duration
                             });
                             break;

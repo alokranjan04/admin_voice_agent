@@ -244,6 +244,7 @@ export class VapiService {
    - Email: ${this.sessionMetadata.email || this.sessionMetadata.userEmail || "Unknown"}
    CONTACT RULE: If Name, Phone, or Email are 'Unknown' or missing from the context above, politely ask the user to provide the missing details before booking. If they are already provided, DO NOT ask for them again, but pass them directly to the createEvent tool.
    TITLE RULE: Always ask the user "What is this booking for?" or "What is the topic of our meeting?" so you can use their answer as the 'service' (title) parameter when creating the calendar event.
+   AVAILABILITY RULE: You MUST NEVER book an appointment (call createEvent) without FIRST checking if the time is open using 'checkAvailability' or 'findAvailableSlots'.
 8. LANGUAGE: You are fully proficient in both English and Hindi. Always reply fluently in the language the user speaks to you. If the user speaks Hindi, reply strictly in Hindi.\n\n`;
 
         let systemPrompt = "";
