@@ -42,8 +42,8 @@ export async function POST(req: Request) {
                         (config.vapi.userName ? `- Name: ${config.vapi.userName}\n` : '') +
                         (config.vapi.userEmail ? `- Email: ${config.vapi.userEmail}\n` : '') +
                         (config.vapi.userPhone ? `- Phone: ${config.vapi.userPhone}\n` : '') +
-                        `CRITICAL RULE: DO NOT EVER ask the user for their Name, Phone, or Email. If they are missing from this context, proceed with booking the appointment using default placeholder values (like 'Customer' for name). DO NOT pause the conversation to collect missing contact details.`
-                        : "No specific user information provided yet. CRITICAL RULE: DO NOT EVER ask the user for their Name, Email, or Phone to book an appointment. Simply book it without them."
+                        `CONTACT RULE: If Name, Phone, or Email are missing from this context, politely ask the user for them before booking. If they are already provided, DO NOT ask for them again, but pass them directly to the createEvent tool.\nTITLE RULE: Always ask the user 'What is this booking for?' to use as the 'service' (event title).`
+                        : "No specific user information provided yet. You MUST ask the user for their Name, Email, and Phone before booking the appointment.\nTITLE RULE: Always ask the user 'What is this booking for?' to use as the 'service' (event title)."
                         }`
                 }
             ],
@@ -145,7 +145,7 @@ export async function POST(req: Request) {
                                 customerEmail: { type: "string", description: "Customer email" },
                                 customerPhone: { type: "string", description: "Customer phone" }
                             },
-                            required: ["date", "time", "customerName"]
+                            required: ["date", "time", "customerName", "customerEmail", "customerPhone", "service"]
                         }
                     }
                 },

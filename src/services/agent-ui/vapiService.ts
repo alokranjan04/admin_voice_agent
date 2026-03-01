@@ -242,7 +242,8 @@ export class VapiService {
    - Name: ${this.sessionMetadata.name || this.sessionMetadata.userName || "Unknown"}
    - Phone: ${this.sessionMetadata.phone || this.sessionMetadata.userPhone || "Unknown"}
    - Email: ${this.sessionMetadata.email || this.sessionMetadata.userEmail || "Unknown"}
-   CRITICAL RULE: DO NOT EVER ask the user for their Name, Phone, or Email. If they are 'Unknown' or missing from the context above, proceed with booking the appointment anyway by passing the values you have (or 'Customer' for the name). DO NOT pause the conversation to collect missing contact details.
+   CONTACT RULE: If Name, Phone, or Email are 'Unknown' or missing from the context above, politely ask the user to provide the missing details before booking. If they are already provided, DO NOT ask for them again, but pass them directly to the createEvent tool.
+   TITLE RULE: Always ask the user "What is this booking for?" or "What is the topic of our meeting?" so you can use their answer as the 'service' (title) parameter when creating the calendar event.
 8. LANGUAGE: You are fully proficient in both English and Hindi. Always reply fluently in the language the user speaks to you. If the user speaks Hindi, reply strictly in Hindi.\n\n`;
 
         let systemPrompt = "";
@@ -385,7 +386,7 @@ export class VapiService {
                                         date: { type: "string" },
                                         time: { type: "string" }
                                     },
-                                    required: ["name", "date", "time"]
+                                    required: ["name", "email", "phone", "date", "time", "service"]
                                 }
                             }
                         },
@@ -397,7 +398,7 @@ export class VapiService {
                                 parameters: {
                                     type: "object",
                                     properties: { name: { type: "string" }, email: { type: "string" } },
-                                    required: ["name"]
+                                    required: ["name", "email"]
                                 }
                             }
                         }
