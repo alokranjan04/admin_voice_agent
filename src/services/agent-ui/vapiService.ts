@@ -242,7 +242,8 @@ export class VapiService {
    - Name: ${this.sessionMetadata.name || this.sessionMetadata.userName || "Unknown"}
    - Phone: ${this.sessionMetadata.phone || this.sessionMetadata.userPhone || "Unknown"}
    - Email: ${this.sessionMetadata.email || this.sessionMetadata.userEmail || "Unknown"}
-   CRITICAL: If the User Context above contains a valid name, phone, or email, DO NOT ask the user for them again. Use these exact values when calling the createEvent tool.\n\n`;
+   CRITICAL: If the User Context above contains a valid name, phone, or email, DO NOT ask the user for them again. Use these exact values when calling the createEvent tool.
+8. LANGUAGE: You are fully proficient in both English and Hindi. Always reply fluently in the language the user speaks to you. If the user speaks Hindi, reply strictly in Hindi.\n\n`;
 
         let systemPrompt = "";
         if (vapiConf?.systemPrompt) {
@@ -406,7 +407,7 @@ export class VapiService {
                 transcriber: {
                     provider: (vapiConf?.transcriber?.provider || "deepgram") as any,
                     model: vapiConf?.transcriber?.model || "nova-2",
-                    language: "en-US",
+                    language: vapiConf?.transcriber?.language || "hi",
                     smartFormat: true
                 },
                 clientMessages: ["transcript", "hang", "function-call", "tool-calls", "speech-update", "metadata", "conversation-update"],
