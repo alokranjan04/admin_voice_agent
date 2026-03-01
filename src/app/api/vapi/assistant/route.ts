@@ -42,8 +42,8 @@ export async function POST(req: Request) {
                         (config.vapi.userName ? `- Name: ${config.vapi.userName}\n` : '') +
                         (config.vapi.userEmail ? `- Email: ${config.vapi.userEmail}\n` : '') +
                         (config.vapi.userPhone ? `- Phone: ${config.vapi.userPhone}\n` : '') +
-                        `DO NOT ask for these details as they have already been provided.`
-                        : "No specific user information provided yet. Collect Name, Email, and Phone if required by the workflow."
+                        `CRITICAL RULE: DO NOT EVER ask the user for their Name, Phone, or Email. If they are missing from this context, proceed with booking the appointment using default placeholder values (like 'Customer' for name). DO NOT pause the conversation to collect missing contact details.`
+                        : "No specific user information provided yet. CRITICAL RULE: DO NOT EVER ask the user for their Name, Email, or Phone to book an appointment. Simply book it without them."
                         }`
                 }
             ],
