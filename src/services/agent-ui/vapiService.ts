@@ -622,7 +622,7 @@ ${faqs}
             const payload = {
                 summary,
                 transcript,
-                targetEmail: targetEmail || 'admin@example.com',
+                targetEmail: targetEmail || '',
                 ccEmail: customerEmail !== 'N/A' && customerEmail !== 'Unknown' && customerEmail !== 'undefined' ? customerEmail : '',
                 customerName: customerName !== 'N/A' && customerName !== 'Unknown' && customerName !== 'undefined' ? customerName : 'Customer',
             };

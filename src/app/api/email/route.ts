@@ -12,7 +12,7 @@ export async function POST(req: Request) {
 
         const gmailUser = process.env.GMAIL_USER;
         const gmailPass = process.env.GMAIL_APP_PASSWORD;
-        const notificationEmail = process.env.NEXT_PUBLIC_NOTIFICATION_EMAIL || process.env.VITE_NOTIFICATION_EMAIL || targetEmail;
+        const notificationEmail = process.env.NEXT_PUBLIC_NOTIFICATION_EMAIL || process.env.VITE_NOTIFICATION_EMAIL || targetEmail || gmailUser;
 
         if (!gmailUser || !gmailPass) {
             console.error('[Email API] Missing Gmail credentials in .env');
