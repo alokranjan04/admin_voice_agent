@@ -237,7 +237,12 @@ export class VapiService {
 3. NEVER APOLOGIZE: Never tell the user you are "having trouble" or "unable to retrieve" availability if a tool result is present.
 4. AUTHENTICATION EXPIRED: If a tool returns 'needsReauth: true', politely tell the user: "It looks like the calendar connection has expired. Could you please click 'Disconnect' and then 'Connect Calendar' again in the admin settings?"
 5. OFFER SLOTS: If findAvailableSlots returns slots, you MUST list them to the user immediately.
-6. CALENDAR ID: Use 'alokranjan04@gmail.com' for all operations.\n\n`;
+6. CALENDAR ID: Use 'alokranjan04@gmail.com' for all operations.
+7. USER CONTEXT:
+   - Name: ${this.sessionMetadata.name || this.sessionMetadata.userName || "Unknown"}
+   - Phone: ${this.sessionMetadata.phone || this.sessionMetadata.userPhone || "Unknown"}
+   - Email: ${this.sessionMetadata.email || this.sessionMetadata.userEmail || "Unknown"}
+   CRITICAL: If the User Context above contains a valid name, phone, or email, DO NOT ask the user for them again. Use these exact values when calling the createEvent tool.\n\n`;
 
         let systemPrompt = "";
         if (vapiConf?.systemPrompt) {
