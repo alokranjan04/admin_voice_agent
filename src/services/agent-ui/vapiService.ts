@@ -419,12 +419,15 @@ export class VapiService {
                     language: vapiConf?.transcriber?.language || "hi",
                     smartFormat: true,
                     keywords: [
-                        companyName,
+                        ...companyName.split(/\s+/),
                         "Youhe",
                         "Amrita",
-                        this.sessionMetadata.name || "",
-                        this.sessionMetadata.userName || ""
-                    ].filter(k => k && k.length > 2)
+                        ...(this.sessionMetadata.name || "").split(/\s+/),
+                        ...(this.sessionMetadata.userName || "").split(/\s+/),
+                    ]
+                        .map(k => k.replace(/[^a-zA-Z0-9]/g, '').trim())
+                        .filter(k => k && k.length > 2)
+                        .filter((v, i, a) => a.indexOf(v) === i)
                 },
                 clientMessages: ["transcript", "hang", "function-call", "tool-calls", "speech-update", "metadata", "conversation-update"],
                 // Enable Server URL for Backend Tool Handling (if configured)
