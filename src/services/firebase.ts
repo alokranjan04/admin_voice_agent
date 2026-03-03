@@ -121,8 +121,8 @@ try {
 }
 
 // EXPORT services
-export const db = dbInstance!;
-export const auth = authInstance!;
+export const db = dbInstance;
+export const auth = authInstance;
 
 // Configure Google Auth Provider
 const provider = new GoogleAuthProvider();

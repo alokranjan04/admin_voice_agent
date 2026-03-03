@@ -28,6 +28,12 @@ COPY . .
 # Uncomment the following line in case you want to disable telemetry during the build.
 ENV NEXT_TELEMETRY_DISABLED 1
 
+# Dummy environment variables for the build phase
+ENV NEXT_PUBLIC_FIREBASE_API_KEY=dummy
+ENV NEXT_PUBLIC_FIREBASE_PROJECT_ID=dummy
+ENV NEXT_PUBLIC_GEMINI_API_KEY=dummy
+ENV STRIPE_SECRET_KEY=dummy
+
 RUN \
   if [ -f yarn.lock ]; then yarn run build; \
   elif [ -f package-lock.json ]; then npm run build; \

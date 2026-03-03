@@ -53,8 +53,9 @@ if (!admin.apps.length) {
 }
 
 
-export const adminDb = admin.firestore();
-export const adminAuth = admin.auth();
+// Lazy-loaded getters to prevent build-time crashes
+export const adminDb = admin.apps.length ? admin.firestore() : null as unknown as ReturnType<typeof admin.firestore>;
+export const adminAuth = admin.apps.length ? admin.auth() : null as unknown as ReturnType<typeof admin.auth>;
 export { admin };
 
 // Helper function to fetch agent configuration
