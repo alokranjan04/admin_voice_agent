@@ -27,20 +27,40 @@ function normalizeKey(key: string): string {
             const decoded = Buffer.from(normalized.replace(/\s/g, ''), 'base64').toString('utf8');
             if (decoded.includes('-----BEGIN')) {
                 console.log('[GoogleAuth] Successfully decoded private key from Base64');
-                return normalizeKey(decoded); // Recurse to handle any \n inside the decoded string
+                return normalizeKey(decoded);
             }
         } catch (e) {
             console.warn('[GoogleAuth] Failed to decode private key as Base64');
         }
     }
 
-    // 3. Standard PEM normalization
-    return normalized
-        .replace(/\\n/g, '\n')        // Fix escaped newlines (\n)
-        .replace(/\\r/g, '\r')        // Fix escaped carriage returns (\r)
-        .replace(/"/g, '')            // Strip double quotes
-        .replace(/^'|'$/g, '')        // Strip single quotes
+    // 3. Clean string bounds
+    let clean = normalized
+        .replace(/\\n/g, '\n')
+        .replace(/\\r/g, '\r')
+        .replace(/"/g, '')
+        .replace(/^'|'$/g, '')
         .trim();
+
+    // 4. Force strict PEM reconstruction if it contains the headers
+    // OpenSSL throws "DECODER routines::unsupported" if the line width is wrong or newlines are missing
+    const header = '-----BEGIN PRIVATE KEY-----';
+    const footer = '-----END PRIVATE KEY-----';
+
+    if (clean.includes(header) && clean.includes(footer)) {
+        const bodyStart = clean.indexOf(header) + header.length;
+        const bodyEnd = clean.indexOf(footer);
+
+        // Extract base64 payload and strip ALL whitespace (spaces pasted from .env files)
+        const base64Body = clean.substring(bodyStart, bodyEnd).replace(/\s/g, '');
+
+        // Chunk into 64 characters (PEM standard)
+        const chunks = base64Body.match(/.{1,64}/g) || [];
+
+        return `${header}\n${chunks.join('\n')}\n${footer}\n`;
+    }
+
+    return clean;
 }
 
 export function getAuth() {
@@ -88,4 +108,17 @@ export function getCalendarClient() {
 
 export function getCalendarId() {
     return process.env.GOOGLE_CALENDAR_ID || 'primary';
+}
+
+export function getBusinessHours() {
+    return {
+        start: parseInt(process.env.BUSINESS_HOURS_START || '9'),
+        end: parseInt(process.env.BUSINESS_HOURS_END || '17'),
+        days: [1, 2, 3, 4, 5], // Monday - Friday
+        timezone: process.env.TIMEZONE || 'Asia/Kolkata',
+    };
+}
+
+export function getAppointmentDuration() {
+    return parseInt(process.env.APPOINTMENT_DURATION || '30');
 }
