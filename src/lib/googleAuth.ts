@@ -12,10 +12,14 @@ export function getCalendarClient() {
 
     if (serviceAccountEmail && serviceAccountKey) {
         // Service Account authentication
-        // Fix escaped newlines and remove surrounding quotes/whitespace
+        // Exhaustive PEM key normalization
         const privateKey = serviceAccountKey
-            .replace(/\\n/g, '\n')
-            .replace(/"/g, '')
+            .replace(/\\n/g, '\n')        // Fix escaped newlines (\n)
+            .replace(/\\r/g, '\r')        // Fix escaped carriage returns (\r)
+            .replace(/"/g, '')            // Strip double quotes
+            .replace(/^'|'$/g, '')        // Strip single quotes
+            .replace(/\s+$/, '')          // Trim trailing space
+            .replace(/^\s+/, '')          // Trim leading space
             .trim();
 
         const auth = new google.auth.JWT({

@@ -12,11 +12,14 @@ export async function GET(req: Request) {
             return NextResponse.json({ error: 'Calendar integration credentials missing.' }, { status: 500 });
         }
 
-        // Fix escaped newlines if user pastes double backslashes
-        // And remove surrounding quotes/whitespace
+        // Exhaustive PEM key normalization
         const privateKey = privateKeyStr
-            .replace(/\\n/g, '\n')
-            .replace(/"/g, '')
+            .replace(/\\n/g, '\n')        // Fix escaped newlines
+            .replace(/\\r/g, '\r')        // Fix escaped carriage returns
+            .replace(/"/g, '')            // Strip double quotes
+            .replace(/^'|'$/g, '')        // Strip single quotes
+            .replace(/\s+$/, '')          // Trim trailing space
+            .replace(/^\s+/, '')          // Trim leading space
             .trim();
 
         const SCOPES = ['https://www.googleapis.com/auth/calendar.readonly'];
