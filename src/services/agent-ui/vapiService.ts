@@ -629,7 +629,15 @@ ${faqs}
             console.log("[Email] Final customer details:", { customerName, customerEmail, customerPhone });
 
             // ALWAYS use absolute URL so embedded widgets hit the Cloud Run backend, not the WordPress host
-            const baseUrl = this.getEnvVar('NEXT_PUBLIC_APP_URL')?.replace(/\/$/, "") || '';
+            let baseUrl = this.getEnvVar('NEXT_PUBLIC_APP_URL')?.replace(/\/$/, "") || '';
+
+            // CRITICAL FIX: Since Vercel redirects https://tellyourjourney.com to https://www.tellyourjourney.com, 
+            // any cross-origin OPTIONS preflight request will get a 307 Redirect -> blocked by browser ("does not have HTTP ok status").
+            // We forcefully map it to the active endpoint to prevent the redirect.
+            if (baseUrl === 'https://tellyourjourney.com') {
+                baseUrl = 'https://www.tellyourjourney.com';
+            }
+
             const apiUrl = baseUrl ? `${baseUrl}/api/email` : '/api/email';
 
             const payload = {
