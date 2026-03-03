@@ -12,8 +12,11 @@ export function getCalendarClient() {
 
     if (serviceAccountEmail && serviceAccountKey) {
         // Service Account authentication
-        // Fix escaped newlines and remove surrounding quotes that dotenv might stringify
-        const privateKey = serviceAccountKey.replace(/\\n/g, '\n').replace(/"/g, '');
+        // Fix escaped newlines and remove surrounding quotes/whitespace
+        const privateKey = serviceAccountKey
+            .replace(/\\n/g, '\n')
+            .replace(/"/g, '')
+            .trim();
 
         const auth = new google.auth.JWT({
             email: serviceAccountEmail,

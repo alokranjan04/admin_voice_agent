@@ -13,8 +13,11 @@ export async function GET(req: Request) {
         }
 
         // Fix escaped newlines if user pastes double backslashes
-        // And remove surrounding quotes that dotenv might stringify
-        const privateKey = privateKeyStr.replace(/\\n/g, '\n').replace(/"/g, '');
+        // And remove surrounding quotes/whitespace
+        const privateKey = privateKeyStr
+            .replace(/\\n/g, '\n')
+            .replace(/"/g, '')
+            .trim();
 
         const SCOPES = ['https://www.googleapis.com/auth/calendar.readonly'];
 
