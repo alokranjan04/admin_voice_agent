@@ -50,9 +50,11 @@ jobs:
 
       - name: Base64 Encode Key
         id: encode_key
+        env:
+          RAW_KEY: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY }}
         run: |
-          ENCODED_KEY=$(echo "${{ secrets.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY }}" | base64 -w 0)
-          echo "encoded_key=$ENCODED_KEY" >> $GITHUB_OUTPUT
+          echo -n "$RAW_KEY" | base64 -w 0 > key_b64.txt
+          echo "encoded_key=$(cat key_b64.txt)" >> $GITHUB_OUTPUT
 
       - name: Deploy to Cloud Run
         uses: 'google-github-actions/deploy-cloudrun@v2'

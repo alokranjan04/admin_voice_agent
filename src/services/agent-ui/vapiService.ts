@@ -247,6 +247,8 @@ export class VapiService {
    - Name: ${this.sessionMetadata.name || this.sessionMetadata.userName || "Unknown"}
    - Phone: ${this.sessionMetadata.phone || this.sessionMetadata.userPhone || "Unknown"}
    - Email: ${this.sessionMetadata.email || this.sessionMetadata.userEmail || "Unknown"}
+   PHONETIC HINT: If the user's name is "Amrita", ensure you pronounce it clearly as "Am-ree-ta".
+   BOOKING RULE: Once the user selects or confirms a time from the available slots, perform the 'createEvent' call immediately. Do not wait for additional confirmation if they have already picked a slot.
    CONTACT RULE: If Name, Phone, or Email are 'Unknown' or missing from the context above, politely ask the user to provide the missing details before booking. If they are already provided, DO NOT ask for them again, but pass them directly to the createEvent tool.
    TITLE RULE: Always ask the user "What is this booking for?" or "What is the topic of our meeting?" so you can use their answer as the 'service' (title) parameter when creating the calendar event.
    AVAILABILITY RULE: You MUST NEVER book an appointment (call createEvent) without FIRST checking if the time is open using 'checkAvailability' or 'findAvailableSlots'.
@@ -415,7 +417,14 @@ export class VapiService {
                     provider: (vapiConf?.transcriber?.provider || "deepgram") as any,
                     model: vapiConf?.transcriber?.model || "nova-2",
                     language: vapiConf?.transcriber?.language || "hi",
-                    smartFormat: true
+                    smartFormat: true,
+                    keywords: [
+                        companyName,
+                        "Youhe",
+                        "Amrita",
+                        this.sessionMetadata.name || "",
+                        this.sessionMetadata.userName || ""
+                    ].filter(k => k && k.length > 2)
                 },
                 clientMessages: ["transcript", "hang", "function-call", "tool-calls", "speech-update", "metadata", "conversation-update"],
                 // Enable Server URL for Backend Tool Handling (if configured)
