@@ -6,7 +6,7 @@ on:
       - main
 
 env:
-  PROJECT_ID: ${{ secrets.GCP_PROJECT }}
+  PROJECT_ID: ai-voice-agent-c2a2b
   REGION: us-central1
   SERVICE_NAME: voice-ai-admin
   ARTIFACT_REPOSITORY: voice-ai-repo
