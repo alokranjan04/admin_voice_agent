@@ -628,8 +628,9 @@ ${faqs}
 
             console.log("[Email] Final customer details:", { customerName, customerEmail, customerPhone });
 
-            // Point to the Next.js Nodemailer API using a relative path to avoid CORS
-            const apiUrl = '/api/email';
+            // ALWAYS use absolute URL so embedded widgets hit the Cloud Run backend, not the WordPress host
+            const baseUrl = this.getEnvVar('NEXT_PUBLIC_APP_URL')?.replace(/\/$/, "") || '';
+            const apiUrl = baseUrl ? `${baseUrl}/api/email` : '/api/email';
 
             const payload = {
                 summary,

@@ -1,13 +1,23 @@
 import { NextResponse } from 'next/server';
 import nodemailer from 'nodemailer';
 
+const corsHeaders = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+};
+
+export async function OPTIONS() {
+    return NextResponse.json({}, { headers: corsHeaders });
+}
+
 export async function POST(req: Request) {
     try {
         const body = await req.json();
         const { summary, transcript, targetEmail, ccEmail, customerName } = body;
 
         if (!summary) {
-            return NextResponse.json({ error: 'Missing summary content' }, { status: 400 });
+            return NextResponse.json({ error: 'Missing summary content' }, { status: 400, headers: corsHeaders });
         }
 
         const gmailUser = process.env.GMAIL_USER;
@@ -16,7 +26,7 @@ export async function POST(req: Request) {
 
         if (!gmailUser || !gmailPass) {
             console.error('[Email API] Missing Gmail credentials in .env');
-            return NextResponse.json({ error: 'Server email credentials not configured' }, { status: 500 });
+            return NextResponse.json({ error: 'Server email credentials not configured' }, { status: 500, headers: corsHeaders });
         }
 
         // Create the Nodemailer transporter using Gmail SMTP
@@ -61,10 +71,10 @@ export async function POST(req: Request) {
         const info = await transporter.sendMail(mailOptions);
         console.log('[Email API] Message sent successfully:', info.messageId);
 
-        return NextResponse.json({ success: true, messageId: info.messageId });
+        return NextResponse.json({ success: true, messageId: info.messageId }, { headers: corsHeaders });
 
     } catch (error: any) {
         console.error('[Email API] Error sending email:', error);
-        return NextResponse.json({ error: error.message || 'Failed to send email' }, { status: 500 });
+        return NextResponse.json({ error: error.message || 'Failed to send email' }, { status: 500, headers: corsHeaders });
     }
 }
