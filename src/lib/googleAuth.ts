@@ -18,17 +18,25 @@ export function getCalendarClient() {
             .replace(/\\r/g, '\r')        // Fix escaped carriage returns (\r)
             .replace(/"/g, '')            // Strip double quotes
             .replace(/^'|'$/g, '')        // Strip single quotes
-            .replace(/\s+$/, '')          // Trim trailing space
-            .replace(/^\s+/, '')          // Trim leading space
             .trim();
 
         // Fallback: If the key looks like Base64 (no PEM headers), try decoding it
-        if (!privateKey.includes('-----BEGIN') && /^[A-Za-z0-9+/=]+$/.test(privateKey.replace(/\s/g, ''))) {
+        if (!privateKey.includes('-----BEGIN') && /^[A-Za-z0-9+/=\s]+$/.test(privateKey)) {
             try {
-                privateKey = Buffer.from(privateKey, 'base64').toString('utf8');
+                const decoded = Buffer.from(privateKey.replace(/\s/g, ''), 'base64').toString('utf8');
+                if (decoded.includes('-----BEGIN')) {
+                    console.log('[GoogleAuth] Successfully decoded private key from Base64');
+                    privateKey = decoded;
+                }
             } catch (e) {
-                console.warn('Failed to decode private key as Base64');
+                console.warn('[GoogleAuth] Failed to decode private key as Base64');
             }
+        }
+
+        if (!privateKey.includes('-----BEGIN')) {
+            console.warn('[GoogleAuth] Private key is missing PEM headers. Connection may fail.');
+        } else {
+            console.log('[GoogleAuth] Private key appears valid (PEM format detected)');
         }
 
         const auth = new google.auth.JWT({

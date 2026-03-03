@@ -24,6 +24,7 @@ export async function POST(req: NextRequest) {
                 console.log(`[Vapi Tools] Processing tool: ${name}`, args);
 
                 try {
+                    console.log(`[Vapi Tools] Executing ${name} with args:`, JSON.stringify(args, null, 2));
                     let result;
 
                     switch (name) {
@@ -33,6 +34,7 @@ export async function POST(req: NextRequest) {
                                 args.time,
                                 args.service
                             );
+                            console.log(`[Vapi Tools] checkAvailability result:`, JSON.stringify(result, null, 2));
                             break;
 
                         case 'findAvailableSlots':
@@ -41,18 +43,18 @@ export async function POST(req: NextRequest) {
                                 args.service,
                                 args.duration
                             );
+                            console.log(`[Vapi Tools] findAvailableSlots result:`, JSON.stringify(result, null, 2));
                             break;
 
                         case 'confirmDetails':
-                            // Simple confirmation - just echo back the details
                             result = {
                                 success: true,
                                 message: `Let me confirm: ${args.service || 'appointment'} on ${args.date} at ${args.time} for ${args.name || args.customerName}. Is this correct?`
                             };
                             break;
 
-
                         case 'createEvent':
+                            console.log(`[Vapi Tools] Creating event with:`, JSON.stringify(args, null, 2));
                             result = await createEvent({
                                 date: args.date,
                                 time: args.time,
@@ -62,6 +64,7 @@ export async function POST(req: NextRequest) {
                                 customerPhone: args.phone || args.customerPhone,
                                 duration: args.duration
                             });
+                            console.log(`[Vapi Tools] createEvent result:`, JSON.stringify(result, null, 2));
                             break;
 
                         case 'getCurrentDateTime':
@@ -88,7 +91,7 @@ export async function POST(req: NextRequest) {
                             };
                     }
 
-                    console.log(`[Vapi Tools] Result for ${name}:`, result);
+                    console.log(`[Vapi Tools] Final standardized result for ${name}:`, result);
 
                     return {
                         toolCallId: id,
@@ -108,7 +111,7 @@ export async function POST(req: NextRequest) {
         );
 
         const response = { results };
-        console.log('[Vapi Tools] Sending response:', JSON.stringify(response, null, 2));
+        console.log('[Vapi Tools] Sending final response:', JSON.stringify(response, null, 2));
 
         return NextResponse.json(response);
     } catch (error: any) {
