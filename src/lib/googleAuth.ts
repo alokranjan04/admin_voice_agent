@@ -13,7 +13,7 @@ export function getCalendarClient() {
     if (serviceAccountEmail && serviceAccountKey) {
         // Service Account authentication
         // Exhaustive PEM key normalization
-        const privateKey = serviceAccountKey
+        let privateKey = serviceAccountKey
             .replace(/\\n/g, '\n')        // Fix escaped newlines (\n)
             .replace(/\\r/g, '\r')        // Fix escaped carriage returns (\r)
             .replace(/"/g, '')            // Strip double quotes
@@ -21,6 +21,15 @@ export function getCalendarClient() {
             .replace(/\s+$/, '')          // Trim trailing space
             .replace(/^\s+/, '')          // Trim leading space
             .trim();
+
+        // Fallback: If the key looks like Base64 (no PEM headers), try decoding it
+        if (!privateKey.includes('-----BEGIN') && /^[A-Za-z0-9+/=]+$/.test(privateKey.replace(/\s/g, ''))) {
+            try {
+                privateKey = Buffer.from(privateKey, 'base64').toString('utf8');
+            } catch (e) {
+                console.warn('Failed to decode private key as Base64');
+            }
+        }
 
         const auth = new google.auth.JWT({
             email: serviceAccountEmail,

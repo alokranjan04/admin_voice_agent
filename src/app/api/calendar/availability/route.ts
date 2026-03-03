@@ -1,37 +1,10 @@
 import { NextResponse } from 'next/server';
-import { google } from 'googleapis';
+import { getCalendarClient, getCalendarId } from '@/lib/googleAuth';
 
 export async function GET(req: Request) {
     try {
-        const privateKeyStr = process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY;
-        const clientEmail = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
-        const calendarId = process.env.GOOGLE_CALENDAR_ID;
-
-        if (!privateKeyStr || !clientEmail || !calendarId) {
-            console.error('Missing Google Calendar Credentials or Calendar ID');
-            return NextResponse.json({ error: 'Calendar integration credentials missing.' }, { status: 500 });
-        }
-
-        // Exhaustive PEM key normalization
-        const privateKey = privateKeyStr
-            .replace(/\\n/g, '\n')        // Fix escaped newlines
-            .replace(/\\r/g, '\r')        // Fix escaped carriage returns
-            .replace(/"/g, '')            // Strip double quotes
-            .replace(/^'|'$/g, '')        // Strip single quotes
-            .replace(/\s+$/, '')          // Trim trailing space
-            .replace(/^\s+/, '')          // Trim leading space
-            .trim();
-
-        const SCOPES = ['https://www.googleapis.com/auth/calendar.readonly'];
-
-        // Initialize Google Auth client
-        const auth = new google.auth.JWT({
-            email: clientEmail,
-            key: privateKey,
-            scopes: SCOPES,
-        });
-
-        const calendar = google.calendar({ version: 'v3', auth });
+        const calendar = getCalendarClient();
+        const calendarId = getCalendarId();
 
         // Calculate time range (from now to 7 days from now)
         const timeMin = new Date();
