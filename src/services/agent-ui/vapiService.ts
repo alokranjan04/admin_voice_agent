@@ -638,7 +638,12 @@ ${faqs}
                 baseUrl = 'https://www.tellyourjourney.com';
             }
 
-            const apiUrl = baseUrl ? `${baseUrl}/api/email` : '/api/email';
+            // If NEXT_PUBLIC_APP_URL was forgotten in build secrets, forcefully bypass Firebase Hosting Traps.
+            if (!baseUrl) {
+                baseUrl = 'https://voice-ai-admin-536573436709.us-central1.run.app';
+            }
+
+            const apiUrl = `${baseUrl}/api/email`;
 
             const payload = {
                 summary,
@@ -654,12 +659,21 @@ ${faqs}
                 body: JSON.stringify(payload)
             });
 
-            const data = await response.json();
-
             if (!response.ok) {
-                console.error('[PostCall] Server Email API Error:', data.error);
-                return { success: false, error: data.error };
+                // Must parse as text FIRST since proxies/firewalls return HTML for 403s
+                const errorText = await response.text();
+                let errorMsg = errorText;
+                try {
+                    // Try to extract JSON if it's a standard Next.js error
+                    const errorJson = JSON.parse(errorText);
+                    errorMsg = errorJson.error || errorText;
+                } catch (e) { /* ignore parse error, it's HTML */ }
+
+                console.error(`[PostCall] Server Email API Error (${response.status}):`, errorMsg);
+                return { success: false, error: errorMsg };
             }
+
+            const data = await response.json();
 
             console.log("[PostCall] Email successfully delivered via Nodemailer API");
             this.onLog({ type: 'system', text: 'Email summary delivered successfully.', timestamp: new Date() });
