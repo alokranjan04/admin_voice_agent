@@ -1,55 +1,70 @@
 import { google } from 'googleapis';
-import { JWT } from 'google-auth-library';
+
+const SCOPES = ['https://www.googleapis.com/auth/calendar.events', 'https://www.googleapis.com/auth/calendar.readonly'];
 
 /**
- * Get Google Calendar API client with authentication
- * Supports both Service Account and OAuth 2.0
+ * Robustly normalizes a private key from various formats:
+ * - JSON string (extracts private_key field)
+ * - Base64 encoded (decodes and recurses)
+ * - PEM with escaped newlines (\n) or quotes
  */
-export function getCalendarClient() {
-    // Try Service Account first (recommended for production)
+function normalizeKey(key: string): string {
+    if (!key) return '';
+
+    let normalized = key.trim();
+
+    // 1. Check if it's a JSON string
+    if (normalized.startsWith('{')) {
+        try {
+            const json = JSON.parse(normalized);
+            if (json.private_key) return normalizeKey(json.private_key);
+        } catch (e) { }
+    }
+
+    // 2. Base64 fallback (if no PEM headers and looks like Base64)
+    if (!normalized.includes('-----BEGIN') && /^[A-Za-z0-9+/=\s]+$/.test(normalized)) {
+        try {
+            const decoded = Buffer.from(normalized.replace(/\s/g, ''), 'base64').toString('utf8');
+            if (decoded.includes('-----BEGIN')) {
+                console.log('[GoogleAuth] Successfully decoded private key from Base64');
+                return normalizeKey(decoded); // Recurse to handle any \n inside the decoded string
+            }
+        } catch (e) {
+            console.warn('[GoogleAuth] Failed to decode private key as Base64');
+        }
+    }
+
+    // 3. Standard PEM normalization
+    return normalized
+        .replace(/\\n/g, '\n')        // Fix escaped newlines (\n)
+        .replace(/\\r/g, '\r')        // Fix escaped carriage returns (\r)
+        .replace(/"/g, '')            // Strip double quotes
+        .replace(/^'|'$/g, '')        // Strip single quotes
+        .trim();
+}
+
+export function getAuth() {
     const serviceAccountEmail = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
     const serviceAccountKey = process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY;
 
     if (serviceAccountEmail && serviceAccountKey) {
-        // Service Account authentication
-        // Exhaustive PEM key normalization
-        let privateKey = serviceAccountKey
-            .replace(/\\n/g, '\n')        // Fix escaped newlines (\n)
-            .replace(/\\r/g, '\r')        // Fix escaped carriage returns (\r)
-            .replace(/"/g, '')            // Strip double quotes
-            .replace(/^'|'$/g, '')        // Strip single quotes
-            .trim();
-
-        // Fallback: If the key looks like Base64 (no PEM headers), try decoding it
-        if (!privateKey.includes('-----BEGIN') && /^[A-Za-z0-9+/=\s]+$/.test(privateKey)) {
-            try {
-                const decoded = Buffer.from(privateKey.replace(/\s/g, ''), 'base64').toString('utf8');
-                if (decoded.includes('-----BEGIN')) {
-                    console.log('[GoogleAuth] Successfully decoded private key from Base64');
-                    privateKey = decoded;
-                }
-            } catch (e) {
-                console.warn('[GoogleAuth] Failed to decode private key as Base64');
-            }
-        }
+        const privateKey = normalizeKey(serviceAccountKey);
 
         if (!privateKey.includes('-----BEGIN')) {
-            console.warn('[GoogleAuth] Private key is missing PEM headers. Connection may fail.');
+            console.warn('[GoogleAuth] Private key is missing PEM headers. Connection will likely fail.');
         } else {
-            console.log('[GoogleAuth] Private key appears valid (PEM format detected)');
+            console.log('[GoogleAuth] Private key established (PEM detected). Length:', privateKey.length);
         }
 
-        const auth = new google.auth.JWT({
+        return new google.auth.JWT({
             email: serviceAccountEmail,
             key: privateKey,
-            scopes: ['https://www.googleapis.com/auth/calendar'],
+            scopes: SCOPES,
         });
-
-        return google.calendar({ version: 'v3', auth });
     }
 
-    // Fallback to OAuth 2.0 (for development/testing)
-    const clientId = process.env.GOOGLE_CLIENT_ID || process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
+    // Local/User OAuth fallback
+    const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
     const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
     const refreshToken = process.env.GOOGLE_REFRESH_TOKEN;
 
@@ -57,45 +72,20 @@ export function getCalendarClient() {
         const oauth2Client = new google.auth.OAuth2(
             clientId,
             clientSecret,
-            'urn:ietf:wg:oauth:2.0:oob' // For installed apps
+            `${process.env.NEXT_PUBLIC_APP_URL}/api/auth/callback/google`
         );
-
-        oauth2Client.setCredentials({
-            refresh_token: refreshToken,
-        });
-
-        return google.calendar({ version: 'v3', auth: oauth2Client });
+        oauth2Client.setCredentials({ refresh_token: refreshToken });
+        return oauth2Client;
     }
 
-    throw new Error(
-        'Google Calendar authentication not configured. Please set either:\n' +
-        '1. GOOGLE_SERVICE_ACCOUNT_EMAIL and GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY (recommended), or\n' +
-        '2. GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, and GOOGLE_REFRESH_TOKEN'
-    );
+    throw new Error('Google Calendar Authentication not configured. Please provide Service Account or OAuth credentials.');
 }
 
-/**
- * Get the calendar ID to use
- */
-export function getCalendarId(): string {
+export function getCalendarClient() {
+    const auth = getAuth();
+    return google.calendar({ version: 'v3', auth });
+}
+
+export function getCalendarId() {
     return process.env.GOOGLE_CALENDAR_ID || 'primary';
-}
-
-/**
- * Get business hours configuration
- */
-export function getBusinessHours() {
-    return {
-        start: parseInt(process.env.BUSINESS_HOURS_START || '9'), // 9 AM
-        end: parseInt(process.env.BUSINESS_HOURS_END || '17'), // 5 PM
-        days: (process.env.BUSINESS_DAYS || '1,2,3,4,5').split(',').map(d => parseInt(d)), // Mon-Fri
-        timezone: process.env.TIMEZONE || 'America/New_York',
-    };
-}
-
-/**
- * Get appointment duration in minutes
- */
-export function getAppointmentDuration(): number {
-    return parseInt(process.env.APPOINTMENT_DURATION || '60');
 }
