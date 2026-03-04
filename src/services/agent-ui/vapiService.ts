@@ -134,6 +134,7 @@ export class VapiService {
                     else if (normalizedName.includes('findavailableslots')) normalizedName = 'findAvailableSlots';
                     else if (normalizedName.includes('createevent') || normalizedName.includes('google_calendar_tool')) normalizedName = 'createEvent';
                     else if (normalizedName.includes('confirmdetails')) normalizedName = 'confirmDetails';
+                    else if (normalizedName.includes('cancelevent')) normalizedName = 'cancelEvent';
 
                     console.log(`[Tool] Executing: ${rawToolName} (Mapped to: ${normalizedName}) with params:`, params);
 
@@ -407,6 +408,22 @@ export class VapiService {
                                     type: "object",
                                     properties: { name: { type: "string" }, email: { type: "string" } },
                                     required: ["name", "email"]
+                                }
+                            }
+                        },
+                        {
+                            type: "function",
+                            function: {
+                                name: "cancelEvent",
+                                description: "Cancel an existing appointment. Use this ONLY if the user explicitly asks to cancel their booking.",
+                                parameters: {
+                                    type: "object",
+                                    properties: {
+                                        date: { type: "string", description: "The date of the appointment to cancel (YYYY-MM-DD)." },
+                                        name: { type: "string", description: "Customer name. If available in context, use it." },
+                                        email: { type: "string", description: "Customer email. If available in context, use it." }
+                                    },
+                                    required: ["date"]
                                 }
                             }
                         }

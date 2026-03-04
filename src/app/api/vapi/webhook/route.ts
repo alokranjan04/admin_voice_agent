@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { checkAvailability, findAvailableSlots, createEvent } from '@/services/calendarService';
+import { checkAvailability, findAvailableSlots, createEvent, cancelEvent } from '@/services/calendarService';
 
 export async function POST(req: NextRequest) {
     try {
@@ -65,6 +65,16 @@ export async function POST(req: NextRequest) {
                                 duration: args.duration
                             });
                             console.log(`[Vapi Tools] createEvent result:`, JSON.stringify(result, null, 2));
+                            break;
+
+                        case 'cancelEvent':
+                            console.log(`[Vapi Tools] Canceling event with:`, JSON.stringify(args, null, 2));
+                            result = await cancelEvent({
+                                date: args.date,
+                                name: args.name || args.customerName,
+                                email: args.email || args.customerEmail
+                            });
+                            console.log(`[Vapi Tools] cancelEvent result:`, JSON.stringify(result, null, 2));
                             break;
 
                         case 'getCurrentDateTime':

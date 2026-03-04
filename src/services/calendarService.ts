@@ -340,9 +340,15 @@ ${details.customerPhone ? `Phone: ${details.customerPhone}` : ''}
             },
         };
 
+        let FinalEvent: any = event;
+        if (details.customerEmail && details.customerEmail.includes('@')) {
+            FinalEvent.attendees = [{ email: details.customerEmail }];
+        }
+
         const response = await calendar.events.insert({
             calendarId,
-            requestBody: event,
+            requestBody: FinalEvent,
+            sendUpdates: 'all'
         });
 
         return {
@@ -384,4 +390,83 @@ function formatDate(date: Date): string {
  */
 function formatDateTime(date: Date): string {
     return `${formatDate(date)} at ${formatTime(date)}`;
+}
+
+/**
+ * Cancel a calendar event/appointment
+ */
+export async function cancelEvent(details: { date: string; name?: string; email?: string }) {
+    try {
+        const calendar = getCalendarClient();
+        const calendarId = getCalendarId();
+
+        const requestedDate = new Date(details.date);
+        if (isNaN(requestedDate.getTime())) {
+            return {
+                success: false,
+                message: "I couldn't understand the specific date. Please provide a full date, like March 3rd."
+            };
+        }
+
+        const fullDayStart = new Date(requestedDate);
+        fullDayStart.setHours(0, 0, 0, 0);
+        const fullDayEnd = new Date(requestedDate);
+        fullDayEnd.setHours(23, 59, 59, 999);
+
+        // Ideally we would pull tzOffset dynamically but reusing the fallback pattern from the file
+        const tzOffset = '+05:30';
+
+        const existingEvents = await calendar.events.list({
+            calendarId,
+            timeMin: buildTargetTzString(fullDayStart, tzOffset),
+            timeMax: buildTargetTzString(fullDayEnd, tzOffset),
+            singleEvents: true
+        });
+
+        const events = existingEvents.data.items || [];
+
+        let eventToDelete = null;
+
+        for (const evt of events) {
+            const summary = (evt.summary || '').toLowerCase();
+            const description = (evt.description || '').toLowerCase();
+
+            const matchEmail = details.email && details.email !== 'Unknown' && (
+                summary.includes(details.email.toLowerCase()) ||
+                description.includes(details.email.toLowerCase()) ||
+                evt.attendees?.some(a => a.email?.toLowerCase() === details.email?.toLowerCase())
+            );
+            const matchName = details.name && details.name !== 'Unknown' && details.name !== 'Client' && (
+                summary.includes(details.name.toLowerCase()) ||
+                description.includes(details.name.toLowerCase())
+            );
+
+            if (matchEmail || matchName) {
+                eventToDelete = evt;
+                break;
+            }
+        }
+
+        if (!eventToDelete) {
+            return {
+                success: false,
+                message: `I couldn't find an appointment for ${details.name || details.email || 'you'} on ${formatDate(requestedDate)}.`
+            };
+        }
+
+        await calendar.events.delete({
+            calendarId,
+            eventId: eventToDelete.id!,
+            sendUpdates: 'all'
+        });
+
+        return {
+            success: true,
+            message: `I have successfully canceled your appointment on ${formatDate(requestedDate)}.`
+        };
+
+    } catch (error: any) {
+        console.error('Error canceling event:', error);
+        throw new Error(`Failed to cancel appointment: ${error.message}`);
+    }
 }
