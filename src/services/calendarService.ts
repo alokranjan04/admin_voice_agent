@@ -340,15 +340,9 @@ ${details.customerPhone ? `Phone: ${details.customerPhone}` : ''}
             },
         };
 
-        let FinalEvent: any = event;
-        if (details.customerEmail && details.customerEmail.includes('@')) {
-            FinalEvent.attendees = [{ email: details.customerEmail }];
-        }
-
         const response = await calendar.events.insert({
             calendarId,
-            requestBody: FinalEvent,
-            sendUpdates: 'all'
+            requestBody: event
         });
 
         return {
@@ -456,8 +450,7 @@ export async function cancelEvent(details: { date: string; name?: string; email?
 
         await calendar.events.delete({
             calendarId,
-            eventId: eventToDelete.id!,
-            sendUpdates: 'all'
+            eventId: eventToDelete.id!
         });
 
         return {
