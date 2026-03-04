@@ -80,6 +80,7 @@ export function getAuth() {
             email: serviceAccountEmail,
             key: privateKey,
             scopes: SCOPES,
+            subject: process.env.GOOGLE_SERVICE_ACCOUNT_SUBJECT || undefined,
         });
     }
 
