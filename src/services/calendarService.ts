@@ -343,23 +343,45 @@ ${details.customerPhone ? `Phone: ${details.customerPhone}` : ''}
         let FinalEvent: any = event;
         const shouldInvite = process.env.ENABLE_CALENDAR_INVITES === 'true' && details.customerEmail && details.customerEmail.includes('@');
 
-        // Only safely append attendees if the admin has explicitly enabled it via ENV (e.g. after configuring DWD)
         if (shouldInvite) {
             FinalEvent.attendees = [{ email: details.customerEmail }];
         }
 
-        const response = await calendar.events.insert({
-            calendarId,
-            requestBody: FinalEvent,
-            sendUpdates: shouldInvite ? 'all' : 'none'
-        });
+        try {
+            const response = await calendar.events.insert({
+                calendarId,
+                requestBody: FinalEvent,
+                sendUpdates: shouldInvite ? 'all' : 'none'
+            });
 
-        return {
-            success: true,
-            eventId: response.data.id,
-            eventLink: response.data.htmlLink,
-            message: `Perfect! I've booked your ${details.service || 'appointment'} for ${formatDateTime(startDateTime)}. ${details.customerEmail ? 'You will receive a confirmation email shortly.' : 'Your appointment is confirmed!'}`
-        };
+            return {
+                success: true,
+                eventId: response.data.id,
+                eventLink: response.data.htmlLink,
+                message: `Perfect! I've booked your ${details.service || 'appointment'} for ${formatDateTime(startDateTime)}. ${details.customerEmail ? 'You will receive a confirmation email shortly.' : 'Your appointment is confirmed!'}`
+            };
+        } catch (insertError: any) {
+            // Unverified OAuth Apps / GSuite Restrictions often fail with 400/403 when dispatching `sendUpdates: all` to external guests.
+            // If it fails, fallback immediately to safely booking the event on the Admin calendar without the restricted guests.
+            if (shouldInvite) {
+                console.warn('[Calendar] Failed to create event with attendees. Retrying silently...', insertError.message);
+
+                delete FinalEvent.attendees;
+                const fallbackResponse = await calendar.events.insert({
+                    calendarId,
+                    requestBody: FinalEvent,
+                    sendUpdates: 'none'
+                });
+
+                return {
+                    success: true,
+                    eventId: fallbackResponse.data.id,
+                    eventLink: fallbackResponse.data.htmlLink,
+                    message: `Perfect! I've booked your ${details.service || 'appointment'} for ${formatDateTime(startDateTime)}. Your appointment is confirmed!`
+                };
+            }
+            throw insertError;
+        }
     } catch (error: any) {
         console.error('Error creating event:', error.response?.data || error);
         throw new Error(`Failed to create appointment: ${JSON.stringify(error.response?.data || error.message)}`);
