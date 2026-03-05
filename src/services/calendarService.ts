@@ -341,15 +341,17 @@ ${details.customerPhone ? `Phone: ${details.customerPhone}` : ''}
         };
 
         let FinalEvent: any = event;
+        const shouldInvite = process.env.ENABLE_CALENDAR_INVITES === 'true' && details.customerEmail && details.customerEmail.includes('@');
+
         // Only safely append attendees if the admin has explicitly enabled it via ENV (e.g. after configuring DWD)
-        if (process.env.ENABLE_CALENDAR_INVITES === 'true' && details.customerEmail && details.customerEmail.includes('@')) {
+        if (shouldInvite) {
             FinalEvent.attendees = [{ email: details.customerEmail }];
         }
 
         const response = await calendar.events.insert({
             calendarId,
             requestBody: FinalEvent,
-            sendUpdates: process.env.ENABLE_CALENDAR_INVITES === 'true' ? 'all' : 'none'
+            sendUpdates: shouldInvite ? 'all' : 'none'
         });
 
         return {
