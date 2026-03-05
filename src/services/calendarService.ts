@@ -275,44 +275,7 @@ export async function createEvent(details: {
 
         const finalName = details.customerName && details.customerName !== 'undefined' ? details.customerName : 'Client';
 
-        // Check for any prior event on the SAME DAY for the SAME RESCHEDULING CUSTOMER, or duplicate overlap
-        const fullDayStart = new Date(startDateTime);
-        fullDayStart.setHours(0, 0, 0, 0);
-        const fullDayEnd = new Date(startDateTime);
-        fullDayEnd.setHours(23, 59, 59, 999);
 
-        const tzOffsetCreate = '+05:30';
-
-        const existingEvents = await calendar.events.list({
-            calendarId,
-            timeMin: buildTargetTzString(fullDayStart, tzOffsetCreate),
-            timeMax: buildTargetTzString(fullDayEnd, tzOffsetCreate),
-            singleEvents: true
-        });
-
-        if (existingEvents.data.items && existingEvents.data.items.length > 0) {
-            // Delete overlaps OR previous appointments by the same name
-            const overlapsOrPrevious = existingEvents.data.items.filter(evt => {
-                const summary = evt.summary?.toLowerCase() || '';
-                const nameMatch = finalName !== 'Client' && summary.includes(finalName.toLowerCase());
-
-                const evtStart = new Date(evt.start?.dateTime || evt.start?.date || '').getTime();
-                const evtEnd = new Date(evt.end?.dateTime || evt.end?.date || '').getTime();
-                const newStart = new Date(buildTargetTzString(startDateTime, tzOffsetCreate)).getTime();
-                const newEnd = new Date(buildTargetTzString(endDateTime, tzOffsetCreate)).getTime();
-
-                const isExactOverlap = (newStart < evtEnd && newEnd > evtStart);
-
-                return nameMatch || isExactOverlap;
-            });
-
-            for (const oldEvent of overlapsOrPrevious) {
-                await calendar.events.delete({
-                    calendarId,
-                    eventId: oldEvent.id!
-                });
-            }
-        }
 
         // Create event
         const event = {
