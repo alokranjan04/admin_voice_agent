@@ -8,6 +8,7 @@ interface WelcomeFormProps {
 
 export const WelcomeForm: React.FC<WelcomeFormProps> = ({ onSubmit, businessName = 'AI Assistant' }) => {
     const [name, setName] = useState('');
+    const [countryCode, setCountryCode] = useState('+1');
     const [phone, setPhone] = useState('');
     const [email, setEmail] = useState('');
     const [errors, setErrors] = useState<{ name?: string; phone?: string }>({});
@@ -30,10 +31,12 @@ export const WelcomeForm: React.FC<WelcomeFormProps> = ({ onSubmit, businessName
             newErrors.name = 'Name is required';
         }
 
+        const fullPhone = `${countryCode}${phone.replace(/\D/g, '')}`;
+
         if (!phone.trim()) {
             newErrors.phone = 'Phone number is required';
-        } else if (!validatePhone(phone)) {
-            newErrors.phone = 'Please enter a valid phone number (e.g., +12025551234)';
+        } else if (!validatePhone(fullPhone)) {
+            newErrors.phone = 'Please enter a valid phone number';
         }
 
         if (Object.keys(newErrors).length > 0) {
@@ -41,7 +44,7 @@ export const WelcomeForm: React.FC<WelcomeFormProps> = ({ onSubmit, businessName
             return;
         }
 
-        onSubmit({ name: name.trim(), phone: phone.trim(), email: email.trim() || undefined });
+        onSubmit({ name: name.trim(), phone: fullPhone, email: email.trim() || undefined });
     };
 
     // Simulate typing effect on mount and Auto-detect timezone
@@ -69,9 +72,9 @@ export const WelcomeForm: React.FC<WelcomeFormProps> = ({ onSubmit, businessName
                 detectedPrefix = '+65';
             }
 
-            // Set the prefix if we confidently detected one, and it hasn't been modified
+            // Set the prefix if we confidently detected one
             if (detectedPrefix) {
-                setPhone(prevPhone => prevPhone ? prevPhone : detectedPrefix);
+                setCountryCode(detectedPrefix);
             }
         } catch (e) {
             console.warn('[WelcomeForm] Intl TimeZone detection failed', e);
@@ -138,22 +141,38 @@ export const WelcomeForm: React.FC<WelcomeFormProps> = ({ onSubmit, businessName
                             <label className="block text-sm font-medium text-slate-700 mb-2">
                                 Phone Number <span className="text-red-500">*</span>
                             </label>
-                            <div className="relative">
-                                <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                            <div className={`relative flex items-center bg-white border ${errors.phone ? 'border-red-500' : 'border-slate-300'} rounded-xl transition-all focus-within:ring-2 focus-within:ring-teal-500 focus-within:border-transparent overflow-hidden`}>
+                                <div className="pl-3 pr-2 py-3 flex items-center h-full border-r border-slate-200 bg-slate-50">
+                                    <Phone className="w-4 h-4 text-slate-400 mr-2 flex-shrink-0" />
+                                    <select
+                                        value={countryCode}
+                                        onChange={(e) => setCountryCode(e.target.value)}
+                                        className="bg-transparent text-slate-700 text-sm focus:outline-none cursor-pointer font-medium appearance-none pr-4 relative z-10"
+                                        style={{ backgroundImage: 'url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%2394A3B8%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right center', backgroundSize: '8px auto' }}
+                                    >
+                                        <option value="+1">US/CA (+1)</option>
+                                        <option value="+44">UK (+44)</option>
+                                        <option value="+61">AU (+61)</option>
+                                        <option value="+65">SG (+65)</option>
+                                        <option value="+91">IN (+91)</option>
+                                        <option value="+966">SA (+966)</option>
+                                        <option value="+971">AE (+971)</option>
+                                    </select>
+                                </div>
                                 <input
                                     type="tel"
                                     value={phone}
                                     onChange={(e) => {
-                                        setPhone(e.target.value);
+                                        // Allow digits and basic spacing helpers
+                                        const val = e.target.value.replace(/[^\d\s-]/g, '');
+                                        setPhone(val);
                                         setErrors((prev) => ({ ...prev, phone: undefined }));
                                     }}
-                                    className={`w-full pl-11 pr-4 py-3 bg-white border ${errors.phone ? 'border-red-500' : 'border-slate-300'
-                                        } rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all`}
-                                    placeholder="+12025551234"
+                                    className="flex-1 w-full pl-3 pr-4 py-3 bg-transparent text-slate-900 placeholder-slate-400 focus:outline-none"
+                                    placeholder="202-555-1234"
                                 />
                             </div>
                             {errors.phone && <p className="mt-1 text-sm text-red-500">{errors.phone}</p>}
-                            <p className="mt-1 text-xs text-slate-500">Format: +[country code][number]</p>
                         </div>
 
                         {/* Email Field (Optional) */}
