@@ -69,8 +69,6 @@ jobs:
             NODE_ENV=production
             GMAIL_USER=${{ secrets.GMAIL_USER }}
             GMAIL_APP_PASSWORD=${{ secrets.GMAIL_APP_PASSWORD }}
-            GOOGLE_SERVICE_ACCOUNT_EMAIL=${{ secrets.GOOGLE_SERVICE_ACCOUNT_EMAIL }}
-            GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY=${{ steps.encode_key.outputs.encoded_key }}
             GOOGLE_CALENDAR_ID=${{ secrets.GOOGLE_CALENDAR_ID }}
             NEXT_PUBLIC_APP_URL=https://tellyourjourney.com
             NEXT_PUBLIC_GEMINI_API_KEY=${{ secrets.NEXT_PUBLIC_GEMINI_API_KEY }}
@@ -85,4 +83,4 @@ jobs:
             NEXT_PUBLIC_GOOGLE_CLIENT_ID=${{ secrets.NEXT_PUBLIC_GOOGLE_CLIENT_ID }}
             GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}
             GOOGLE_REFRESH_TOKEN=${{ secrets.GOOGLE_REFRESH_TOKEN }}
-            ENABLE_CALENDAR_INVITES=${{ secrets.ENABLE_CALENDAR_INVITES }}
+            ENABLE_CALENDAR_INVITES=true
