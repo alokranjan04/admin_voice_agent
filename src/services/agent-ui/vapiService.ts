@@ -420,10 +420,11 @@ export class VapiService {
                                     type: "object",
                                     properties: {
                                         date: { type: "string", description: "The date of the appointment to cancel (YYYY-MM-DD)." },
+                                        time: { type: "string", description: "The exact time of the appointment to cancel (e.g. 10:30 AM). You must ask the user for the time before cancelling." },
                                         name: { type: "string", description: "Customer name. If available in context, use it." },
                                         email: { type: "string", description: "Customer email. If available in context, use it." }
                                     },
-                                    required: ["date"]
+                                    required: ["date", "time"]
                                 }
                             }
                         }
