@@ -364,21 +364,40 @@ ${details.customerPhone ? `Phone: ${details.customerPhone}` : ''}
             // Unverified OAuth Apps / GSuite Restrictions often fail with 400/403 when dispatching `sendUpdates: all` to external guests.
             // If it fails, fallback immediately to safely booking the event on the Admin calendar without the restricted guests.
             if (shouldInvite) {
-                console.warn('[Calendar] Failed to create event with attendees. Retrying silently...', insertError.message);
+                console.warn('[Calendar] Failed to sendUpdates: "all". Attempting to retain attendees with sendUpdates: "none"...', insertError.message);
 
-                delete FinalEvent.attendees;
-                const fallbackResponse = await calendar.events.insert({
-                    calendarId,
-                    requestBody: FinalEvent,
-                    sendUpdates: 'none'
-                });
+                try {
+                    // TIER 1: Keep attendees but don't email them.
+                    const tier1Response = await calendar.events.insert({
+                        calendarId,
+                        requestBody: FinalEvent,
+                        sendUpdates: 'none'
+                    });
 
-                return {
-                    success: true,
-                    eventId: fallbackResponse.data.id,
-                    eventLink: fallbackResponse.data.htmlLink,
-                    message: `Perfect! I've booked your ${details.service || 'appointment'} for ${formatDateTime(startDateTime)}. Your appointment is confirmed!`
-                };
+                    return {
+                        success: true,
+                        eventId: tier1Response.data.id,
+                        eventLink: tier1Response.data.htmlLink,
+                        message: `Perfect! I've booked your ${details.service || 'appointment'} for ${formatDateTime(startDateTime)}. Your appointment is confirmed and you are on the guest list!`
+                    };
+                } catch (tier1Error: any) {
+                    // TIER 2: If the email itself is completely invalid, strip the guest list to save the booking.
+                    console.warn('[Calendar] Guests completely rejected. Stripping attendees block entirely.', tier1Error.message);
+                    delete FinalEvent.attendees;
+
+                    const tier2Response = await calendar.events.insert({
+                        calendarId,
+                        requestBody: FinalEvent,
+                        sendUpdates: 'none'
+                    });
+
+                    return {
+                        success: true,
+                        eventId: tier2Response.data.id,
+                        eventLink: tier2Response.data.htmlLink,
+                        message: `Perfect! I've booked your ${details.service || 'appointment'} for ${formatDateTime(startDateTime)}. Your appointment is confirmed on our calendar!`
+                    };
+                }
             }
             throw insertError;
         }
