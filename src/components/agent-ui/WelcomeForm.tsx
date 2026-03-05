@@ -44,9 +44,39 @@ export const WelcomeForm: React.FC<WelcomeFormProps> = ({ onSubmit, businessName
         onSubmit({ name: name.trim(), phone: phone.trim(), email: email.trim() || undefined });
     };
 
-    // Simulate typing effect on mount
+    // Simulate typing effect on mount and Auto-detect timezone
     React.useEffect(() => {
         const timer = setTimeout(() => setIsTyping(false), 2000);
+
+        // Auto-detect country code from system timezone safely
+        try {
+            const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+            let detectedPrefix = '';
+
+            if (tz === 'Asia/Kolkata' || tz === 'Asia/Calcutta') {
+                detectedPrefix = '+91';
+            } else if (tz.startsWith('America/')) {
+                // Core North American zones
+                const usCaZones = ['America/New_York', 'America/Chicago', 'America/Denver', 'America/Los_Angeles', 'America/Toronto', 'America/Vancouver'];
+                if (usCaZones.includes(tz)) detectedPrefix = '+1';
+            } else if (tz === 'Europe/London') {
+                detectedPrefix = '+44';
+            } else if (tz === 'Australia/Sydney' || tz === 'Australia/Melbourne') {
+                detectedPrefix = '+61';
+            } else if (tz === 'Asia/Dubai') {
+                detectedPrefix = '+971';
+            } else if (tz === 'Asia/Singapore') {
+                detectedPrefix = '+65';
+            }
+
+            // Set the prefix if we confidently detected one, and it hasn't been modified
+            if (detectedPrefix) {
+                setPhone(prevPhone => prevPhone ? prevPhone : detectedPrefix);
+            }
+        } catch (e) {
+            console.warn('[WelcomeForm] Intl TimeZone detection failed', e);
+        }
+
         return () => clearTimeout(timer);
     }, []);
 
