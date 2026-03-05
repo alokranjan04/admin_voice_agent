@@ -402,7 +402,7 @@ function formatDateTime(date: Date): string {
 /**
  * Cancel a calendar event/appointment
  */
-export async function cancelEvent(details: { date: string; time?: string; name?: string; email?: string }) {
+export async function cancelEvent(details: { date: string; time?: string; name?: string; email?: string; callerPhone?: string }) {
     try {
         const calendar = getCalendarClient();
         const calendarId = getCalendarId();
@@ -438,15 +438,15 @@ export async function cancelEvent(details: { date: string; time?: string; name?:
             const summary = (evt.summary || '').toLowerCase();
             const description = (evt.description || '').toLowerCase();
 
+            // Authentication: The caller must explicitly provide the booking email, or their verified caller ID must match the booking phone.
             const matchEmail = details.email && details.email !== 'Unknown' && (
                 summary.includes(details.email.toLowerCase()) ||
                 description.includes(details.email.toLowerCase()) ||
                 evt.attendees?.some(a => a.email?.toLowerCase() === details.email?.toLowerCase())
             );
-            const matchName = details.name && details.name !== 'Unknown' && details.name !== 'Client' && (
-                summary.includes(details.name.toLowerCase()) ||
-                description.includes(details.name.toLowerCase())
-            );
+
+            // Note: details.callerPhone usually starts with '+'
+            const matchPhone = details.callerPhone && details.callerPhone !== 'Unknown' && description.includes(details.callerPhone);
 
             let isTimeMatch = true;
             if (details.time && evt.start?.dateTime) {
@@ -469,7 +469,9 @@ export async function cancelEvent(details: { date: string; time?: string; name?:
                 }
             }
 
-            if ((matchEmail || matchName) && isTimeMatch) {
+            // We no longer rely purely on `matchName` for cancellation to prevent unauthorized manipulation. 
+            // The request must mathematically authenticate via Email OR Phone.
+            if ((matchEmail || matchPhone) && isTimeMatch) {
                 eventToDelete = evt;
                 break;
             }
@@ -478,7 +480,7 @@ export async function cancelEvent(details: { date: string; time?: string; name?:
         if (!eventToDelete) {
             return {
                 success: false,
-                message: `I couldn't find an appointment for ${details.name || details.email || 'you'} on ${formatDate(requestedDate)}.`
+                message: `I couldn't find a matching appointment on ${formatDate(requestedDate)} at ${details.time || 'that time'}. Please note: for security reasons, you must call from the same phone number used to book the appointment, or provide the exact email address on file.`
             };
         }
 

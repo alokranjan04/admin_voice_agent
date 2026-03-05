@@ -16,6 +16,8 @@ export async function POST(req: NextRequest) {
         }
 
         // Process each tool call
+        const callerPhone = body.message?.call?.customer?.number || '';
+
         const results = await Promise.all(
             toolCalls.map(async (toolCall: any) => {
                 const { id, function: func } = toolCall;
@@ -61,7 +63,7 @@ export async function POST(req: NextRequest) {
                                 service: args.service,
                                 customerName: args.name || args.customerName || "Customer",
                                 customerEmail: args.email || args.customerEmail,
-                                customerPhone: args.phone || args.customerPhone,
+                                customerPhone: args.phone || args.customerPhone || callerPhone,
                                 duration: args.duration
                             });
                             console.log(`[Vapi Tools] createEvent result:`, JSON.stringify(result, null, 2));
@@ -73,7 +75,8 @@ export async function POST(req: NextRequest) {
                                 date: args.date,
                                 time: args.time,
                                 name: args.name || args.customerName,
-                                email: args.email || args.customerEmail
+                                email: args.email || args.customerEmail,
+                                callerPhone: callerPhone
                             });
                             console.log(`[Vapi Tools] cancelEvent result:`, JSON.stringify(result, null, 2));
                             break;
