@@ -71,6 +71,7 @@ export async function POST(req: NextRequest) {
                             console.log(`[Vapi Tools] Canceling event with:`, JSON.stringify(args, null, 2));
                             result = await cancelEvent({
                                 date: args.date,
+                                time: args.time,
                                 name: args.name || args.customerName,
                                 email: args.email || args.customerEmail
                             });

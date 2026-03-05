@@ -402,7 +402,7 @@ function formatDateTime(date: Date): string {
 /**
  * Cancel a calendar event/appointment
  */
-export async function cancelEvent(details: { date: string; name?: string; email?: string }) {
+export async function cancelEvent(details: { date: string; time?: string; name?: string; email?: string }) {
     try {
         const calendar = getCalendarClient();
         const calendarId = getCalendarId();
@@ -448,7 +448,28 @@ export async function cancelEvent(details: { date: string; name?: string; email?
                 description.includes(details.name.toLowerCase())
             );
 
-            if (matchEmail || matchName) {
+            let isTimeMatch = true;
+            if (details.time && evt.start?.dateTime) {
+                const timeStr = details.time.toUpperCase();
+                const isPM = timeStr.includes('PM');
+                const isAM = timeStr.includes('AM');
+                const parts = timeStr.replace(/[^\d:]/g, '').split(':');
+
+                let hours = parseInt(parts[0], 10);
+                const minutes = parts.length > 1 ? parseInt(parts[1], 10) : 0;
+
+                if (!isNaN(hours)) {
+                    if (isPM && hours < 12) hours += 12;
+                    if (isAM && hours === 12) hours = 0;
+
+                    const timeTarget = `T${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+                    if (!evt.start.dateTime.includes(timeTarget)) {
+                        isTimeMatch = false;
+                    }
+                }
+            }
+
+            if ((matchEmail || matchName) && isTimeMatch) {
                 eventToDelete = evt;
                 break;
             }
