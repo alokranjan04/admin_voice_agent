@@ -1,16 +1,16 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Sidebar } from '../components/Sidebar';
-import { LoginScreen } from '../components/LoginScreen';
-import { CalendarView } from '../components/CalendarView';
-import { generateConfigFromDescription } from '../services/geminiService';
-import { saveConfiguration, auth, loginWithGoogle, logoutUser, getOrgId, getBranding, saveBranding } from '../services/firebase';
-import { createVapiAssistant } from '../services/vapiService';
-import { researchBusiness } from '../services/researchService';
-import { getTemplateByIndustry } from '../services/templateService';
-import { AgentConfiguration, INITIAL_CONFIG, DeliveryModeType, SUPPORTED_INDUSTRIES, BrandingConfig, DEFAULT_BRANDING } from '../types';
-import { Wand2, Plus, Trash2, Loader2, AlertCircle, Copy, Check, Database, Calendar, Rocket, Braces, Search, Upload, Palette, Image as ImageIcon, Phone, PhoneCall, Link, Globe, ShieldCheck } from 'lucide-react';
+import { Sidebar } from '@/components/Sidebar';
+import { LoginScreen } from '@/components/LoginScreen';
+import { CalendarView } from '@/components/CalendarView';
+import { generateConfigFromDescription } from '@/services/geminiService';
+import { saveConfiguration, auth, loginWithGoogle, logoutUser, getOrgId, getBranding, saveBranding } from '@/services/firebase';
+import { createVapiAssistant } from '@/services/vapiService';
+import { researchBusiness } from '@/services/researchService';
+import { getTemplateByIndustry } from '@/services/templateService';
+import { AgentConfiguration, INITIAL_CONFIG, DeliveryModeType, SUPPORTED_INDUSTRIES, BrandingConfig, DEFAULT_BRANDING } from '@/types';
+import { Wand2, Plus, Trash2, Loader2, AlertCircle, Copy, Check, Database, Calendar, Rocket, Braces, Search, Upload, Palette, Image as ImageIcon, Phone, PhoneCall, Link, Globe, ShieldCheck, Settings2 } from 'lucide-react';
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { loadStripe } from '@stripe/stripe-js';
 
@@ -211,7 +211,7 @@ export default function AdminPage() {
     const loadOrgData = async () => {
         setIsBrandingLoading(true);
         try {
-            const { getOrgData } = await import('../services/firebase');
+            const { getOrgData } = await import('@/services/firebase');
             const data = await getOrgData();
             if (data) {
                 if (data.branding) setBranding(data.branding);
@@ -301,7 +301,7 @@ export default function AdminPage() {
 
     const loadAgents = async () => {
         try {
-            const { getAgents } = await import('../services/firebase');
+            const { getAgents } = await import('@/services/firebase');
             const list = await getAgents();
             setAgents(list);
         } catch (error) {
@@ -311,7 +311,7 @@ export default function AdminPage() {
 
     const selectAgent = async (agentId: string) => {
         try {
-            const { getAgentConfig } = await import('../services/firebase');
+            const { getAgentConfig } = await import('@/services/firebase');
             const loadedConfig = await getAgentConfig(agentId);
             if (loadedConfig) {
                 setConfig(loadedConfig);
