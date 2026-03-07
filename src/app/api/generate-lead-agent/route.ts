@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
 import nodemailer from 'nodemailer';
+import { researchBusiness } from '@/services/researchService';
+import { summarizeBusinessResearch } from '@/services/geminiService';
 
 export async function POST(req: Request) {
     try {
@@ -34,22 +36,35 @@ export async function POST(req: Request) {
                 console.log(`[Generate Agent API] Scraping via Jina AI: ${website}`);
                 const jinaUrl = `https://r.jina.ai/${website}`;
                 const siteRes = await fetch(jinaUrl, {
-                    headers: {
-                        'User-Agent': 'Mozilla/5.0',
-                        'Accept': 'text/plain',
-                    },
+                    headers: { 'User-Agent': 'Mozilla/5.0', 'Accept': 'text/plain' },
                     signal: AbortSignal.timeout(12000)
                 });
                 if (siteRes.ok) {
                     const text = await siteRes.text();
-                    // Jina returns clean markdown — just trim and cap length
                     websiteContent = text.trim().substring(0, 5000);
-                    console.log(`[Generate Agent API] Scraped ${websiteContent.length} chars via Jina from ${website}`);
-                } else {
-                    console.warn(`[Generate Agent API] Jina returned ${siteRes.status} for ${website}`);
+                    console.log(`[Generate Agent API] Scraped ${websiteContent.length} chars from ${website}`);
                 }
             } catch (scrapeErr) {
-                console.warn(`[Generate Agent API] Could not scrape ${website}:`, scrapeErr);
+                console.warn(`[Generate Agent API] Scraping failed for ${website}:`, scrapeErr);
+            }
+        }
+
+        // 0.5 Smart Research Step: If scraping is thin (< 1000 chars) or missing, pick from Google (the "Swiddles and Siahi" fix)
+        let researchSummary = '';
+        const needsResearch = !website || websiteContent.length < 1000;
+
+        if (needsResearch) {
+            try {
+                const searchQuery = `${company} ${industry} ${companyDetails} services menu location details`.trim();
+                console.log(`[Generate Agent API] Performing Smart Research for: ${searchQuery}`);
+                const researchData = await researchBusiness(searchQuery);
+
+                if (researchData.webResults.length > 0 || (researchData.placesResults && researchData.placesResults.length > 0)) {
+                    researchSummary = await summarizeBusinessResearch(company, companyDetails || industry, researchData);
+                    console.log(`[Generate Agent API] Research complete. Summary length: ${researchSummary.length}`);
+                }
+            } catch (researchErr) {
+                console.warn(`[Generate Agent API] Smart Research failed:`, researchErr);
             }
         }
 
@@ -74,17 +89,20 @@ export async function POST(req: Request) {
         const firstMessage = firstMessageMap[language] || firstMessageMap['English'];
 
         // 1. Create the Vapi Assistant
-        // Priority: user-provided details > scraped website content
+        // Priority: user-provided details > research summary > scraped website content
         const manualContext = [
-            companyDetails ? `Company Description: ${companyDetails}` : '',
+            companyDetails ? `User Provided Description: ${companyDetails}` : '',
             industry ? `Industry: ${industry}` : '',
         ].filter(Boolean).join('\n');
 
-        const businessContext = manualContext
-            ? `\n\n== COMPANY INFORMATION ==\n${manualContext}${websiteContent ? `\n\nAdditional context from website:\n${websiteContent.substring(0, 2000)}` : ''}\n== END ==\n\nUse the above information to answer questions about ${company} accurately. Do NOT make up services or details not listed above.`
-            : websiteContent
-                ? `\n\n== COMPANY KNOWLEDGE BASE (scraped from ${website}) ==\n${websiteContent}\n== END OF KNOWLEDGE BASE ==\n\nUse the above knowledge to answer questions about ${company}'s services accurately. Do NOT make up information.`
-                : '';
+        let businessContext = "";
+        if (manualContext || researchSummary || websiteContent) {
+            businessContext = `\n\n== BUSINESS KNOWLEDGE BASE ==\n`;
+            if (manualContext) businessContext += `${manualContext}\n\n`;
+            if (researchSummary) businessContext += `### VERIFIED BUSINESS DETAILS (from Google):\n${researchSummary}\n\n`;
+            if (websiteContent && !researchSummary) businessContext += `### WEBSITE CONTENT:\n${websiteContent.substring(0, 2000)}\n\n`;
+            businessContext += `== END ==\n\nUse the above information to answer questions about ${company} accurately. If asked about a menu or items, use the verified details above. Do NOT make up services or details not listed above.`;
+        }
 
         const systemPrompt = `You are a highly persuasive, intelligent, and friendly AI Voice Agent representing ${company}. Your primary goal is to demonstrate your capabilities to the prospect, ${name}, who just requested this demo.${businessContext}
 

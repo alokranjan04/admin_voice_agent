@@ -270,6 +270,47 @@ export async function generateConfigFromDescription(description: string, researc
   throw lastError || new Error("All Gemini models failed.");
 }
 
+/**
+ * Summarizes raw research data into a clean business knowledge base.
+ * Perfect for lead-gen agents where we need accurate services/menu details from Google.
+ */
+export async function summarizeBusinessResearch(companyName: string, description: string, researchData: any): Promise<string> {
+  const apiKey = getGeminiApiKey();
+  if (!apiKey) return "";
+
+  const genAI = new GoogleGenerativeAI(apiKey);
+  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+  const prompt = `
+    You are a professional business analyst. I am providing you with raw search results (Google Search + Google Places) for a company called "${companyName}".
+    
+    USER'S INITIAL DESCRIPTION: "${description}"
+    
+    RAW RESEARCH DATA:
+    ${JSON.stringify(researchData, null, 2)}
+    
+    YOUR TASK:
+    Extract and summarize the most relevant information for a Voice AI Agent to use. 
+    Focus on:
+    1. EXACT Menu items or Services (with prices if available).
+    2. Operational details (Address, Hours, Unique features).
+    3. Key selling points and tone of the business.
+    
+    OUTPUT FORMAT:
+    Return a clean, structured Markdown summary. Be concise. Avoid fluff. 
+    If you find conflicting information, prioritize the one that looks like an official listing or a high-rated review.
+    Limit the output to 1500 characters.
+  `;
+
+  try {
+    const result = await model.generateContent(prompt);
+    return result.response.text().trim();
+  } catch (err) {
+    console.error("[Gemini Service] Research summary failed:", err);
+    return "";
+  }
+}
+
 function processResult(result: any) {
   const jsonText = result.response.text();
   const parsed = JSON.parse(jsonText);
