@@ -2,11 +2,20 @@
 
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Loader2, CheckCircle, ArrowRight } from 'lucide-react';
+import { Loader2, CheckCircle, ArrowRight, Phone, Mail } from 'lucide-react';
 import { sendGAEvent } from '@next/third-parties/google';
 
+type DeliveryOption = 'email' | 'call';
+
 export default function AgencyLeadForm() {
-    const [formData, setFormData] = useState({ name: '', email: '', phone: '', company: '' });
+    const [formData, setFormData] = useState({
+        name: '',
+        email: '',
+        phone: '',
+        company: '',
+        website: '',
+    });
+    const [deliveryOption, setDeliveryOption] = useState<DeliveryOption>('email');
     const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
     const [errorMessage, setErrorMessage] = useState('');
 
@@ -19,14 +28,15 @@ export default function AgencyLeadForm() {
             category: 'acquisition',
             action: 'submit',
             label: 'Agency Lead Form',
-            company: formData.company
+            company: formData.company,
+            delivery: deliveryOption,
         });
 
         try {
             const res = await fetch('/api/generate-lead-agent', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(formData),
+                body: JSON.stringify({ ...formData, deliveryOption }),
             });
 
             const data = await res.json();
@@ -40,19 +50,17 @@ export default function AgencyLeadForm() {
             sendGAEvent('event', 'lead_agent_generated_success', {
                 category: 'conversion',
                 action: 'generate',
-                label: 'Vapi Agent Minted successfully'
+                label: deliveryOption === 'call' ? 'Call Dispatched' : 'Email Sent',
             });
 
         } catch (err: any) {
             console.error(err);
             setStatus('error');
-
             sendGAEvent('event', 'lead_agent_generated_error', {
                 category: 'error',
                 action: 'generate_failed',
-                label: err.message
+                label: err.message,
             });
-
             setErrorMessage(err.message || 'Something went wrong. Please try again.');
         }
     };
@@ -75,14 +83,20 @@ export default function AgencyLeadForm() {
                 >
                     <CheckCircle className="w-16 h-16 text-green-400 mx-auto mb-4" />
                 </motion.div>
-                <h3 className="text-2xl font-bold text-white mb-2">Agent Generated!</h3>
+                <h3 className="text-2xl font-bold text-white mb-2">
+                    {deliveryOption === 'call' ? 'Calling You Now! 📞' : 'Agent Generated! 🚀'}
+                </h3>
                 <p className="text-indigo-100 mb-6">
-                    We've just built a custom Voice AI agent for {formData.company}. Check your inbox ({formData.email}) for the exclusive test link to interact with your new digital employee!
+                    {deliveryOption === 'call'
+                        ? `Your phone (${formData.phone}) should be ringing in seconds with a live call from your new ${formData.company} AI Agent!`
+                        : `We've built a custom Voice AI agent for ${formData.company}. Check ${formData.email} for the exclusive test link!`
+                    }
                 </p>
                 <button
                     onClick={() => {
                         setStatus('idle');
-                        setFormData({ name: '', email: '', phone: '', company: '' });
+                        setFormData({ name: '', email: '', phone: '', company: '', website: '' });
+                        setDeliveryOption('email');
                     }}
                     className="bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-2 rounded-lg font-medium transition-colors cursor-pointer"
                 >
@@ -98,21 +112,18 @@ export default function AgencyLeadForm() {
             animate={{ opacity: 1, y: 0 }}
             className="bg-white/10 backdrop-blur-xl border border-white/20 p-8 rounded-2xl shadow-2xl relative z-20"
         >
-            <div className="mb-8 text-center sm:text-left">
+            <div className="mb-6 text-center sm:text-left">
                 <h3 className="text-2xl font-bold text-white mb-2">Get Your Free AI Agent</h3>
-                <p className="text-indigo-100 text-sm">See the magic in action. Enter your details and we'll instantly generate & email you a custom AI Voice Agent trained for your business.</p>
+                <p className="text-indigo-100 text-sm">See the magic in action. Enter your details and we'll instantly generate a custom AI Voice Agent for your business.</p>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-4">
+                {/* Row 1: Name + Company */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <label className="block text-sm font-medium text-indigo-100 mb-1">Full Name</label>
                         <input
-                            required
-                            type="text"
-                            name="name"
-                            value={formData.name}
-                            onChange={handleChange}
+                            required type="text" name="name" value={formData.name} onChange={handleChange}
                             className="w-full bg-black/20 border border-white/10 rounded-lg px-4 py-2.5 text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                             placeholder="Elon Musk"
                         />
@@ -120,41 +131,70 @@ export default function AgencyLeadForm() {
                     <div>
                         <label className="block text-sm font-medium text-indigo-100 mb-1">Company Name</label>
                         <input
-                            required
-                            type="text"
-                            name="company"
-                            value={formData.company}
-                            onChange={handleChange}
+                            required type="text" name="company" value={formData.company} onChange={handleChange}
                             className="w-full bg-black/20 border border-white/10 rounded-lg px-4 py-2.5 text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                             placeholder="Tesla"
                         />
                     </div>
                 </div>
 
+                {/* Row 2: Email + Phone */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label className="block text-sm font-medium text-indigo-100 mb-1">Work Email</label>
+                        <input
+                            required type="email" name="email" value={formData.email} onChange={handleChange}
+                            className="w-full bg-black/20 border border-white/10 rounded-lg px-4 py-2.5 text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                            placeholder="elon@tesla.com"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-indigo-100 mb-1">Phone Number</label>
+                        <input
+                            required type="tel" name="phone" value={formData.phone} onChange={handleChange}
+                            className="w-full bg-black/20 border border-white/10 rounded-lg px-4 py-2.5 text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                            placeholder="+1 (555) 000-0000"
+                        />
+                    </div>
+                </div>
+
+                {/* Row 3: Company Website */}
                 <div>
-                    <label className="block text-sm font-medium text-indigo-100 mb-1">Work Email</label>
+                    <label className="block text-sm font-medium text-indigo-100 mb-1">Company Website <span className="text-white/30 text-xs">(optional)</span></label>
                     <input
-                        required
-                        type="email"
-                        name="email"
-                        value={formData.email}
-                        onChange={handleChange}
+                        type="url" name="website" value={formData.website} onChange={handleChange}
                         className="w-full bg-black/20 border border-white/10 rounded-lg px-4 py-2.5 text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                        placeholder="elon@tesla.com"
+                        placeholder="https://tesla.com"
                     />
                 </div>
 
+                {/* Row 4: Delivery Option */}
                 <div>
-                    <label className="block text-sm font-medium text-indigo-100 mb-1">Phone Number</label>
-                    <input
-                        required
-                        type="tel"
-                        name="phone"
-                        value={formData.phone}
-                        onChange={handleChange}
-                        className="w-full bg-black/20 border border-white/10 rounded-lg px-4 py-2.5 text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                        placeholder="+1 (555) 000-0000"
-                    />
+                    <label className="block text-sm font-medium text-indigo-100 mb-3">How would you like to receive your agent?</label>
+                    <div className="grid grid-cols-2 gap-3">
+                        <button
+                            type="button"
+                            onClick={() => setDeliveryOption('email')}
+                            className={`flex items-center justify-center gap-2 px-4 py-3 rounded-xl border-2 font-semibold text-sm transition-all ${deliveryOption === 'email'
+                                    ? 'border-indigo-400 bg-indigo-500/30 text-white'
+                                    : 'border-white/10 bg-black/20 text-white/50 hover:border-white/30'
+                                }`}
+                        >
+                            <Mail className="w-4 h-4" />
+                            Email Me the Agent
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => setDeliveryOption('call')}
+                            className={`flex items-center justify-center gap-2 px-4 py-3 rounded-xl border-2 font-semibold text-sm transition-all ${deliveryOption === 'call'
+                                    ? 'border-purple-400 bg-purple-500/30 text-white'
+                                    : 'border-white/10 bg-black/20 text-white/50 hover:border-white/30'
+                                }`}
+                        >
+                            <Phone className="w-4 h-4" />
+                            Call Me Now
+                        </button>
+                    </div>
                 </div>
 
                 {status === 'error' && (
@@ -166,20 +206,25 @@ export default function AgencyLeadForm() {
                 <button
                     type="submit"
                     disabled={status === 'loading'}
-                    className="w-full mt-6 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold py-3 px-6 rounded-lg shadow-lg flex items-center justify-center transition-all disabled:opacity-70 disabled:cursor-not-allowed"
+                    className="w-full mt-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold py-3 px-6 rounded-lg shadow-lg flex items-center justify-center transition-all disabled:opacity-70 disabled:cursor-not-allowed"
                 >
                     {status === 'loading' ? (
                         <>
                             <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                            Building Your AI...
+                            {deliveryOption === 'call' ? 'Calling You...' : 'Building Your AI...'}
                         </>
                     ) : (
                         <>
-                            Generate My Agent <ArrowRight className="w-5 h-5 ml-2" />
+                            {deliveryOption === 'call' ? <Phone className="w-5 h-5 mr-2" /> : <ArrowRight className="w-5 h-5 ml-2 order-last" />}
+                            {deliveryOption === 'call' ? 'Call Me with My Agent' : 'Generate & Email My Agent'}
                         </>
                     )}
                 </button>
-                <p className="text-xs text-white/40 text-center mt-4">Takes ~5 seconds to build. We will email you the secure link.</p>
+                <p className="text-xs text-white/40 text-center mt-2">
+                    {deliveryOption === 'call'
+                        ? '~5 seconds to build, then your phone will ring.'
+                        : 'Takes ~5 seconds to build. We will email you the secure link.'}
+                </p>
             </form>
         </motion.div>
     );

@@ -4,9 +4,9 @@ import nodemailer from 'nodemailer';
 export async function POST(req: Request) {
     try {
         const body = await req.json();
-        const { name, company, email, phone } = body;
+        const { name, company, email, phone, website, deliveryOption } = body;
 
-        if (!name || !company || !email) {
+        if (!name || !company || !email || !phone) {
             return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
         }
 
@@ -28,7 +28,7 @@ export async function POST(req: Request) {
         const protocol = host.includes('localhost') ? 'http' : 'https';
 
         // 1. Create the Vapi Assistant
-        const systemPrompt = `You are a highly persuasive, intelligent, and friendly AI Voice Agent representing ${company}. Your primary goal right now is to demonstrate your capabilities to the prospect, ${name}, who just requested this demo. Be enthusiastic and professional. Start the conversation by warmly greeting ${name} by name, welcoming them to their custom ${company} AI demo, and asking if they are ready to see how voice automation can transform their customer experience 24/7. Keep your responses concise and naturally conversational.`;
+        const systemPrompt = `You are a highly persuasive, intelligent, and friendly AI Voice Agent representing ${company}. Your primary goal right now is to demonstrate your capabilities to the prospect, ${name}, who just requested this demo${website ? ` after visiting ${website}` : ''}. Be enthusiastic and professional. Start the conversation by warmly greeting ${name} by name, welcoming them to their custom ${company} AI demo, and asking if they are ready to see how voice automation can transform their customer experience 24/7. Keep your responses concise and naturally conversational.`;
 
         const vapiRes = await fetch('https://api.vapi.ai/assistant', {
             method: 'POST',
@@ -42,7 +42,8 @@ export async function POST(req: Request) {
                 metadata: {
                     leadEmail: email,
                     leadName: name,
-                    leadCompany: company
+                    leadCompany: company,
+                    leadWebsite: website || ''
                 },
                 model: {
                     provider: 'openai',
@@ -72,11 +73,30 @@ export async function POST(req: Request) {
         // 2. Determine the host URL for the Test Drive link
         const testLink = `${protocol}://${host}/test/${assistantId}`;
 
-        // 3. Send the Email
+        // 3. Handle Delivery Mode
+        if (deliveryOption === 'call') {
+            try {
+                // Trigger immediate outbound call utilizing the smart-resolving internal route
+                await fetch(`${protocol}://${host}/api/vapi/call`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ phoneNumber: phone, assistantId })
+                });
+                console.log(`[Generate Agent API] Dispatched outbound call to ${phone} for ${assistantId}`);
+            } catch (callErr) {
+                console.error('[Generate Agent API] Failed to trigger outbound call', callErr);
+            }
+        }
+
+        // 4. Send the Email Confirmation / Link
         const transporter = nodemailer.createTransport({
             service: 'gmail',
             auth: { user: gmailUser, pass: gmailPass }
         });
+
+        const deliveryMessage = deliveryOption === 'call'
+            ? `Your phone (${phone}) should be ringing in a few seconds with a live call from your new AI agent!`
+            : `Click the secure link below to interact with your new digital employee!`;
 
         const mailOptions = {
             from: `"Voice AI Agency" <${gmailUser}>`,
@@ -88,29 +108,21 @@ export async function POST(req: Request) {
                     <div style="text-align: center; margin-bottom: 30px;">
                         <h1 style="color: #4f46e5; margin: 0; font-size: 28px;">Your AI is Alive, ${name}!</h1>
                     </div>
-                    
                     <p style="font-size: 16px; line-height: 1.6; color: #4b5563;">
                         Hi ${name},<br><br>
-                        We're thrilled to present your custom-built Voice AI Agent. It has been specifically trained to represent <strong>${company}</strong> and is ready to demonstrate how flawless 24/7 automated customer interaction sounds.
+                        We have built a custom Voice AI Agent trained to represent <strong>${company}</strong>.
+                        <br><br>
+                        <strong>${deliveryMessage}</strong>
                     </p>
-
-                    <div style="background-color: #f8fafc; border-left: 4px solid #4f46e5; padding: 20px; margin: 30px 0; border-radius: 0 8px 8px 0;">
-                        <h3 style="margin-top: 0; color: #1e293b; font-size: 18px;">Click below to start your Test Drive:</h3>
+                    ${deliveryOption !== 'call'
+                    ? `<div style="background-color: #f8fafc; border-left: 4px solid #4f46e5; padding: 20px; margin: 30px 0; border-radius: 0 8px 8px 0;">
+                        <h3 style="margin-top: 0; color: #1e293b; font-size: 18px;">Start Your Test Drive:</h3>
                         <a href="${testLink}" style="display: inline-block; background-color: #4f46e5; color: #ffffff; padding: 14px 28px; text-decoration: none; font-weight: bold; border-radius: 6px; font-size: 16px; margin-top: 10px;">
                             Talk to My Agent Now
-                        </a>
-                    </div>
-
-                    <p style="font-size: 16px; line-height: 1.6; color: #4b5563;">
-                        Imagine having thousands of these agents making outbound sales calls or answering support tickets for ${company} simultaneously. 
-                        If you're impressed by the demo, reply directly to this email to schedule a technical consultation.
-                    </p>
-
-                    <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 40px 0;">
-
-                    <p style="font-size: 12px; color: #94a3b8; text-align: center;">
-                        This is an automated delivery from our Voice AI Agency Platform.<br>
-                        ${company} Automated Agent ID: <code>${assistantId}</code>
+                        </a></div>`
+                    : ''}
+                    <p style="font-size: 14px; color: #6b7280; text-align: center; margin-top: 40px;">
+                        If you have any questions, simply reply to this email.<br>— The Voice AI Team
                     </p>
                 </div>
             `
