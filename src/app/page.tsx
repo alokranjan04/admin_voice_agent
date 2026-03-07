@@ -5,8 +5,16 @@ import ThreeDElement from '@/components/ThreeDElement';
 import AgencyLeadForm from '@/components/AgencyLeadForm';
 import { Bot, PhoneCall, CalendarCheck, Sparkles } from 'lucide-react';
 import { sendGAEvent } from '@next/third-parties/google';
+import { PopupModal } from 'react-calendly';
 
 export default function AgencyLandingPage() {
+    const [isCalendlyOpen, setIsCalendlyOpen] = React.useState(false);
+    const [isMounted, setIsMounted] = React.useState(false);
+
+    React.useEffect(() => {
+        setIsMounted(true);
+    }, []);
+
     return (
         <div className="min-h-screen bg-slate-950 overflow-x-hidden flex flex-col font-sans">
             {/* Top Navigation Bar / Branding */}
@@ -28,15 +36,15 @@ export default function AgencyLandingPage() {
                     </nav>
 
                     <div className="flex items-center">
-                        <a
-                            href={process.env.NEXT_PUBLIC_CALENDAR_BOOKING_LINK || "https://calendar.google.com/"}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            onClick={() => sendGAEvent('event', 'book_demo_click', { category: 'engagement', label: 'Header CTA' })}
-                            className="hidden sm:flex items-center justify-center px-6 py-2.5 rounded-full bg-white text-slate-900 font-bold text-sm hover:scale-105 transition-transform shadow-[0_0_20px_rgba(255,255,255,0.1)]"
+                        <button
+                            onClick={() => {
+                                sendGAEvent('event', 'book_demo_click', { category: 'engagement', label: 'Header CTA' });
+                                setIsCalendlyOpen(true);
+                            }}
+                            className="hidden sm:flex items-center justify-center px-6 py-2.5 rounded-full bg-white text-slate-900 font-bold text-sm hover:scale-105 transition-transform shadow-[0_0_20px_rgba(255,255,255,0.1)] cursor-pointer"
                         >
                             Book a Demo
-                        </a>
+                        </button>
                     </div>
                 </div>
             </header>
@@ -157,6 +165,16 @@ export default function AgencyLandingPage() {
                     </div>
                 </div>
             </footer>
+
+            {/* Calendly Interactive Popup */}
+            {isMounted && (
+                <PopupModal
+                    url={process.env.NEXT_PUBLIC_CALENDAR_BOOKING_LINK || "https://calendly.com/"}
+                    onModalClose={() => setIsCalendlyOpen(false)}
+                    open={isCalendlyOpen}
+                    rootElement={document.getElementById("__next") || document.body}
+                />
+            )}
         </div>
     );
 }
