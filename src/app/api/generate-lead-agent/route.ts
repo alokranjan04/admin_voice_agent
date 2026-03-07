@@ -106,6 +106,85 @@ Be enthusiastic and professional. Start by warmly greeting ${name} by name and a
                     model: 'gpt-4o-mini',
                     messages: [
                         { role: 'system', content: systemPrompt }
+                    ],
+                    tools: [
+                        {
+                            type: 'function',
+                            function: {
+                                name: 'getCurrentDateTime',
+                                description: 'Get the current date and time',
+                                parameters: { type: 'object', properties: {}, required: [] }
+                            }
+                        },
+                        {
+                            type: 'function',
+                            function: {
+                                name: 'checkAvailability',
+                                description: 'Check if a specific date and time slot is available for booking',
+                                parameters: {
+                                    type: 'object',
+                                    properties: {
+                                        date: { type: 'string', description: 'Date in YYYY-MM-DD format' },
+                                        time: { type: 'string', description: 'Time in HH:MM format (24h)' },
+                                        service: { type: 'string', description: 'Type of service requested' }
+                                    },
+                                    required: ['date', 'time']
+                                }
+                            }
+                        },
+                        {
+                            type: 'function',
+                            function: {
+                                name: 'findAvailableSlots',
+                                description: 'Find available time slots on a given date',
+                                parameters: {
+                                    type: 'object',
+                                    properties: {
+                                        date: { type: 'string', description: 'Date in YYYY-MM-DD format' },
+                                        service: { type: 'string', description: 'Type of service' },
+                                        duration: { type: 'number', description: 'Duration in minutes' }
+                                    },
+                                    required: ['date']
+                                }
+                            }
+                        },
+                        {
+                            type: 'function',
+                            function: {
+                                name: 'createEvent',
+                                description: 'Book an appointment and add it to the calendar',
+                                parameters: {
+                                    type: 'object',
+                                    properties: {
+                                        date: { type: 'string', description: 'Date in YYYY-MM-DD format' },
+                                        time: { type: 'string', description: 'Time in HH:MM format' },
+                                        service: { type: 'string', description: 'Service type' },
+                                        name: { type: 'string', description: 'Customer name' },
+                                        email: { type: 'string', description: 'Customer email' },
+                                        phone: { type: 'string', description: 'Customer phone' },
+                                        duration: { type: 'number', description: 'Duration in minutes' }
+                                    },
+                                    required: ['date', 'time', 'name']
+                                }
+                            }
+                        },
+                        {
+                            type: 'function',
+                            function: {
+                                name: 'cancelEvent',
+                                description: 'Cancel an existing appointment',
+                                parameters: {
+                                    type: 'object',
+                                    properties: {
+                                        date: { type: 'string' },
+                                        time: { type: 'string' },
+                                        name: { type: 'string' },
+                                        email: { type: 'string' }
+                                    },
+                                    required: ['name']
+                                }
+                            }
+                        }
                     ]
                 },
                 voice: {
