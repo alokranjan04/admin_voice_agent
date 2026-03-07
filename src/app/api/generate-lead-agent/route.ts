@@ -23,7 +23,9 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: 'Server configuration error' }, { status: 500 });
         }
 
-        console.log(`[Generate Agent API] Creating assistant for ${company}...`);
+        // resolved host for Webhook & Test Link URLs
+        const host = req.headers.get('host') || 'localhost:3000';
+        const protocol = host.includes('localhost') ? 'http' : 'https';
 
         // 1. Create the Vapi Assistant
         const systemPrompt = `You are a highly persuasive, intelligent, and friendly AI Voice Agent representing ${company}. Your primary goal right now is to demonstrate your capabilities to the prospect, ${name}, who just requested this demo. Be enthusiastic and professional. Start the conversation by warmly greeting ${name} by name, welcoming them to their custom ${company} AI demo, and asking if they are ready to see how voice automation can transform their customer experience 24/7. Keep your responses concise and naturally conversational.`;
@@ -36,6 +38,12 @@ export async function POST(req: Request) {
             },
             body: JSON.stringify({
                 name: `${company} AI Rep`,
+                serverUrl: `${protocol}://${host}/api/vapi/webhook`,
+                metadata: {
+                    leadEmail: email,
+                    leadName: name,
+                    leadCompany: company
+                },
                 model: {
                     provider: 'openai',
                     model: 'gpt-4o-mini',
@@ -62,8 +70,6 @@ export async function POST(req: Request) {
         console.log(`[Generate Agent API] Created Assistant ID: ${assistantId}`);
 
         // 2. Determine the host URL for the Test Drive link
-        const host = req.headers.get('host') || 'localhost:3000';
-        const protocol = host.includes('localhost') ? 'http' : 'https';
         const testLink = `${protocol}://${host}/test/${assistantId}`;
 
         // 3. Send the Email

@@ -6,6 +6,47 @@ export async function POST(req: NextRequest) {
         const body = await req.json();
         console.log('[Vapi Tools] Received request:', JSON.stringify(body, null, 2));
 
+        // --- End of Call Report Handling ---
+        if (body.message?.type === 'end-of-call-report') {
+            const report = body.message;
+            const assistantMetadata = report.call?.assistant?.metadata;
+            const customerEmail = assistantMetadata?.leadEmail;
+
+            if (customerEmail) {
+                console.log(`[Vapi Webhook] Found End-Of-Call report for lead (${customerEmail}). Dispatching email...`);
+
+                try {
+                    const url = new URL(req.url);
+                    const emailEndpoint = `${url.origin}/api/email`;
+
+                    const sendRes = await fetch(emailEndpoint, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            summary: report.summary || 'AI generated summary unavailable.',
+                            transcript: report.transcript || 'Transcript unavailable.',
+                            targetEmail: customerEmail,
+                            customerName: assistantMetadata.leadName || 'Customer'
+                        })
+                    });
+
+                    if (!sendRes.ok) {
+                        console.error('[Vapi Webhook] Failed to relay call report to Email API:', await sendRes.text());
+                    } else {
+                        console.log('[Vapi Webhook] Successfully emailed Call Report to prospect.');
+                    }
+                } catch (emailErr) {
+                    console.error('[Vapi Webhook] Internal exception while attempting to send email:', emailErr);
+                }
+            } else {
+                console.log('[Vapi Webhook] Missing leadEmail metadata. Skipping email dispatch.');
+            }
+
+            // Acknowledge Vapi's webhook instantly to prevent retries
+            return NextResponse.json({ success: true });
+        }
+        // -----------------------------------
+
         // Vapi sends tool calls in this format
         const toolCalls = body.message?.toolCalls || [];
 
