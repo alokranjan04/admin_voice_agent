@@ -499,6 +499,30 @@ export default function AdminPage() {
         }
     };
 
+    const handleManageSubscription = async () => {
+        if (!user) return;
+        setIsBillingLoading(true);
+        try {
+            const orgId = getOrgId(user);
+            const response = await fetch('/api/stripe/portal', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    orgId,
+                    returnUrl: window.location.origin + '/agency/admin',
+                }),
+            });
+            const { url, error } = await response.json();
+            if (error) throw new Error(error);
+            window.location.href = url;
+        } catch (error: any) {
+            console.error("Portal failed", error);
+            alert("Failed to open billing portal: " + error.message);
+        } finally {
+            setIsBillingLoading(false);
+        }
+    };
+
     const handleLock = async () => {
         setIsSaving(true);
         try {
@@ -1156,9 +1180,19 @@ export default function AdminPage() {
                             </button>
                         )}
                         {plan === 'PRO' && (
-                            <div className="flex items-center gap-2 text-emerald-600 font-bold">
-                                <Check className="w-6 h-6" />
-                                Active
+                            <div className="flex flex-col items-end gap-3">
+                                <div className="flex items-center gap-2 text-emerald-600 font-bold">
+                                    <Check className="w-6 h-6" />
+                                    Active
+                                </div>
+                                <button
+                                    onClick={handleManageSubscription}
+                                    disabled={isBillingLoading}
+                                    className="px-6 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl border border-slate-300 transition-all active:scale-95 disabled:opacity-70 flex items-center gap-2 text-sm"
+                                >
+                                    {isBillingLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Settings2 className="w-4 h-4" />}
+                                    Manage Subscription
+                                </button>
                             </div>
                         )}
                     </div>
