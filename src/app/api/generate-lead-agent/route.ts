@@ -137,30 +137,25 @@ Be enthusiastic and professional. Start by warmly greeting ${name} by name and a
                 let phoneNumberId = process.env.VITE_VAPI_PHONE_NUMBER_ID || process.env.NEXT_PUBLIC_VAPI_PHONE_NUMBER_ID || '';
 
                 // Smart Resolution: If it's a phone number string (not a UUID), resolve it to a UUID
-                if (phoneNumberId && !phoneNumberId.includes('-') && phoneNumberId.startsWith('+')) {
-                    console.log(`[Generate Agent API] Resolving phone number ${phoneNumberId} to UUID...`);
-                    const listRes = await fetch('https://api.vapi.ai/phone-number', {
-                        headers: { 'Authorization': `Bearer ${vapiApiKey}` }
-                    });
-                    if (listRes.ok) {
-                        const numbers = await listRes.json();
-                        const match = numbers.find((n: any) => n.number === phoneNumberId);
-                        if (match) {
-                            phoneNumberId = match.id;
-                            console.log(`[Generate Agent API] Resolved to UUID: ${phoneNumberId}`);
-                        } else {
-                            console.warn(`[Generate Agent API] Phone number not found in VAPI account. Attempting call without phoneNumberId.`);
-                            phoneNumberId = '';
-                        }
-                    }
-                }
+                const twilioSid = process.env.TWILIO_ACCOUNT_SID;
+                const twilioToken = process.env.TWILIO_AUTH_TOKEN;
+                const twilioFrom = process.env.TWILIO_PHONE_NUMBER || process.env.VITE_VAPI_PHONE_NUMBER_ID;
 
                 const callPayload: any = {
                     assistantId,
-                    customer: { number: phone }
+                    customer: { number: phone },
                 };
-                if (phoneNumberId && phoneNumberId.includes('-')) {
-                    callPayload.phoneNumberId = phoneNumberId;
+
+                if (twilioSid && twilioToken && twilioFrom) {
+                    // Inline Twilio credentials — bypasses VAPI phone number registration
+                    callPayload.phoneNumber = {
+                        twilioPhoneNumber: twilioFrom,
+                        twilioAccountSid: twilioSid,
+                        twilioAuthToken: twilioToken,
+                    };
+                    console.log(`[Generate Agent API] Using inline Twilio creds from ${twilioFrom}`);
+                } else {
+                    console.warn(`[Generate Agent API] No Twilio credentials found — call may fail.`);
                 }
 
                 const callRes = await fetch('https://api.vapi.ai/call/phone', {
@@ -174,7 +169,7 @@ Be enthusiastic and professional. Start by warmly greeting ${name} by name and a
 
                 const callData = await callRes.json();
                 if (!callRes.ok) {
-                    console.error(`[Generate Agent API] VAPI Call Failed:`, callData);
+                    console.error(`[Generate Agent API] VAPI Call Failed:`, JSON.stringify(callData));
                 } else {
                     console.log(`[Generate Agent API] ✅ Outbound call dispatched to ${phone}. Call ID: ${callData.id}`);
                 }
