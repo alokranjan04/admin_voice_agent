@@ -1,7 +1,10 @@
+"use client";
+
 import React from 'react';
 import ThreeDElement from '@/components/ThreeDElement';
 import AgencyLeadForm from '@/components/AgencyLeadForm';
 import { Bot, PhoneCall, CalendarCheck, Sparkles } from 'lucide-react';
+import { sendGAEvent } from '@next/third-parties/google';
 
 export default function AgencyLandingPage() {
     return (
@@ -19,13 +22,16 @@ export default function AgencyLandingPage() {
                     </div>
 
                     <nav className="hidden md:flex items-center space-x-8 text-sm font-medium text-slate-300">
-                        <a href="#services" className="hover:text-white transition-colors">Services</a>
-                        <a href="#technology" className="hover:text-white transition-colors">Technology</a>
-                        <a href="#contact" className="hover:text-white transition-colors">Contact</a>
+                        <a href="#services" onClick={() => sendGAEvent('event', 'nav_click', { label: 'Services' })} className="hover:text-white transition-colors">Services</a>
+                        <a href="#technology" onClick={() => sendGAEvent('event', 'nav_click', { label: 'Technology' })} className="hover:text-white transition-colors">Technology</a>
+                        <a href="#contact" onClick={() => sendGAEvent('event', 'nav_click', { label: 'Contact' })} className="hover:text-white transition-colors">Contact</a>
                     </nav>
 
                     <div className="flex items-center">
-                        <button className="hidden sm:flex items-center justify-center px-6 py-2.5 rounded-full bg-white text-slate-900 font-bold text-sm hover:scale-105 transition-transform shadow-[0_0_20px_rgba(255,255,255,0.1)]">
+                        <button
+                            onClick={() => sendGAEvent('event', 'book_demo_click', { category: 'engagement', label: 'Header CTA' })}
+                            className="hidden sm:flex items-center justify-center px-6 py-2.5 rounded-full bg-white text-slate-900 font-bold text-sm hover:scale-105 transition-transform shadow-[0_0_20px_rgba(255,255,255,0.1)]"
+                        >
                             Book a Demo
                         </button>
                     </div>

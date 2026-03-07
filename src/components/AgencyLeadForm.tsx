@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Loader2, CheckCircle, ArrowRight } from 'lucide-react';
+import { sendGAEvent } from '@next/third-parties/google';
 
 export default function AgencyLeadForm() {
     const [formData, setFormData] = useState({ name: '', email: '', phone: '', company: '' });
@@ -13,6 +14,13 @@ export default function AgencyLeadForm() {
         e.preventDefault();
         setStatus('loading');
         setErrorMessage('');
+
+        sendGAEvent('event', 'lead_form_submit', {
+            category: 'acquisition',
+            action: 'submit',
+            label: 'Agency Lead Form',
+            company: formData.company
+        });
 
         try {
             const res = await fetch('/api/generate-lead-agent', {
@@ -28,9 +36,23 @@ export default function AgencyLeadForm() {
             }
 
             setStatus('success');
+
+            sendGAEvent('event', 'lead_agent_generated_success', {
+                category: 'conversion',
+                action: 'generate',
+                label: 'Vapi Agent Minted successfully'
+            });
+
         } catch (err: any) {
             console.error(err);
             setStatus('error');
+
+            sendGAEvent('event', 'lead_agent_generated_error', {
+                category: 'error',
+                action: 'generate_failed',
+                label: err.message
+            });
+
             setErrorMessage(err.message || 'Something went wrong. Please try again.');
         }
     };
