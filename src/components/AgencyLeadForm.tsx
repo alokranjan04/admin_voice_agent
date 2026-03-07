@@ -9,7 +9,7 @@ type DeliveryOption = 'email' | 'call';
 
 const LANGUAGES = [
     { code: 'English', flag: '🇬🇧', label: 'English' },
-    { code: 'Hindi', flag: '🇮🇳', label: 'हिंदी' },
+    { code: 'Hindi', flag: '🇮🇳', label: 'Hinglish' },
     { code: 'French', flag: '🇫🇷', label: 'Français' },
     { code: 'German', flag: '🇩🇪', label: 'Deutsch' },
     { code: 'Spanish', flag: '🇪🇸', label: 'Español' },
@@ -189,8 +189,8 @@ export default function AgencyLeadForm() {
                                 type="button"
                                 onClick={() => setLanguage(lang.code)}
                                 className={`flex items-center gap-1.5 px-3 py-2 rounded-xl border-2 font-semibold text-xs transition-all ${language === lang.code
-                                        ? 'border-indigo-400 bg-indigo-500/30 text-white scale-105'
-                                        : 'border-white/10 bg-black/20 text-white/50 hover:border-white/30'
+                                    ? 'border-indigo-400 bg-indigo-500/30 text-white scale-105'
+                                    : 'border-white/10 bg-black/20 text-white/50 hover:border-white/30'
                                     }`}
                             >
                                 <span className="text-base">{lang.flag}</span>
