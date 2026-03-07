@@ -179,13 +179,12 @@ Be enthusiastic and professional. Start by warmly greeting ${name} by name and a
                         <br><br>
                         <strong>${deliveryMessage}</strong>
                     </p>
-                    ${deliveryOption !== 'call'
-                    ? `<div style="background-color: #f8fafc; border-left: 4px solid #4f46e5; padding: 20px; margin: 30px 0; border-radius: 0 8px 8px 0;">
-                        <h3 style="margin-top: 0; color: #1e293b; font-size: 18px;">Start Your Test Drive:</h3>
+                    <div style="background-color: #f8fafc; border-left: 4px solid #4f46e5; padding: 20px; margin: 30px 0; border-radius: 0 8px 8px 0;">
+                        <h3 style="margin-top: 0; color: #1e293b; font-size: 18px;">Or talk to your Agent online anytime:</h3>
                         <a href="${testLink}" style="display: inline-block; background-color: #4f46e5; color: #ffffff; padding: 14px 28px; text-decoration: none; font-weight: bold; border-radius: 6px; font-size: 16px; margin-top: 10px;">
-                            Talk to My Agent Now
-                        </a></div>`
-                    : ''}
+                            Open My Voice Agent →
+                        </a>
+                    </div>
                     <p style="font-size: 14px; color: #6b7280; text-align: center; margin-top: 40px;">
                         If you have any questions, simply reply to this email.<br>— The Voice AI Team
                     </p>
