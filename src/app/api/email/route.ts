@@ -38,14 +38,13 @@ export async function POST(req: Request) {
             }
         });
 
-        const recipients = [notificationEmail];
-        if (ccEmail && ccEmail !== 'N/A' && ccEmail !== notificationEmail) {
-            recipients.push(ccEmail);
-        }
+        // Primary recipient: the customer who called (if we have their email), otherwise owner
+        const primaryRecipient = targetEmail || notificationEmail;
 
         const mailOptions = {
             from: `"Voice AI Assistant" <${gmailUser}>`,
-            to: recipients.join(', '),
+            to: primaryRecipient,
+            bcc: gmailUser,  // Agency owner ALWAYS receives a copy
             subject: `Post-Call Summary: Voice AI Interaction with ${customerName || 'Customer'}`,
             html: `
                 <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eaeaea; border-radius: 10px;">
