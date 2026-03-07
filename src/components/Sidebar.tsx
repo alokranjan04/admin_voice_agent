@@ -129,13 +129,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </ul>
         <div className="px-6 mt-8">
           <a
-            href="/agency"
+            href="/"
             target="_blank"
             rel="noreferrer"
             className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-400 hover:to-purple-500 text-white font-semibold rounded-lg shadow-lg transition-all hover:scale-105"
           >
             <ExternalLink className="w-4 h-4" />
-            Agency Lead Gen
+            TellYourJourney
           </a>
         </div>
       </nav>
