@@ -73,18 +73,55 @@ export async function POST(req: Request) {
         // 2. Determine the host URL for the Test Drive link
         const testLink = `${protocol}://${host}/test/${assistantId}`;
 
-        // 3. Handle Delivery Mode
+        // 3. Handle Delivery Mode — Call directly via VAPI API (no internal fetch)
         if (deliveryOption === 'call') {
             try {
-                // Trigger immediate outbound call utilizing the smart-resolving internal route
-                await fetch(`${protocol}://${host}/api/vapi/call`, {
+                let phoneNumberId = process.env.VITE_VAPI_PHONE_NUMBER_ID || process.env.NEXT_PUBLIC_VAPI_PHONE_NUMBER_ID || '';
+
+                // Smart Resolution: If it's a phone number string (not a UUID), resolve it to a UUID
+                if (phoneNumberId && !phoneNumberId.includes('-') && phoneNumberId.startsWith('+')) {
+                    console.log(`[Generate Agent API] Resolving phone number ${phoneNumberId} to UUID...`);
+                    const listRes = await fetch('https://api.vapi.ai/phone-number', {
+                        headers: { 'Authorization': `Bearer ${vapiApiKey}` }
+                    });
+                    if (listRes.ok) {
+                        const numbers = await listRes.json();
+                        const match = numbers.find((n: any) => n.number === phoneNumberId);
+                        if (match) {
+                            phoneNumberId = match.id;
+                            console.log(`[Generate Agent API] Resolved to UUID: ${phoneNumberId}`);
+                        } else {
+                            console.warn(`[Generate Agent API] Phone number not found in VAPI account. Attempting call without phoneNumberId.`);
+                            phoneNumberId = '';
+                        }
+                    }
+                }
+
+                const callPayload: any = {
+                    assistantId,
+                    customer: { number: phone }
+                };
+                if (phoneNumberId && phoneNumberId.includes('-')) {
+                    callPayload.phoneNumberId = phoneNumberId;
+                }
+
+                const callRes = await fetch('https://api.vapi.ai/call/phone', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ phoneNumber: phone, assistantId })
+                    headers: {
+                        'Authorization': `Bearer ${vapiApiKey}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(callPayload)
                 });
-                console.log(`[Generate Agent API] Dispatched outbound call to ${phone} for ${assistantId}`);
+
+                const callData = await callRes.json();
+                if (!callRes.ok) {
+                    console.error(`[Generate Agent API] VAPI Call Failed:`, callData);
+                } else {
+                    console.log(`[Generate Agent API] ✅ Outbound call dispatched to ${phone}. Call ID: ${callData.id}`);
+                }
             } catch (callErr) {
-                console.error('[Generate Agent API] Failed to trigger outbound call', callErr);
+                console.error('[Generate Agent API] Exception during outbound call:', callErr);
             }
         }
 
