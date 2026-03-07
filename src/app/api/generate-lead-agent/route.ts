@@ -4,7 +4,7 @@ import nodemailer from 'nodemailer';
 export async function POST(req: Request) {
     try {
         const body = await req.json();
-        const { name, company, email, phone, website, deliveryOption } = body;
+        const { name, company, email, phone, website, deliveryOption, language = 'English' } = body;
 
         if (!name || !company || !email || !phone) {
             return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
@@ -27,8 +27,32 @@ export async function POST(req: Request) {
         const host = req.headers.get('host') || 'localhost:3000';
         const protocol = host.includes('localhost') ? 'http' : 'https';
 
+        // Language → locale code map (used for VAPI's language hint)
+        const languageCodeMap: Record<string, string> = {
+            'English': 'en',
+            'Hindi': 'hi',
+            'French': 'fr',
+            'German': 'de',
+            'Spanish': 'es',
+        };
+        const langCode = languageCodeMap[language] || 'en';
+
+        // Language-aware first message
+        const firstMessageMap: Record<string, string> = {
+            'English': `Hello ${name}! Welcome to your custom ${company} AI demo. How can I help you today?`,
+            'Hindi': `नमस्ते ${name}! ${company} के आपके कस्टम AI डेमो में आपका स्वागत है। मैं आपकी कैसे मदद कर सकता हूँ?`,
+            'French': `Bonjour ${name} ! Bienvenue dans votre démo IA personnalisée pour ${company}. Comment puis-je vous aider ?`,
+            'German': `Hallo ${name}! Willkommen zu Ihrer maßgeschneiderten ${company} KI-Demo. Wie kann ich Ihnen helfen?`,
+            'Spanish': `¡Hola ${name}! Bienvenido a tu demostración de IA personalizada de ${company}. ¿Cómo puedo ayudarte?`,
+        };
+        const firstMessage = firstMessageMap[language] || firstMessageMap['English'];
+
         // 1. Create the Vapi Assistant
-        const systemPrompt = `You are a highly persuasive, intelligent, and friendly AI Voice Agent representing ${company}. Your primary goal right now is to demonstrate your capabilities to the prospect, ${name}, who just requested this demo${website ? ` after visiting ${website}` : ''}. Be enthusiastic and professional. Start the conversation by warmly greeting ${name} by name, welcoming them to their custom ${company} AI demo, and asking if they are ready to see how voice automation can transform their customer experience 24/7. Keep your responses concise and naturally conversational.`;
+        const systemPrompt = `You are a highly persuasive, intelligent, and friendly AI Voice Agent representing ${company}. Your primary goal is to demonstrate your capabilities to the prospect, ${name}, who just requested this demo${website ? ` after visiting ${website}` : ''}.
+
+CRITICAL LANGUAGE RULE: You MUST respond EXCLUSIVELY in ${language}. Do NOT switch to any other language under any circumstances, even if the user speaks to you in a different language.
+
+Be enthusiastic and professional. Start by warmly greeting ${name} by name and asking if they are ready to see how voice automation can transform their customer experience 24/7. Keep responses concise and naturally conversational.`;
 
         const vapiRes = await fetch('https://api.vapi.ai/assistant', {
             method: 'POST',
@@ -37,13 +61,15 @@ export async function POST(req: Request) {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                name: `${company} AI Rep`,
+                name: `${company} AI Rep (${language})`,
                 serverUrl: `${protocol}://${host}/api/vapi/webhook`,
+                language: langCode,
                 metadata: {
                     leadEmail: email,
                     leadName: name,
                     leadCompany: company,
-                    leadWebsite: website || ''
+                    leadWebsite: website || '',
+                    leadLanguage: language
                 },
                 model: {
                     provider: 'openai',
@@ -54,9 +80,11 @@ export async function POST(req: Request) {
                 },
                 voice: {
                     provider: '11labs',
-                    voiceId: 'bIHbv24MWmeRgasZH58o' // Willa voice
+                    voiceId: 'bIHbv24MWmeRgasZH58o', // Willa — supports eleven_multilingual_v2
+                    model: 'eleven_multilingual_v2',
+                    language: langCode,
                 },
-                firstMessage: `Hello ${name}! Welcome to your custom ${company} Voice AI demo. Thanks for building me. How can I help you today?`
+                firstMessage,
             })
         });
 

@@ -7,6 +7,14 @@ import { sendGAEvent } from '@next/third-parties/google';
 
 type DeliveryOption = 'email' | 'call';
 
+const LANGUAGES = [
+    { code: 'English', flag: '🇬🇧', label: 'English' },
+    { code: 'Hindi', flag: '🇮🇳', label: 'हिंदी' },
+    { code: 'French', flag: '🇫🇷', label: 'Français' },
+    { code: 'German', flag: '🇩🇪', label: 'Deutsch' },
+    { code: 'Spanish', flag: '🇪🇸', label: 'Español' },
+];
+
 export default function AgencyLeadForm() {
     const [formData, setFormData] = useState({
         name: '',
@@ -15,6 +23,7 @@ export default function AgencyLeadForm() {
         company: '',
         website: '',
     });
+    const [language, setLanguage] = useState('English');
     const [deliveryOption, setDeliveryOption] = useState<DeliveryOption>('email');
     const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
     const [errorMessage, setErrorMessage] = useState('');
@@ -30,13 +39,14 @@ export default function AgencyLeadForm() {
             label: 'Agency Lead Form',
             company: formData.company,
             delivery: deliveryOption,
+            language,
         });
 
         try {
             const res = await fetch('/api/generate-lead-agent', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ ...formData, deliveryOption }),
+                body: JSON.stringify({ ...formData, deliveryOption, language }),
             });
 
             const data = await res.json();
@@ -97,6 +107,7 @@ export default function AgencyLeadForm() {
                         setStatus('idle');
                         setFormData({ name: '', email: '', phone: '', company: '', website: '' });
                         setDeliveryOption('email');
+                        setLanguage('English');
                     }}
                     className="bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-2 rounded-lg font-medium transition-colors cursor-pointer"
                 >
@@ -168,7 +179,26 @@ export default function AgencyLeadForm() {
                     />
                 </div>
 
-                {/* Row 4: Delivery Option */}
+                {/* Row 4: Agent Language */}
+                <div>
+                    <label className="block text-sm font-medium text-indigo-100 mb-3">Agent Language</label>
+                    <div className="flex flex-wrap gap-2">
+                        {LANGUAGES.map(lang => (
+                            <button
+                                key={lang.code}
+                                type="button"
+                                onClick={() => setLanguage(lang.code)}
+                                className={`flex items-center gap-1.5 px-3 py-2 rounded-xl border-2 font-semibold text-xs transition-all ${language === lang.code
+                                        ? 'border-indigo-400 bg-indigo-500/30 text-white scale-105'
+                                        : 'border-white/10 bg-black/20 text-white/50 hover:border-white/30'
+                                    }`}
+                            >
+                                <span className="text-base">{lang.flag}</span>
+                                {lang.label}
+                            </button>
+                        ))}
+                    </div>
+                </div>
                 <div>
                     <label className="block text-sm font-medium text-indigo-100 mb-3">How would you like to receive your agent?</label>
                     <div className="grid grid-cols-2 gap-3">
@@ -176,8 +206,8 @@ export default function AgencyLeadForm() {
                             type="button"
                             onClick={() => setDeliveryOption('email')}
                             className={`flex items-center justify-center gap-2 px-4 py-3 rounded-xl border-2 font-semibold text-sm transition-all ${deliveryOption === 'email'
-                                    ? 'border-indigo-400 bg-indigo-500/30 text-white'
-                                    : 'border-white/10 bg-black/20 text-white/50 hover:border-white/30'
+                                ? 'border-indigo-400 bg-indigo-500/30 text-white'
+                                : 'border-white/10 bg-black/20 text-white/50 hover:border-white/30'
                                 }`}
                         >
                             <Mail className="w-4 h-4" />
@@ -187,8 +217,8 @@ export default function AgencyLeadForm() {
                             type="button"
                             onClick={() => setDeliveryOption('call')}
                             className={`flex items-center justify-center gap-2 px-4 py-3 rounded-xl border-2 font-semibold text-sm transition-all ${deliveryOption === 'call'
-                                    ? 'border-purple-400 bg-purple-500/30 text-white'
-                                    : 'border-white/10 bg-black/20 text-white/50 hover:border-white/30'
+                                ? 'border-purple-400 bg-purple-500/30 text-white'
+                                : 'border-white/10 bg-black/20 text-white/50 hover:border-white/30'
                                 }`}
                         >
                             <Phone className="w-4 h-4" />
