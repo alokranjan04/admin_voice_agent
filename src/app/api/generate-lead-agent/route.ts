@@ -27,6 +27,32 @@ export async function POST(req: Request) {
         const host = req.headers.get('host') || 'localhost:3000';
         const protocol = host.includes('localhost') ? 'http' : 'https';
 
+        // 0. Scrape website content if URL provided
+        let websiteContent = '';
+        if (website) {
+            try {
+                console.log(`[Generate Agent API] Scraping website: ${website}`);
+                const siteRes = await fetch(website, {
+                    headers: { 'User-Agent': 'Mozilla/5.0 (compatible; VoiceAI-Bot/1.0)' },
+                    signal: AbortSignal.timeout(8000)
+                });
+                if (siteRes.ok) {
+                    const html = await siteRes.text();
+                    const text = html
+                        .replace(/<script[\s\S]*?<\/script>/gi, '')
+                        .replace(/<style[\s\S]*?<\/style>/gi, '')
+                        .replace(/<[^>]+>/g, ' ')
+                        .replace(/\s+/g, ' ')
+                        .trim()
+                        .substring(0, 4000);
+                    websiteContent = text;
+                    console.log(`[Generate Agent API] Scraped ${websiteContent.length} chars from ${website}`);
+                }
+            } catch (scrapeErr) {
+                console.warn(`[Generate Agent API] Could not scrape ${website}:`, scrapeErr);
+            }
+        }
+
         // Language → locale code map (used for VAPI's language hint)
         const languageCodeMap: Record<string, string> = {
             'English': 'en',
@@ -40,7 +66,7 @@ export async function POST(req: Request) {
         // Language-aware first message
         const firstMessageMap: Record<string, string> = {
             'English': `Hello ${name}! Welcome to your custom ${company} AI demo. How can I help you today?`,
-            'Hindi': `नमस्ते ${name}! ${company} के आपके कस्टम AI डेमो में आपका स्वागत है। मैं आपकी कैसे मदद कर सकता हूँ?`,
+            'Hindi': `Arre ${name} ji! ${company} ke liye aapka custom AI demo ready hai — let's go! Main aapki kaise help kar sakta hoon aaj?`,
             'French': `Bonjour ${name} ! Bienvenue dans votre démo IA personnalisée pour ${company}. Comment puis-je vous aider ?`,
             'German': `Hallo ${name}! Willkommen zu Ihrer maßgeschneiderten ${company} KI-Demo. Wie kann ich Ihnen helfen?`,
             'Spanish': `¡Hola ${name}! Bienvenido a tu demostración de IA personalizada de ${company}. ¿Cómo puedo ayudarte?`,
@@ -48,9 +74,13 @@ export async function POST(req: Request) {
         const firstMessage = firstMessageMap[language] || firstMessageMap['English'];
 
         // 1. Create the Vapi Assistant
-        const systemPrompt = `You are a highly persuasive, intelligent, and friendly AI Voice Agent representing ${company}. Your primary goal is to demonstrate your capabilities to the prospect, ${name}, who just requested this demo${website ? ` after visiting ${website}` : ''}.
+        const businessContext = websiteContent
+            ? `\n\n== COMPANY KNOWLEDGE BASE (scraped from ${website}) ==\n${websiteContent}\n== END OF KNOWLEDGE BASE ==\n\nUse the above knowledge to answer any questions about ${company}'s services, pricing, team, or offerings accurately. Do NOT make up information not found in the knowledge base.`
+            : '';
 
-CRITICAL LANGUAGE RULE: You MUST respond EXCLUSIVELY in ${language}. Do NOT switch to any other language under any circumstances, even if the user speaks to you in a different language.
+        const systemPrompt = `You are a highly persuasive, intelligent, and friendly AI Voice Agent representing ${company}. Your primary goal is to demonstrate your capabilities to the prospect, ${name}, who just requested this demo.${businessContext}
+
+CRITICAL LANGUAGE RULE: You MUST respond EXCLUSIVELY in ${language === 'Hindi' ? 'Hinglish (a natural, conversational mix of Hindi and English the way young urban Indians speak — use English words freely mixed with Hindi, do NOT use formal pure Hindi or Devanagari script)' : language}. Do NOT switch to any other language style under any circumstances.
 
 Be enthusiastic and professional. Start by warmly greeting ${name} by name and asking if they are ready to see how voice automation can transform their customer experience 24/7. Keep responses concise and naturally conversational.`;
 
