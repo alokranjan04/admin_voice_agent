@@ -27,26 +27,26 @@ export async function POST(req: Request) {
         const host = req.headers.get('host') || 'localhost:3000';
         const protocol = host.includes('localhost') ? 'http' : 'https';
 
-        // 0. Scrape website content if URL provided
+        // 0. Scrape website content using Jina AI Reader (handles JS-rendered sites)
         let websiteContent = '';
         if (website) {
             try {
-                console.log(`[Generate Agent API] Scraping website: ${website}`);
-                const siteRes = await fetch(website, {
-                    headers: { 'User-Agent': 'Mozilla/5.0 (compatible; VoiceAI-Bot/1.0)' },
-                    signal: AbortSignal.timeout(8000)
+                console.log(`[Generate Agent API] Scraping via Jina AI: ${website}`);
+                const jinaUrl = `https://r.jina.ai/${website}`;
+                const siteRes = await fetch(jinaUrl, {
+                    headers: {
+                        'User-Agent': 'Mozilla/5.0',
+                        'Accept': 'text/plain',
+                    },
+                    signal: AbortSignal.timeout(12000)
                 });
                 if (siteRes.ok) {
-                    const html = await siteRes.text();
-                    const text = html
-                        .replace(/<script[\s\S]*?<\/script>/gi, '')
-                        .replace(/<style[\s\S]*?<\/style>/gi, '')
-                        .replace(/<[^>]+>/g, ' ')
-                        .replace(/\s+/g, ' ')
-                        .trim()
-                        .substring(0, 4000);
-                    websiteContent = text;
-                    console.log(`[Generate Agent API] Scraped ${websiteContent.length} chars from ${website}`);
+                    const text = await siteRes.text();
+                    // Jina returns clean markdown — just trim and cap length
+                    websiteContent = text.trim().substring(0, 5000);
+                    console.log(`[Generate Agent API] Scraped ${websiteContent.length} chars via Jina from ${website}`);
+                } else {
+                    console.warn(`[Generate Agent API] Jina returned ${siteRes.status} for ${website}`);
                 }
             } catch (scrapeErr) {
                 console.warn(`[Generate Agent API] Could not scrape ${website}:`, scrapeErr);
