@@ -4,7 +4,7 @@ import nodemailer from 'nodemailer';
 export async function POST(req: Request) {
     try {
         const body = await req.json();
-        const { name, company, email, phone, website, deliveryOption, language = 'English' } = body;
+        const { name, company, email, phone, website, deliveryOption, language = 'English', companyDetails = '', industry = '' } = body;
 
         if (!name || !company || !email || !phone) {
             return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
@@ -74,9 +74,17 @@ export async function POST(req: Request) {
         const firstMessage = firstMessageMap[language] || firstMessageMap['English'];
 
         // 1. Create the Vapi Assistant
-        const businessContext = websiteContent
-            ? `\n\n== COMPANY KNOWLEDGE BASE (scraped from ${website}) ==\n${websiteContent}\n== END OF KNOWLEDGE BASE ==\n\nUse the above knowledge to answer any questions about ${company}'s services, pricing, team, or offerings accurately. Do NOT make up information not found in the knowledge base.`
-            : '';
+        // Priority: user-provided details > scraped website content
+        const manualContext = [
+            companyDetails ? `Company Description: ${companyDetails}` : '',
+            industry ? `Industry: ${industry}` : '',
+        ].filter(Boolean).join('\n');
+
+        const businessContext = manualContext
+            ? `\n\n== COMPANY INFORMATION ==\n${manualContext}${websiteContent ? `\n\nAdditional context from website:\n${websiteContent.substring(0, 2000)}` : ''}\n== END ==\n\nUse the above information to answer questions about ${company} accurately. Do NOT make up services or details not listed above.`
+            : websiteContent
+                ? `\n\n== COMPANY KNOWLEDGE BASE (scraped from ${website}) ==\n${websiteContent}\n== END OF KNOWLEDGE BASE ==\n\nUse the above knowledge to answer questions about ${company}'s services accurately. Do NOT make up information.`
+                : '';
 
         const systemPrompt = `You are a highly persuasive, intelligent, and friendly AI Voice Agent representing ${company}. Your primary goal is to demonstrate your capabilities to the prospect, ${name}, who just requested this demo.${businessContext}
 

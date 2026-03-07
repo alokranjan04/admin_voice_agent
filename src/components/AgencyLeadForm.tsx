@@ -22,6 +22,8 @@ export default function AgencyLeadForm() {
         phone: '',
         company: '',
         website: '',
+        companyDetails: '',
+        industry: '',
     });
     const [language, setLanguage] = useState('English');
     const [deliveryOption, setDeliveryOption] = useState<DeliveryOption>('email');
@@ -105,7 +107,7 @@ export default function AgencyLeadForm() {
                 <button
                     onClick={() => {
                         setStatus('idle');
-                        setFormData({ name: '', email: '', phone: '', company: '', website: '' });
+                        setFormData({ name: '', email: '', phone: '', company: '', website: '', companyDetails: '', industry: '' });
                         setDeliveryOption('email');
                         setLanguage('English');
                     }}
@@ -169,13 +171,33 @@ export default function AgencyLeadForm() {
                     </div>
                 </div>
 
-                {/* Row 3: Company Website */}
+                {/* Row 3: Company Website + Industry */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label className="block text-sm font-medium text-indigo-100 mb-1">Company Website <span className="text-white/30 text-xs">(optional)</span></label>
+                        <input
+                            type="url" name="website" value={formData.website} onChange={handleChange}
+                            className="w-full bg-black/20 border border-white/10 rounded-lg px-4 py-2.5 text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                            placeholder="https://tesla.com"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-indigo-100 mb-1">Industry <span className="text-white/30 text-xs">(optional)</span></label>
+                        <input
+                            type="text" name="industry" value={formData.industry} onChange={handleChange}
+                            className="w-full bg-black/20 border border-white/10 rounded-lg px-4 py-2.5 text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                            placeholder="e.g. Legal & Compliance, Healthcare, SaaS"
+                        />
+                    </div>
+                </div>
+
+                {/* Company Details */}
                 <div>
-                    <label className="block text-sm font-medium text-indigo-100 mb-1">Company Website <span className="text-white/30 text-xs">(optional)</span></label>
-                    <input
-                        type="url" name="website" value={formData.website} onChange={handleChange}
-                        className="w-full bg-black/20 border border-white/10 rounded-lg px-4 py-2.5 text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                        placeholder="https://tesla.com"
+                    <label className="block text-sm font-medium text-indigo-100 mb-1">What does your company do? <span className="text-white/30 text-xs">(optional but helps the AI)</span></label>
+                    <textarea
+                        name="companyDetails" value={formData.companyDetails} onChange={handleChange} rows={3}
+                        className="w-full bg-black/20 border border-white/10 rounded-lg px-4 py-2.5 text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
+                        placeholder="e.g. We help factories get Factories Act licenses, ESI & PF compliance, Pollution NOC, Fire Safety NOC, and more across UP..."
                     />
                 </div>
 
