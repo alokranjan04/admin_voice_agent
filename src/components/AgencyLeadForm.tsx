@@ -84,9 +84,10 @@ export default function AgencyLeadForm() {
     if (status === 'success') {
         return (
             <motion.div
+                key="success"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="bg-white/10 backdrop-blur-xl border border-white/20 p-8 rounded-2xl shadow-2xl text-center"
+                className="bg-white/10 backdrop-blur-xl border border-white/20 p-8 rounded-2xl shadow-2xl text-center relative z-30"
             >
                 <motion.div
                     initial={{ scale: 0 }}
@@ -121,6 +122,7 @@ export default function AgencyLeadForm() {
 
     return (
         <motion.div
+            key="form"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             className="bg-white/10 backdrop-blur-xl border border-white/20 p-8 rounded-2xl shadow-2xl relative z-20"

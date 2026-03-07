@@ -228,6 +228,8 @@ Be enthusiastic and professional. Start by warmly greeting ${name} by name and a
                 const twilioToken = process.env.TWILIO_AUTH_TOKEN;
                 const twilioFrom = process.env.TWILIO_PHONE_NUMBER || process.env.VITE_VAPI_PHONE_NUMBER_ID;
 
+                console.log(`[Generate Agent API] Call context: phone=${phone}, twilioSid=${!!twilioSid}, twilioToken=${!!twilioToken}, twilioFrom=${twilioFrom}`);
+
                 const callPayload: any = {
                     assistantId,
                     customer: { number: phone },
