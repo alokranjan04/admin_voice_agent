@@ -28,12 +28,15 @@ export default function AgencyLandingPage() {
                     </nav>
 
                     <div className="flex items-center">
-                        <button
+                        <a
+                            href={process.env.NEXT_PUBLIC_CALENDAR_BOOKING_LINK || "https://calendar.google.com/"}
+                            target="_blank"
+                            rel="noopener noreferrer"
                             onClick={() => sendGAEvent('event', 'book_demo_click', { category: 'engagement', label: 'Header CTA' })}
                             className="hidden sm:flex items-center justify-center px-6 py-2.5 rounded-full bg-white text-slate-900 font-bold text-sm hover:scale-105 transition-transform shadow-[0_0_20px_rgba(255,255,255,0.1)]"
                         >
                             Book a Demo
-                        </button>
+                        </a>
                     </div>
                 </div>
             </header>
