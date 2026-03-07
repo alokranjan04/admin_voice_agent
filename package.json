@@ -13,18 +13,22 @@
     "@google/genai": "^1.41.0",
     "@google/generative-ai": "^0.24.1",
     "@opentelemetry/api": "1.9.0",
+    "@react-three/drei": "^10.7.7",
+    "@react-three/fiber": "^9.5.0",
     "@stripe/stripe-js": "^8.7.0",
     "@vapi-ai/web": "^2.5.2",
     "axios": "^1.13.4",
     "dotenv": "^17.2.4",
     "firebase": "^12.9.0",
+    "framer-motion": "^12.35.0",
     "googleapis": "^171.4.0",
     "lucide-react": "^0.563.0",
     "next": "^15.1.6",
     "nodemailer": "^8.0.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "stripe": "^20.3.1"
+    "stripe": "^20.3.1",
+    "three": "^0.183.2"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.1.18",
