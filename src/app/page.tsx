@@ -7,15 +7,27 @@ export default function AgencyLandingPage() {
     return (
         <div className="min-h-screen bg-slate-950 overflow-x-hidden flex flex-col font-sans">
             {/* Top Navigation Bar / Branding */}
-            <header className="w-full relative z-20 py-6 px-6 lg:px-12 border-b border-white/5 bg-slate-950/50 backdrop-blur-md">
+            <header className="fixed top-0 left-0 right-0 z-50 w-full py-4 px-6 lg:px-12 border-b border-white/5 bg-slate-950/60 backdrop-blur-xl transition-all duration-300">
                 <div className="container mx-auto flex items-center justify-between">
-                    <div className="flex items-center space-x-2">
-                        <div className="w-10 h-10 bg-gradient-to-tr from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/20">
+                    <div className="flex items-center space-x-3">
+                        <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-fuchsia-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/20">
                             <Sparkles className="w-5 h-5 text-white" />
                         </div>
-                        <span className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white to-slate-400 tracking-tight">
-                            TellYourJourney
+                        <span className="text-2xl font-black text-white tracking-tighter">
+                            TellYour<span className="text-indigo-400">Journey</span>
                         </span>
+                    </div>
+
+                    <nav className="hidden md:flex items-center space-x-8 text-sm font-medium text-slate-300">
+                        <a href="#services" className="hover:text-white transition-colors">Services</a>
+                        <a href="#technology" className="hover:text-white transition-colors">Technology</a>
+                        <a href="#contact" className="hover:text-white transition-colors">Contact</a>
+                    </nav>
+
+                    <div className="flex items-center">
+                        <button className="hidden sm:flex items-center justify-center px-6 py-2.5 rounded-full bg-white text-slate-900 font-bold text-sm hover:scale-105 transition-transform shadow-[0_0_20px_rgba(255,255,255,0.1)]">
+                            Book a Demo
+                        </button>
                     </div>
                 </div>
             </header>
@@ -78,48 +90,60 @@ export default function AgencyLandingPage() {
                 </div>
             </main>
 
-            {/* Custom Footer */}
-            <footer className="w-full relative z-20 border-t border-white/10 bg-slate-950/80 backdrop-blur-lg mt-12 py-10">
-                <div className="container mx-auto px-6 lg:px-12">
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                        <div>
-                            <div className="flex items-center space-x-2 mb-4">
-                                <div className="w-8 h-8 bg-gradient-to-tr from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center">
+            {/* Professional Custom Footer */}
+            <footer id="contact" className="w-full relative z-20 mt-20 border-t border-white/10 bg-slate-950 py-16">
+                <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                    <div className="absolute bottom-0 left-[20%] w-[40%] h-[300px] rounded-full opacity-10 blur-[100px] bg-indigo-500" />
+                </div>
+
+                <div className="container mx-auto px-6 lg:px-12 relative z-10">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12 lg:gap-8 mb-16">
+                        <div className="lg:col-span-2">
+                            <div className="flex items-center space-x-3 mb-6">
+                                <div className="w-8 h-8 bg-gradient-to-br from-indigo-500 to-fuchsia-600 rounded-lg flex items-center justify-center shadow-lg shadow-indigo-500/20">
                                     <Sparkles className="w-4 h-4 text-white" />
                                 </div>
-                                <span className="text-lg font-bold text-white tracking-tight">TellYourJourney</span>
+                                <span className="text-xl font-black text-white tracking-tighter">
+                                    TellYour<span className="text-indigo-400">Journey</span>
+                                </span>
                             </div>
-                            <p className="text-sm text-slate-400 max-w-xs">
-                                Powering the next generation of conversational AI. We build systems that speak for you, perfectly, every time.
+                            <p className="text-slate-400 leading-relaxed max-w-sm mb-8">
+                                We engineer autonomous voice intelligence that perfectly represents your brand, handles limitless concurrency, and drives measurable revenue 24/7.
                             </p>
                         </div>
 
-                        <div>
-                            <h4 className="text-white font-semibold mb-4">Contact Us</h4>
-                            <ul className="space-y-2 text-sm text-slate-400">
-                                <li>
-                                    <span className="text-slate-300 font-medium">Name:</span> Alok Ranjan
+                        <div className="lg:col-span-1">
+                            <h4 className="text-white font-semibold mb-6 tracking-wide uppercase text-xs">Contact Us</h4>
+                            <ul className="space-y-4 text-sm text-slate-400">
+                                <li className="flex flex-col">
+                                    <span className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Director</span>
+                                    <span className="text-slate-200">Alok Ranjan</span>
                                 </li>
-                                <li>
-                                    <span className="text-slate-300 font-medium">Phone:</span> 7042915552
+                                <li className="flex flex-col">
+                                    <span className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Direct Line</span>
+                                    <a href="tel:7042915552" className="text-indigo-400 hover:text-indigo-300 transition-colors font-medium">7042915552</a>
                                 </li>
                             </ul>
                         </div>
 
-                        <div>
-                            <h4 className="text-white font-semibold mb-4">Headquarters</h4>
-                            <p className="text-sm text-slate-400 leading-relaxed">
+                        <div className="lg:col-span-2">
+                            <h4 className="text-white font-semibold mb-6 tracking-wide uppercase text-xs">Headquarters</h4>
+                            <div className="text-sm text-slate-400 leading-relaxed p-6 bg-white/5 border border-white/10 rounded-2xl inline-block shadow-xl">
+                                <p className="font-medium text-slate-200 mb-2">TellYourJourney AI Agency</p>
                                 E 311, Ace City Noida Ext<br />
                                 Greater Noida West<br />
-                                Gautam Buddha Nagar, 201306
-                            </p>
+                                Gautam Buddha Nagar, 201306<br />
+                                Uttar Pradesh, India
+                            </div>
                         </div>
                     </div>
-                    <div className="mt-10 pt-6 border-t border-white/10 text-center md:text-left flex flex-col md:flex-row justify-between items-center text-xs text-slate-500">
+
+                    <div className="pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-center text-sm text-slate-500">
                         <p>&copy; {new Date().getFullYear()} TellYourJourney. All rights reserved.</p>
-                        <div className="flex space-x-4 mt-4 md:mt-0">
-                            <span className="hover:text-slate-300 cursor-pointer transition-colors">Privacy Policy</span>
-                            <span className="hover:text-slate-300 cursor-pointer transition-colors">Terms of Service</span>
+                        <div className="flex space-x-6 mt-4 md:mt-0">
+                            <a href="#" className="hover:text-indigo-400 transition-colors">Privacy Policy</a>
+                            <a href="#" className="hover:text-indigo-400 transition-colors">Terms of Service</a>
+                            <a href="#" className="hover:text-indigo-400 transition-colors">Data Security</a>
                         </div>
                     </div>
                 </div>
