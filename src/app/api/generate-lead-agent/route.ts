@@ -10,12 +10,16 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
         }
 
-        const vapiApiKey = process.env.VAPI_PRIVATE_API_KEY;
+        const vapiApiKey = process.env.VITE_VAPI_PRIVATE_KEY || process.env.VAPI_PRIVATE_API_KEY;
         const gmailUser = process.env.GMAIL_USER;
         const gmailPass = process.env.GMAIL_APP_PASSWORD;
 
         if (!vapiApiKey || !gmailUser || !gmailPass) {
-            console.error('[Generate Agent API] Missing critical environment variables.');
+            console.error('[Generate Agent API] Missing critical environment variables:', {
+                vapiApiKey: !!vapiApiKey,
+                gmailUser: !!gmailUser,
+                gmailPass: !!gmailPass
+            });
             return NextResponse.json({ error: 'Server configuration error' }, { status: 500 });
         }
 
