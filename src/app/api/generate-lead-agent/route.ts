@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import nodemailer from 'nodemailer';
 import { researchBusiness } from '@/services/researchService';
-import { summarizeBusinessResearch } from '@/services/geminiService';
+import { summarizeBusinessResearch, extractServicesFromResearch } from '@/services/geminiService';
 
 export async function POST(req: Request) {
     try {
@@ -51,6 +51,7 @@ export async function POST(req: Request) {
 
         // 0.5 Smart Research Step: If scraping is thin (< 1000 chars) or missing, pick from Google (the "Swiddles and Siahi" fix)
         let researchSummary = '';
+        let extractedServices: Array<{ name: string, description: string }> = [];
         const needsResearch = !website || websiteContent.length < 1000;
 
         if (needsResearch) {
@@ -60,11 +61,26 @@ export async function POST(req: Request) {
                 const researchData = await researchBusiness(searchQuery);
 
                 if (researchData.webResults.length > 0 || (researchData.placesResults && researchData.placesResults.length > 0)) {
+                    // Extract summary FOR THE AI
                     researchSummary = await summarizeBusinessResearch(company, companyDetails || industry, researchData);
-                    console.log(`[Generate Agent API] Research complete. Summary length: ${researchSummary.length}`);
+                    // Extract structured services FOR THE UI
+                    extractedServices = await extractServicesFromResearch(company, researchData);
+                    console.log(`[Generate Agent API] Research complete. Summary length: ${researchSummary.length}, Services: ${extractedServices.length}`);
                 }
             } catch (researchErr) {
                 console.warn(`[Generate Agent API] Smart Research failed:`, researchErr);
+            }
+        }
+
+        // 0.7 Always try to extract structured services (either from Research or Scraped Content)
+        if (extractedServices.length === 0 && (websiteContent || researchSummary)) {
+            try {
+                // Use whichever content we have (prioritize research for accuracy if available)
+                const mockResearchData = researchSummary ? { webResults: [{ snippet: researchSummary }] } : { webResults: [{ snippet: websiteContent }] };
+                extractedServices = await extractServicesFromResearch(company, mockResearchData);
+                console.log(`[Generate Agent API] Extracted ${extractedServices.length} services from existing context.`);
+            } catch (serviceErr) {
+                console.warn(`[Generate Agent API] Fallback service extraction failed:`, serviceErr);
             }
         }
 
@@ -327,7 +343,12 @@ Be enthusiastic and professional. Start by warmly greeting ${name} by name and a
         const info = await transporter.sendMail(mailOptions);
         console.log('[Generate Agent API] Email sent:', info.messageId);
 
-        return NextResponse.json({ success: true, assistantId, testLink });
+        return NextResponse.json({
+            success: true,
+            assistantId,
+            testLink,
+            services: extractedServices
+        });
 
     } catch (error: any) {
         console.error('[Generate Agent API] Error:', error);

@@ -271,6 +271,61 @@ export async function generateConfigFromDescription(description: string, researc
 }
 
 /**
+ * Extracts a structured array of key services from raw business research.
+ * Used to display "What this AI can do" on the lead-gen success screen.
+ */
+export async function extractServicesFromResearch(companyName: string, researchData: any): Promise<Array<{ name: string, description: string }>> {
+  const apiKey = getGeminiApiKey();
+  if (!apiKey) return [];
+
+  const genAI = new GoogleGenerativeAI(apiKey);
+  const model = genAI.getGenerativeModel({
+    model: "gemini-1.5-flash",
+    generationConfig: {
+      responseMimeType: "application/json",
+      responseSchema: {
+        type: SchemaType.OBJECT,
+        properties: {
+          services: {
+            type: SchemaType.ARRAY,
+            items: {
+              type: SchemaType.OBJECT,
+              properties: {
+                name: { type: SchemaType.STRING },
+                description: { type: SchemaType.STRING }
+              },
+              required: ["name", "description"]
+            }
+          }
+        },
+        required: ["services"]
+      }
+    }
+  });
+
+  const prompt = `
+    Based on the following research data for "${companyName}", identify exactly 3-4 key services or features that a Voice AI agent should handle.
+    For each, provide a short professional name and a 1-sentence description of how the AI helps.
+    
+    RESEARCH DATA:
+    ${JSON.stringify(researchData).substring(0, 10000)}
+    
+    Example for a Restaurant:
+    - Name: Table Reservations
+    - Description: AI handles dynamic booking requests and checks real-time availability.
+  `;
+
+  try {
+    const result = await model.generateContent(prompt);
+    const parsed = JSON.parse(result.response.text());
+    return parsed.services || [];
+  } catch (err) {
+    console.error("[Gemini Service] Service extraction failed:", err);
+    return [];
+  }
+}
+
+/**
  * Summarizes raw research data into a clean business knowledge base.
  * Perfect for lead-gen agents where we need accurate services/menu details from Google.
  */

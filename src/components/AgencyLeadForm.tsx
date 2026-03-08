@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Loader2, CheckCircle, ArrowRight, Phone, Mail } from 'lucide-react';
+import { Loader2, CheckCircle, ArrowRight, Phone, Mail, Sparkles } from 'lucide-react';
 import { sendGAEvent } from '@next/third-parties/google';
 
 type DeliveryOption = 'email' | 'call';
@@ -29,6 +29,7 @@ export default function AgencyLeadForm() {
     const [deliveryOption, setDeliveryOption] = useState<DeliveryOption>('email');
     const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
     const [errorMessage, setErrorMessage] = useState('');
+    const [generatedServices, setGeneratedServices] = useState<Array<{ name: string, description: string }>>([]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -57,6 +58,7 @@ export default function AgencyLeadForm() {
                 throw new Error(data.error || 'Failed to generate agent.');
             }
 
+            setGeneratedServices(data.services || []);
             setStatus('success');
 
             sendGAEvent('event', 'lead_agent_generated_success', {
@@ -105,17 +107,60 @@ export default function AgencyLeadForm() {
                         : `We've built a custom Voice AI agent for ${formData.company}. Check ${formData.email} for the exclusive test link!`
                     }
                 </p>
-                <button
-                    onClick={() => {
-                        setStatus('idle');
-                        setFormData({ name: '', email: '', phone: '', company: '', website: '', companyDetails: '', industry: '' });
-                        setDeliveryOption('email');
-                        setLanguage('English');
-                    }}
-                    className="bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-2 rounded-lg font-medium transition-colors cursor-pointer"
-                >
-                    Build Another
-                </button>
+
+                {generatedServices.length > 0 && (
+                    <div className="mb-8 text-left">
+                        <h4 className="text-indigo-300 text-xs font-bold uppercase tracking-wider mb-4 border-b border-white/10 pb-2">
+                            AI Agent Capabilities
+                        </h4>
+                        <div className="space-y-3">
+                            {generatedServices.map((service, idx) => (
+                                <motion.div
+                                    key={idx}
+                                    initial={{ opacity: 0, x: -10 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    transition={{ delay: idx * 0.1 }}
+                                    className="bg-white/5 border border-white/10 p-4 rounded-xl hover:bg-white/10 transition-all group"
+                                >
+                                    <div className="flex items-start gap-3">
+                                        <div className="mt-1 bg-indigo-500/20 text-indigo-300 p-1.5 rounded-lg group-hover:bg-indigo-500/40 transition-colors">
+                                            <Sparkles className="w-4 h-4" />
+                                        </div>
+                                        <div>
+                                            <div className="text-white font-semibold text-sm mb-1">{service.name}</div>
+                                            <div className="text-indigo-200/70 text-xs leading-relaxed">{service.description}</div>
+                                        </div>
+                                    </div>
+                                </motion.div>
+                            ))}
+                        </div>
+                    </div>
+                )}
+
+                <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                    <button
+                        onClick={() => {
+                            setStatus('idle');
+                            setFormData({ name: '', email: '', phone: '', company: '', website: '', companyDetails: '', industry: '' });
+                            setDeliveryOption('email');
+                            setLanguage('English');
+                            setGeneratedServices([]);
+                        }}
+                        className="bg-white/10 hover:bg-white/20 border border-white/20 text-white px-6 py-2 rounded-lg font-medium transition-colors cursor-pointer"
+                    >
+                        Build Another
+                    </button>
+                    {deliveryOption === 'email' && (
+                        <a
+                            href="https://vapi.ai"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-2 rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
+                        >
+                            Open Dashboard <ArrowRight className="w-4 h-4" />
+                        </a>
+                    )}
+                </div>
             </motion.div>
         );
     }
