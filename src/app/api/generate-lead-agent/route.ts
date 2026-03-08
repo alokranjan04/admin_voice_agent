@@ -291,37 +291,78 @@ Be enthusiastic. Greet ${name} by name immediately. Keep it short and human.`;
 
         if (deliveryOption === 'call') {
             try {
-                const twilioSid = process.env.TWILIO_ACCOUNT_SID;
-                const twilioToken = process.env.TWILIO_AUTH_TOKEN;
-                const twilioFrom = process.env.TWILIO_PHONE_NUMBER;
-                const vapiPhoneNumberId = process.env.VAPI_PHONE_NUMBER_ID || process.env.VITE_VAPI_PHONE_NUMBER_ID;
+                // Support both standard and VITE_ prefixed env vars for maximum compatibility
+                const twilioSid = process.env.TWILIO_ACCOUNT_SID || process.env.VITE_TWILIO_ACCOUNT_SID;
+                const twilioToken = process.env.TWILIO_AUTH_TOKEN || process.env.VITE_TWILIO_AUTH_TOKEN;
+                const twilioFrom = (process.env.TWILIO_PHONE_NUMBER || process.env.VITE_TWILIO_PHONE_NUMBER)?.replace(/\s/g, '');
+                let vapiPhoneNumberId = process.env.VAPI_PHONE_NUMBER_ID || process.env.VITE_VAPI_PHONE_NUMBER_ID;
 
-                console.log(`[Generate Agent API] Call context: phone=${phone}, vapiPhoneId=${!!vapiPhoneNumberId}, twilioSid=${!!twilioSid}, twilioFrom=${twilioFrom}`);
+                console.log(`[Generate Agent API] Outbound Config Detection: VAPI_ID=${!!vapiPhoneNumberId}, TWILIO_SID=${!!twilioSid}`);
+
+                // Smart Resolution: If it's a raw number, try to find the Vapi UUID first
+                if (vapiPhoneNumberId && vapiPhoneNumberId.startsWith('+') && vapiApiKey) {
+                    try {
+                        console.log(`[Generate Agent API] Attempting to resolve number ${vapiPhoneNumberId} to Vapi UUID...`);
+                        const listRes = await fetch('https://api.vapi.ai/phone-number', {
+                            headers: { 'Authorization': `Bearer ${vapiApiKey}` }
+                        });
+                        if (listRes.ok) {
+                            const numbers = await listRes.json() as any[];
+                            const match = numbers?.find((n: any) => n.number === vapiPhoneNumberId);
+                            if (match) {
+                                console.log(`[Generate Agent API] Resolved to UUID: ${match.id}`);
+                                vapiPhoneNumberId = match.id;
+                            }
+                        }
+                    } catch (resErr) {
+                        console.warn(`[Generate Agent API] UUID Resolution failed:`, resErr);
+                    }
+                }
+
+                console.log(`[Generate Agent API] Starting Outbound Dispatch: phone=${phone}`);
+                console.log(`[Generate Agent API] Phone Config: VAPI_PHONE_ID=${vapiPhoneNumberId}, TWILIO_SID=${!!twilioSid}, TWILIO_NUM=${twilioFrom}`);
 
                 const callPayload: any = {
                     assistantId,
-                    customer: { number: phone },
+                    customer: { number: phone.replace(/\s/g, '') }, // Ensure customer number is clean
                 };
 
-                // Priority 1: Vapi Phone Number ID (Pre-configured in Vapi Dashboard)
-                if (vapiPhoneNumberId && (vapiPhoneNumberId.includes('-') || vapiPhoneNumberId.length > 15)) {
+                // ID vs BYOD detection logic
+                const isUuid = vapiPhoneNumberId && vapiPhoneNumberId.includes('-') && vapiPhoneNumberId.length > 20;
+
+                if (isUuid) {
+                    // Scenario 1: We have a proper Vapi UUID ID
                     callPayload.phoneNumberId = vapiPhoneNumberId;
-                    console.log(`[Generate Agent API] Using pre-configured phoneNumberId: ${vapiPhoneNumberId}`);
+                    console.log(`[Generate Agent API] Using Vapi phoneNumberId (UUID).`);
                 }
-                // Priority 2: Inline Twilio Credentials (Byod)
-                else if (twilioSid && twilioToken && twilioFrom) {
+                else if (twilioSid && twilioToken && (twilioFrom || vapiPhoneNumberId)) {
+                    // Scenario 2: Inline BYOD (Twilio)
+                    // Use twilioFrom if set, or vapiPhoneNumberId if it looks like a number
+                    const rawNumber = (twilioFrom || vapiPhoneNumberId || "").replace(/\s/g, '');
+
+                    if (!rawNumber.startsWith('+')) {
+                        throw new Error(`Invalid Twilio number format: ${rawNumber}. Must start with +`);
+                    }
+
                     callPayload.phoneNumber = {
                         provider: 'twilio',
-                        number: twilioFrom, // Vapi expects 'number' here, not 'twilioPhoneNumber'
+                        number: rawNumber,
                         twilioAccountSid: twilioSid,
                         twilioAuthToken: twilioToken,
                     };
-                    console.log(`[Generate Agent API] Using inline Twilio credentials.`);
-                } else {
-                    console.warn(`[Generate Agent API] No valid phone config found — the call will likely fail.`);
+                    console.log(`[Generate Agent API] Using Twilio BYOD configuration with number: ${rawNumber}`);
+                }
+                else {
+                    // Scenario 3: Failure — no UUID and no Twilio creds to handle the raw number
+                    const diag = [];
+                    if (!vapiPhoneNumberId) diag.push("VAPI_PHONE_NUMBER_ID missing");
+                    if (!twilioSid) diag.push("TWILIO_ACCOUNT_SID missing");
+                    if (!twilioToken) diag.push("TWILIO_AUTH_TOKEN missing");
+
+                    throw new Error(`Outbound Call Failed: ${vapiPhoneNumberId && !isUuid ? 'BYOD credentials (SID/Token) are required for raw phone numbers.' : 'Missing configuration.'} Diagnostics: ${diag.join(', ')}`);
                 }
 
-                const callRes = await fetch('https://api.vapi.ai/call/phone', {
+                const callRes = await fetch('https://api.vapi.ai/call', {
                     method: 'POST',
                     headers: {
                         'Authorization': `Bearer ${vapiApiKey}`,
