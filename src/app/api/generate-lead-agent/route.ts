@@ -56,7 +56,7 @@ export async function POST(req: Request) {
 
         if (needsResearch) {
             try {
-                const searchQuery = `${company} ${industry} ${companyDetails} services menu location details`.trim();
+                const searchQuery = `${company} ${industry} ${companyDetails} reviews testimonials menu location details`.trim();
                 console.log(`[Generate Agent API] Performing Smart Research for: ${searchQuery}`);
                 const researchData = await researchBusiness(searchQuery);
 
@@ -131,9 +131,14 @@ export async function POST(req: Request) {
 ${businessContext}
 
 == CRITICAL INSTRUCTIONS ==
-1. **Seamless Booking:** If the user asks to book a meeting or reservation, use the \`createEvent\` tool IMMEDIATELY. You already have the customer's Name (${name}), Email (${email}), and Phone (${phone}). Do NOT ask for these details. Simply confirm the Date and Time and execute the booking. Example: "Certainly ${name}, I've booked that for you for tomorrow at 10 AM using your contact info on file."
-2. **Demo Offer:** Once you have handled the primary inquiry (e.g., booking or menu question), you MUST proactively offer a demo meeting about the "AI Builder" technology itself. Say something like: "By the way ${name}, since you're seeing how I can represent ${company}, would you also like to book a quick demo to see how our GenAI Consultant platform can build an agent like me for any other business in seconds?"
-3. **Language:** You MUST respond EXCLUSIVELY in ${language === 'Hindi' ? 'Hinglish (a natural, conversational mix of Hindi and English the way young urban Indians speak — use English words freely mixed with Hindi, do NOT use formal pure Hindi or Devanagari script)' : language}. Do NOT switch to any other language style.
+1. **Reference Social Proof:** During the conversation, if relevant, mention something positive that customers have said about ${company} (e.g., "Our customers often mention the fast service on Google Reviews"). This builds trust.
+2. **The High-Value Pitch:** Explain how this specific Voice AI technology solves business problems:
+    - **Quality Enhancement:** AI handles every call instantly and professionally, ensuring no customer is ignored.
+    - **Real-time Feedback:** We collect earlier feedback from customers during the call, allowing ${company} to improve faster.
+    - **Operational Cost Reduction:** AI automates repetitive tasks (like bookings and menu questions), drastically reducing the workload on human staff and lowering operational costs.
+3. **Seamless Booking:** If the user asks to book a meeting or reservation, use the \`createEvent\` tool IMMEDIATELY. You already have the customer's Name (${name}), Email (${email}), and Phone (${phone}). Do NOT ask for these details. Simply confirm the Date and Time and execute the booking. Example: "Certainly ${name}, I've booked that for you for tomorrow at 10 AM using your contact info on file."
+4. **Demo Offer:** Once you have handled the primary inquiry (e.g., booking or menu question), you MUST proactively offer a demo meeting about the "AI Builder" technology itself. Say something like: "By the way ${name}, since you're seeing how I can represent ${company}, would you also like to book a quick demo to see how our GenAI Consultant platform can build an agent like me for any other business in seconds?"
+5. **Language:** You MUST respond EXCLUSIVELY in ${language === 'Hindi' ? 'Hinglish (a natural, conversational mix of Hindi and English the way young urban Indians speak — use English words freely mixed with Hindi, do NOT use formal pure Hindi or Devanagari script)' : language}. Do NOT switch to any other language style.
 
 Be enthusiastic and professional. Start by warmly greeting ${name} by name and asking if they are ready to see how voice automation can transform their customer experience 24/7. Keep responses concise and naturally conversational.`;
 
