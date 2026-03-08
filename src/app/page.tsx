@@ -56,31 +56,36 @@ export default function AgencyLandingPage() {
             </div>
 
             {/* Main Content Container */}
-            <main className="flex-grow container mx-auto px-6 lg:px-12 relative z-10 py-16 lg:py-24">
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+            <main className="flex-grow relative z-10 pt-20">
 
-                    {/* Left Column - Copy & 3D */}
-                    <div className="flex flex-col space-y-8">
-                        <div className="relative z-20">
-                            <div className="inline-flex items-center space-x-2 px-4 py-1.5 rounded-full border border-indigo-400/30 bg-indigo-400/10 text-indigo-300 text-sm font-semibold mb-6 shadow-xl shadow-indigo-500/10">
-                                <Bot className="w-4 h-4" />
-                                <span>TellYourJourney Exclusive Access</span>
-                            </div>
-                            <h1 className="text-5xl md:text-6xl lg:text-7xl font-extrabold text-transparent bg-clip-text bg-gradient-to-tr from-white via-indigo-100 to-indigo-400 leading-[1.1] mb-6">
-                                Deploy Voice AI <br /> That Converts.
-                            </h1>
-                            <p className="text-xl text-indigo-100/70 max-w-xl leading-relaxed">
-                                Supercharge your business with completely autonomous AI Voice Agents that handle customer support, execute outbound sales, and automate calendar bookings 24/7.
-                            </p>
+                {/* Full-Width 3D Hero Section */}
+                <div className="relative w-full">
+                    {/* Headline overlaid on top of the 3D element */}
+                    <div className="absolute inset-0 z-10 flex flex-col items-center justify-center text-center px-6 pointer-events-none">
+                        <div className="inline-flex items-center space-x-2 px-4 py-1.5 rounded-full border border-indigo-400/30 bg-indigo-400/10 text-indigo-300 text-sm font-semibold mb-4 shadow-xl shadow-indigo-500/10">
+                            <Bot className="w-4 h-4" />
+                            <span>TellYourJourney Exclusive Access</span>
                         </div>
+                        <h1 className="text-5xl md:text-6xl lg:text-8xl font-extrabold text-transparent bg-clip-text bg-gradient-to-tr from-white via-indigo-100 to-indigo-400 leading-[1.1] mb-4">
+                            Deploy Voice AI <br /> That Converts.
+                        </h1>
+                        <p className="text-xl text-indigo-100/70 max-w-2xl leading-relaxed">
+                            Supercharge your business with completely autonomous AI Voice Agents that handle customer support, execute outbound sales, and automate calendar bookings 24/7.
+                        </p>
+                    </div>
 
-                        {/* Premium 3D Element Container */}
-                        <div className="w-full relative z-10 pointer-events-none">
-                            {/* Embedded 3D Canvas */}
-                            <ThreeDElement />
-                        </div>
+                    {/* Full-width 3D Canvas */}
+                    <div className="w-full pointer-events-auto">
+                        <ThreeDElement />
+                    </div>
+                </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-white max-w-xl relative z-20">
+                {/* Below-fold: Stats + Form */}
+                <div className="container mx-auto px-6 lg:px-12 py-12">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
+
+                        {/* Left: Stats Cards */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-white">
                             <div className="flex flex-col space-y-2 border-l-2 border-indigo-500 pl-4 bg-white/5 p-4 rounded-r-xl backdrop-blur-sm shadow-xl shadow-black/50 hover:bg-white/10 transition-colors">
                                 <span className="text-3xl font-bold flex items-center">
                                     <PhoneCall className="w-6 h-6 mr-3 text-indigo-400" />
@@ -96,14 +101,14 @@ export default function AgencyLandingPage() {
                                 <span className="text-sm text-indigo-200">Scalability. Handle infinite simultaneous callers & book meetings instantly.</span>
                             </div>
                         </div>
-                    </div>
 
-                    {/* Right Column - Lead Capture Form */}
-                    <div className="w-full max-w-lg mx-auto lg:mr-0 lg:ml-auto relative z-20">
-                        <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/20 to-purple-500/20 rounded-3xl blur-2xl" />
-                        <AgencyLeadForm />
-                    </div>
+                        {/* Right: Lead Capture Form */}
+                        <div className="w-full max-w-lg mx-auto lg:mr-0 lg:ml-auto relative z-20">
+                            <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/20 to-purple-500/20 rounded-3xl blur-2xl" />
+                            <AgencyLeadForm />
+                        </div>
 
+                    </div>
                 </div>
             </main>
 

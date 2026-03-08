@@ -36,7 +36,7 @@ const AnimatedShape = () => {
 
 export default function ThreeDElement() {
     return (
-        <div className="w-full h-[520px] md:h-[680px] lg:h-[720px] relative pointer-events-auto">
+        <div className="w-full h-[70vh] md:h-[85vh] relative pointer-events-auto">
             <Canvas camera={{ position: [0, 0, 6], fov: 50 }}>
                 <ambientLight intensity={0.4} />
                 <directionalLight position={[10, 10, 5]} intensity={1.5} color="#c084fc" />
