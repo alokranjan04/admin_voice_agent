@@ -253,14 +253,15 @@ Be enthusiastic and professional. Start by warmly greeting ${name} by name and a
         const testLink = `${protocol}://${host}/test/${assistantId}`;
 
         // 3. Handle Delivery Mode — Call directly via VAPI API (no internal fetch)
+        // 3. Handle Delivery Mode — Call directly via VAPI API
+        let callStatus = 'not_requested';
+        let callError = null;
+
         if (deliveryOption === 'call') {
             try {
-                let phoneNumberId = process.env.VITE_VAPI_PHONE_NUMBER_ID || process.env.NEXT_PUBLIC_VAPI_PHONE_NUMBER_ID || '';
-
-                // Smart Resolution: If it's a phone number string (not a UUID), resolve it to a UUID
                 const twilioSid = process.env.TWILIO_ACCOUNT_SID;
                 const twilioToken = process.env.TWILIO_AUTH_TOKEN;
-                const twilioFrom = process.env.TWILIO_PHONE_NUMBER || process.env.VITE_VAPI_PHONE_NUMBER_ID;
+                const twilioFrom = process.env.TWILIO_PHONE_NUMBER;
 
                 console.log(`[Generate Agent API] Call context: phone=${phone}, twilioSid=${!!twilioSid}, twilioToken=${!!twilioToken}, twilioFrom=${twilioFrom}`);
 
@@ -270,13 +271,13 @@ Be enthusiastic and professional. Start by warmly greeting ${name} by name and a
                 };
 
                 if (twilioSid && twilioToken && twilioFrom) {
-                    // Inline Twilio credentials — bypasses VAPI phone number registration
                     callPayload.phoneNumber = {
+                        provider: 'twilio',
                         twilioPhoneNumber: twilioFrom,
                         twilioAccountSid: twilioSid,
                         twilioAuthToken: twilioToken,
                     };
-                    console.log(`[Generate Agent API] Using inline Twilio creds from ${twilioFrom}`);
+                    console.log(`[Generate Agent API] Using inline Twilio credentials.`);
                 } else {
                     console.warn(`[Generate Agent API] No Twilio credentials found — call may fail.`);
                 }
@@ -293,11 +294,16 @@ Be enthusiastic and professional. Start by warmly greeting ${name} by name and a
                 const callData = await callRes.json();
                 if (!callRes.ok) {
                     console.error(`[Generate Agent API] VAPI Call Failed:`, JSON.stringify(callData));
+                    callStatus = 'failed';
+                    callError = callData.message || 'Vapi rejected the call request.';
                 } else {
-                    console.log(`[Generate Agent API] ✅ Outbound call dispatched to ${phone}. Call ID: ${callData.id}`);
+                    console.log(`[Generate Agent API] ✅ Outbound call dispatched (ID: ${callData.id})`);
+                    callStatus = 'success';
                 }
-            } catch (callErr) {
-                console.error('[Generate Agent API] Exception during outbound call:', callErr);
+            } catch (err: any) {
+                console.error('[Generate Agent API] Exception during outbound call:', err);
+                callStatus = 'failed';
+                callError = err.message || 'Internal error during call dispatch.';
             }
         }
 
@@ -347,7 +353,9 @@ Be enthusiastic and professional. Start by warmly greeting ${name} by name and a
             success: true,
             assistantId,
             testLink,
-            services: extractedServices
+            services: extractedServices,
+            callStatus,
+            callError
         });
 
     } catch (error: any) {

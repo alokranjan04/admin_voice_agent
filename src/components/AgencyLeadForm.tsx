@@ -30,6 +30,8 @@ export default function AgencyLeadForm() {
     const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
     const [errorMessage, setErrorMessage] = useState('');
     const [generatedServices, setGeneratedServices] = useState<Array<{ name: string, description: string }>>([]);
+    const [callStatus, setCallStatus] = useState<string>('not_requested');
+    const [callError, setCallError] = useState<string | null>(null);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -59,6 +61,8 @@ export default function AgencyLeadForm() {
             }
 
             setGeneratedServices(data.services || []);
+            setCallStatus(data.callStatus || 'not_requested');
+            setCallError(data.callError || null);
             setStatus('success');
 
             sendGAEvent('event', 'lead_agent_generated_success', {
@@ -99,11 +103,16 @@ export default function AgencyLeadForm() {
                     <CheckCircle className="w-16 h-16 text-green-400 mx-auto mb-4" />
                 </motion.div>
                 <h3 className="text-2xl font-bold text-white mb-2">
-                    {deliveryOption === 'call' ? 'Calling You Now! 📞' : 'Agent Generated! 🚀'}
+                    {deliveryOption === 'call'
+                        ? (callStatus === 'failed' ? 'Agent Ready, but Call Failed ⚠️' : 'Calling You Now! 📞')
+                        : 'Agent Generated! 🚀'
+                    }
                 </h3>
                 <p className="text-indigo-100 mb-6">
                     {deliveryOption === 'call'
-                        ? `Your phone (${formData.phone}) should be ringing in seconds with a live call from your new ${formData.company} AI Agent!`
+                        ? (callStatus === 'failed'
+                            ? `We built your agent, but couldn't trigger the call: ${callError || 'Check server Twilio config'}.`
+                            : `Your phone (${formData.phone}) should be ringing in seconds with a live call from your new ${formData.company} AI Agent!`)
                         : `We've built a custom Voice AI agent for ${formData.company}. Check ${formData.email} for the exclusive test link!`
                     }
                 </p>
@@ -145,6 +154,8 @@ export default function AgencyLeadForm() {
                             setDeliveryOption('email');
                             setLanguage('English');
                             setGeneratedServices([]);
+                            setCallStatus('not_requested');
+                            setCallError(null);
                         }}
                         className="bg-white/10 hover:bg-white/20 border border-white/20 text-white px-6 py-2 rounded-lg font-medium transition-colors cursor-pointer"
                     >
