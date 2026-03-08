@@ -294,24 +294,31 @@ Be enthusiastic. Greet ${name} by name immediately. Keep it short and human.`;
                 const twilioSid = process.env.TWILIO_ACCOUNT_SID;
                 const twilioToken = process.env.TWILIO_AUTH_TOKEN;
                 const twilioFrom = process.env.TWILIO_PHONE_NUMBER;
+                const vapiPhoneNumberId = process.env.VAPI_PHONE_NUMBER_ID || process.env.VITE_VAPI_PHONE_NUMBER_ID;
 
-                console.log(`[Generate Agent API] Call context: phone=${phone}, twilioSid=${!!twilioSid}, twilioToken=${!!twilioToken}, twilioFrom=${twilioFrom}`);
+                console.log(`[Generate Agent API] Call context: phone=${phone}, vapiPhoneId=${!!vapiPhoneNumberId}, twilioSid=${!!twilioSid}, twilioFrom=${twilioFrom}`);
 
                 const callPayload: any = {
                     assistantId,
                     customer: { number: phone },
                 };
 
-                if (twilioSid && twilioToken && twilioFrom) {
+                // Priority 1: Vapi Phone Number ID (Pre-configured in Vapi Dashboard)
+                if (vapiPhoneNumberId && (vapiPhoneNumberId.includes('-') || vapiPhoneNumberId.length > 15)) {
+                    callPayload.phoneNumberId = vapiPhoneNumberId;
+                    console.log(`[Generate Agent API] Using pre-configured phoneNumberId: ${vapiPhoneNumberId}`);
+                }
+                // Priority 2: Inline Twilio Credentials (Byod)
+                else if (twilioSid && twilioToken && twilioFrom) {
                     callPayload.phoneNumber = {
                         provider: 'twilio',
-                        twilioPhoneNumber: twilioFrom,
+                        number: twilioFrom, // Vapi expects 'number' here, not 'twilioPhoneNumber'
                         twilioAccountSid: twilioSid,
                         twilioAuthToken: twilioToken,
                     };
                     console.log(`[Generate Agent API] Using inline Twilio credentials.`);
                 } else {
-                    console.warn(`[Generate Agent API] No Twilio credentials found — call may fail.`);
+                    console.warn(`[Generate Agent API] No valid phone config found — the call will likely fail.`);
                 }
 
                 const callRes = await fetch('https://api.vapi.ai/call/phone', {
