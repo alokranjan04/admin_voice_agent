@@ -158,10 +158,25 @@ Be enthusiastic. Greet ${name} by name immediately. Keep it short and human.`;
                 name: `${company} AI Rep (${language})`,
                 serverUrl,
                 analysisPlan: {
-                    summaryEnabled: true,
-                    summaryPrompt: `Summarize the conversation between the AI Agent and ${name}. Focus on their interest in ${company}'s services.`,
-                    successEvaluationEnabled: true,
-                    successEvaluationPrompt: "The call was successful if the user expressed interest or booked a follow-up."
+                    summaryPlan: {
+                        enabled: true,
+                        messages: [
+                            {
+                                role: 'system',
+                                content: `Summarize the conversation between the AI Agent and ${name} from ${company}. Focus on their interest in services and any next steps discussed.`
+                            }
+                        ]
+                    },
+                    successEvaluationPlan: {
+                        enabled: true,
+                        rubric: 'NumericScale',
+                        messages: [
+                            {
+                                role: 'system',
+                                content: "Rate the call success from 1-10. The call was successful if the user expressed genuine interest or agreed to a follow-up."
+                            }
+                        ]
+                    }
                 },
                 language: langCode,
                 metadata: {
