@@ -241,3 +241,16 @@ We accept all major credit cards, debit cards, and digital payment methods like 
     clientUrl: ''
   }
 };
+
+export interface Lead {
+  id: string;
+  name: string;
+  company: string;
+  email: string;
+  phone: string;
+  website?: string;
+  assistantId: string;
+  expiresAt: string;
+  createdAt: string;
+  isExpired?: boolean;
+}

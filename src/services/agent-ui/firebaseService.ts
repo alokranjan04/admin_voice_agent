@@ -25,7 +25,7 @@ const getDocumentTimestamp = (doc: any) => {
   }
 
   // 3. savedAt (Business Logic - SANITIZED)
-  // If 'savedAt' is present, we use it, BUT we filter out crazy future dates (e.g. 2026)
+  // If 'savedAt' is present, we use it, BUT we filter out crazy future dates
   // which effectively "bans" bugged configs from taking over.
   if (doc.savedAt) {
     let t = 0;
@@ -364,6 +364,30 @@ export const firebaseService = {
     } catch (e) {
       console.error("Error saving config:", e);
       return false;
+    }
+  },
+
+  // Real-time subscription for Agency Leads
+  subscribeToLeads(callback: (leads: any[]) => void) {
+    if (!db) return () => { };
+    try {
+      const leadsRef = collection(db, 'temporary_assistants');
+      const q = query(leadsRef, orderBy('createdAt', 'desc'));
+
+      return onSnapshot(q, (snapshot) => {
+        const leads = snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data(),
+          // Calculate status based on expiration
+          isExpired: doc.data().expiresAt ? new Date(doc.data().expiresAt).getTime() < Date.now() : false
+        }));
+        callback(leads);
+      }, (error) => {
+        console.error("Leads subscription error:", error);
+      });
+    } catch (e) {
+      console.error("Error setting up leads subscription:", e);
+      return () => { };
     }
   }
 };

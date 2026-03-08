@@ -92,3 +92,16 @@ export interface BusinessConfig {
     showFloatingWidget?: boolean;
   };
 }
+
+export interface Lead {
+  id: string;
+  name: string;
+  company: string;
+  email: string;
+  phone: string;
+  website?: string;
+  assistantId: string;
+  expiresAt: string;
+  createdAt: string;
+  isExpired?: boolean;
+}

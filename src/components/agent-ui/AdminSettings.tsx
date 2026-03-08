@@ -118,15 +118,8 @@ const AdminSettings: React.FC<AdminSettingsProps> = ({
     };
 
     // ... render return ...
-    // Note: I am replacing the Component start. I need to make sure I don't delete the JSX logic if I don't include it. 
-    // The previous tool usage showed the file content. 
-    // I need to be careful. I will target up to the `persistCurrentSession` function end or logic. 
 
-    // Wait, replacing a large chunk might be risky if I don't hav the full content. 
-    // I have up to line 324. 
-    // The `persistCurrentSession` logic continues. 
 
-    // Let's replace imports and `useEffect` first.
 
 
 

@@ -4,13 +4,15 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Sidebar } from '@/components/Sidebar';
 import { LoginScreen } from '@/components/LoginScreen';
 import { CalendarView } from '@/components/CalendarView';
+import LeadsDashboard from '@/components/LeadsDashboard';
 import { generateConfigFromDescription } from '@/services/geminiService';
 import { saveConfiguration, auth, loginWithGoogle, logoutUser, getOrgId, getBranding, saveBranding } from '@/services/firebase';
+import { firebaseService } from '@/services/agent-ui/firebaseService';
 import { createVapiAssistant } from '@/services/vapiService';
 import { researchBusiness } from '@/services/researchService';
 import { getTemplateByIndustry } from '@/services/templateService';
-import { AgentConfiguration, INITIAL_CONFIG, DeliveryModeType, SUPPORTED_INDUSTRIES, BrandingConfig, DEFAULT_BRANDING } from '@/types';
-import { Wand2, Plus, Trash2, Loader2, AlertCircle, Copy, Check, Database, Calendar, Rocket, Braces, Search, Upload, Palette, Image as ImageIcon, Phone, PhoneCall, Link, Globe, ShieldCheck, Settings2 } from 'lucide-react';
+import { AgentConfiguration, INITIAL_CONFIG, DeliveryModeType, SUPPORTED_INDUSTRIES, BrandingConfig, DEFAULT_BRANDING, Lead } from '@/types';
+import { Wand2, Plus, Trash2, Loader2, AlertCircle, Copy, Check, Database, Calendar, Rocket, Braces, Search, Upload, Palette, Image as ImageIcon, Phone, PhoneCall, Link, Globe, ShieldCheck, Settings2, Users } from 'lucide-react';
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { loadStripe } from '@stripe/stripe-js';
 
@@ -182,6 +184,7 @@ export default function AdminPage() {
     const [isBillingLoading, setIsBillingLoading] = useState(false);
     const [isCalling, setIsCalling] = useState(false);
     const [vapiAssistantId, setVapiAssistantId] = useState<string | null>(null);
+    const [leads, setLeads] = useState<Lead[]>([]);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     // Handle Stripe Checkout Success Redirect
@@ -235,6 +238,16 @@ export default function AdminPage() {
             setIsBrandingLoading(false);
         }
     };
+
+    // Leads Subscription
+    useEffect(() => {
+        if (user) {
+            const unsubscribe = firebaseService.subscribeToLeads((data: Lead[]) => {
+                setLeads(data);
+            });
+            return () => unsubscribe();
+        }
+    }, [user]);
 
     // Auth Listener
     useEffect(() => {
@@ -1144,6 +1157,11 @@ export default function AdminPage() {
                         <p className="text-slate-500">Book meetings and send automated email invitations directly.</p>
                     </div>
                     <CalendarView />
+                </section>
+
+                {/* Section L: Agency Leads Dashboard */}
+                <section id="leads" className="space-y-6 scroll-mt-24 pb-12">
+                    <LeadsDashboard leads={leads} />
                 </section>
 
                 {/* Section K: Plan & Billing */}

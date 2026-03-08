@@ -49,6 +49,7 @@ const NAV_ITEMS = [
   { id: 'mode', label: 'Operation Modes', icon: Settings2 },
   { id: 'vapi', label: 'VAPI Setup', icon: Settings2 },
   { id: 'calendar', label: 'Calendar & Bookings', icon: Calendar },
+  { id: 'leads', label: 'Agency Leads', icon: Users },
   { id: 'billing', label: 'Plan & Billing', icon: CreditCard },
 ];
 
