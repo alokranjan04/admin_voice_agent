@@ -84,3 +84,8 @@ jobs:
             GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}
             GOOGLE_REFRESH_TOKEN=${{ secrets.GOOGLE_REFRESH_TOKEN }}
             ENABLE_CALENDAR_INVITES=true
+            TWILIO_ACCOUNT_SID=${{ secrets.TWILIO_ACCOUNT_SID }}
+            TWILIO_AUTH_TOKEN=${{ secrets.TWILIO_AUTH_TOKEN }}
+            TWILIO_PHONE_NUMBER=${{ secrets.TWILIO_PHONE_NUMBER }}
+            VAPI_PHONE_NUMBER_ID=${{ secrets.VAPI_PHONE_NUMBER_ID }}
+            VAPI_PRIVATE_API_KEY=${{ secrets.VAPI_PRIVATE_API_KEY }}
