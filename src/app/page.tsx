@@ -75,7 +75,7 @@ export default function AgencyLandingPage() {
                         </div>
 
                         {/* Premium 3D Element Container */}
-                        <div className="w-full relative z-10 -mt-8 -mb-12 pointer-events-none">
+                        <div className="w-full relative z-10 pointer-events-none">
                             {/* Embedded 3D Canvas */}
                             <ThreeDElement />
                         </div>
