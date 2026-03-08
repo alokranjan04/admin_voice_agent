@@ -30,6 +30,13 @@ export async function POST(req: Request) {
         const host = req.headers.get('host') || 'localhost:3000';
         const protocol = host.includes('localhost') ? 'http' : 'https';
 
+        // Robust Webhook URL: Priority to ENV_URL, fallback to host with WWW handling for tellyourjourney.com
+        let baseUrl = process.env.NEXT_PUBLIC_APP_URL || `${protocol}://${host}`;
+        if (baseUrl.includes('tellyourjourney.com') && !baseUrl.includes('www.')) {
+            baseUrl = baseUrl.replace('tellyourjourney.com', 'www.tellyourjourney.com');
+        }
+        const serverUrl = `${baseUrl.replace(/\/$/, '')}/api/vapi/webhook`;
+
         // 0. Scrape website content using Jina AI Reader (handles JS-rendered sites)
         let websiteContent = '';
         if (website) {
@@ -149,7 +156,13 @@ Be enthusiastic. Greet ${name} by name immediately. Keep it short and human.`;
             },
             body: JSON.stringify({
                 name: `${company} AI Rep (${language})`,
-                serverUrl: `${protocol}://${host}/api/vapi/webhook`,
+                serverUrl,
+                analysisPlan: {
+                    summaryEnabled: true,
+                    summaryPrompt: `Summarize the conversation between the AI Agent and ${name}. Focus on their interest in ${company}'s services.`,
+                    successEvaluationEnabled: true,
+                    successEvaluationPrompt: "The call was successful if the user expressed interest or booked a follow-up."
+                },
                 language: langCode,
                 metadata: {
                     leadEmail: email,

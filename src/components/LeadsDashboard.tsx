@@ -77,14 +77,14 @@ const LeadsDashboard: React.FC<LeadsDashboardProps> = ({ leads }) => {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100">
-                            <AnimatePresence mode="popLayout">
+                            <AnimatePresence>
                                 {leads.length > 0 ? (
                                     leads.map((lead, index) => (
                                         <motion.tr
                                             key={lead.id}
-                                            initial={{ opacity: 0, y: 20 }}
+                                            initial={{ opacity: 0, y: 10 }}
                                             animate={{ opacity: 1, y: 0 }}
-                                            transition={{ delay: index * 0.05 }}
+                                            transition={{ duration: 0.2 }}
                                             className="group hover:bg-slate-50/80 transition-all duration-200"
                                         >
                                             <td className="px-6 py-5">
