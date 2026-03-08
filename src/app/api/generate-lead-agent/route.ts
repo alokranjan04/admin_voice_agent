@@ -157,27 +157,7 @@ Be enthusiastic. Greet ${name} by name immediately. Keep it short and human.`;
             body: JSON.stringify({
                 name: `${company} AI Rep (${language})`,
                 serverUrl,
-                analysisPlan: {
-                    summaryPlan: {
-                        enabled: true,
-                        messages: [
-                            {
-                                role: 'system',
-                                content: `Summarize the conversation between the AI Agent and ${name} from ${company}. Focus on their interest in services and any next steps discussed.`
-                            }
-                        ]
-                    },
-                    successEvaluationPlan: {
-                        enabled: true,
-                        rubric: 'NumericScale',
-                        messages: [
-                            {
-                                role: 'system',
-                                content: "Rate the call success from 1-10. The call was successful if the user expressed genuine interest or agreed to a follow-up."
-                            }
-                        ]
-                    }
-                },
+
                 language: langCode,
                 metadata: {
                     leadEmail: email,
