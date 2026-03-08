@@ -346,14 +346,16 @@ export async function summarizeBusinessResearch(companyName: string, description
     
     YOUR TASK:
     Extract and summarize the most relevant information for a Voice AI Agent to use. 
-    Focus on:
-    1. EXACT Menu items or Services (with prices if available).
-    2. Operational details (Address, Hours, Unique features).
-    3. Key selling points and tone of the business.
+    
+    CRITICAL PRIORITY:
+    1. EXACT Menu items, Services, and Products (with prices if available). If it's a restaurant, list specific dishes.
+    2. Operational details (Exact Address, Opening Hours, Contact info).
+    3. Core value proposition and unique selling points.
     
     OUTPUT FORMAT:
-    Return a clean, structured Markdown summary. Be concise. Avoid fluff. 
-    If you find conflicting information, prioritize the one that looks like an official listing or a high-rated review.
+    Return a clean, structured Markdown summary. 
+    Use headers like "### Menu & Services" and "### Operational Details".
+    Be concise but thorough with facts. Avoid adjectives and marketing fluff.
     Limit the output to 1500 characters.
   `;
 

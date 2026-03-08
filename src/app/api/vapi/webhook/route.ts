@@ -17,18 +17,20 @@ export async function POST(req: NextRequest) {
             const summary = report.summary || 'Summary not available.';
             const transcript = report.transcript || 'Transcript not available.';
 
+            console.log(`[Vapi Webhook] Processing end-of-call. Metadata: email=${customerEmail}, name=${customerName}, company=${companyName}`);
+
             const gmailUser = process.env.GMAIL_USER;
             const gmailPass = process.env.GMAIL_APP_PASSWORD;
 
             if (customerEmail && gmailUser && gmailPass) {
-                console.log(`[Vapi Webhook] Sending post-call email to ${customerEmail} (BCC: ${gmailUser})`);
+                console.log(`[Vapi Webhook] Attempting to send summary email...`);
                 try {
                     const transporter = nodemailer.createTransport({
                         service: 'gmail',
                         auth: { user: gmailUser, pass: gmailPass }
                     });
 
-                    await transporter.sendMail({
+                    const info = await transporter.sendMail({
                         from: `"Voice AI Agency" <${gmailUser}>`,
                         to: customerEmail,
                         bcc: gmailUser,
@@ -56,12 +58,12 @@ export async function POST(req: NextRequest) {
                             </div>
                         `
                     });
-                    console.log(`[Vapi Webhook] ✅ Post-call email sent to ${customerEmail}`);
+                    console.log(`[Vapi Webhook] ✅ Email sent! ID: ${info.messageId}`);
                 } catch (emailErr) {
-                    console.error('[Vapi Webhook] Failed to send post-call email:', emailErr);
+                    console.error('[Vapi Webhook] ERROR sending post-call email:', emailErr);
                 }
             } else {
-                console.warn(`[Vapi Webhook] Skipping email — missing customerEmail or Gmail config. email:${customerEmail}, gmail:${!!gmailUser}`);
+                console.warn(`[Vapi Webhook] ⚠️ Skipping email. Details missing: custEmail=${!!customerEmail}, gmailUser=${!!gmailUser}, gmailPass=${!!gmailPass}`);
             }
 
             return NextResponse.json({ success: true });
