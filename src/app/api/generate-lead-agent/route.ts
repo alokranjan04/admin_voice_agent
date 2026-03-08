@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import nodemailer from 'nodemailer';
 import { researchBusiness } from '@/services/researchService';
 import { summarizeBusinessResearch, extractServicesFromResearch } from '@/services/geminiService';
+import { adminDb } from '@/lib/firebase-admin';
 
 export async function POST(req: Request) {
     try {
@@ -130,17 +131,15 @@ export async function POST(req: Request) {
 
 ${businessContext}
 
-== CRITICAL INSTRUCTIONS ==
-1. **Reference Social Proof:** During the conversation, if relevant, mention something positive that customers have said about ${company} (e.g., "Our customers often mention the fast service on Google Reviews"). This builds trust.
-2. **The High-Value Pitch:** Explain how this specific Voice AI technology solves business problems:
-    - **Quality Enhancement:** AI handles every call instantly and professionally, ensuring no customer is ignored.
-    - **Real-time Feedback:** We collect earlier feedback from customers during the call, allowing ${company} to improve faster.
-    - **Operational Cost Reduction:** AI automates repetitive tasks (like bookings and menu questions), drastically reducing the workload on human staff and lowering operational costs.
-3. **Seamless Booking:** If the user asks to book a meeting or reservation, use the \`createEvent\` tool IMMEDIATELY. You already have the customer's Name (${name}), Email (${email}), and Phone (${phone}). Do NOT ask for these details. Simply confirm the Date and Time and execute the booking. Example: "Certainly ${name}, I've booked that for you for tomorrow at 10 AM using your contact info on file."
-4. **Demo Offer:** Once you have handled the primary inquiry (e.g., booking or menu question), you MUST proactively offer a demo meeting about the "AI Builder" technology itself. Say something like: "By the way ${name}, since you're seeing how I can represent ${company}, would you also like to book a quick demo to see how our GenAI Consultant platform can build an agent like me for any other business in seconds?"
-5. **Language:** You MUST respond EXCLUSIVELY in ${language === 'Hindi' ? 'Hinglish (a natural, conversational mix of Hindi and English the way young urban Indians speak — use English words freely mixed with Hindi, do NOT use formal pure Hindi or Devanagari script)' : language}. Do NOT switch to any other language style.
+== CRITICAL INSTRUCTIONS (MANDATORY) ==
+1. **NO REPETITIVE QUESTIONS:** You strictly already have the user's details. ${name}'s email is ${email} and phone is ${phone}. If they ask to book or reschedule, use these details IMMEDIATELY without asking for them. 
+2. **Reference Social Proof:** During the conversation, mention positive feedback found in the "Customer Feedback" section above to build trust (e.g., "Customers love our fast service!").
+3. **The Strategic Pitch:** Explain that this Voice AI isn't just a bot—it improves **Quality** (no missed calls), catches **Feedback** earlier, and slashes **Operational Costs**.
+4. **Seamless Booking:** Confirmation is key. Just say: "${name}, I'm booking that for you now using your contact info on file (${phone})." Then call the tool.
+5. **Demo Offer:** Suggest a demo of the "AI Builder" platform once the primary topic is handled.
+6. **Language:** Respond EXCLUSIVELY in ${language === 'Hindi' ? 'Hinglish' : language}.
 
-Be enthusiastic and professional. Start by warmly greeting ${name} by name and asking if they are ready to see how voice automation can transform their customer experience 24/7. Keep responses concise and naturally conversational.`;
+Be enthusiastic. Greet ${name} by name immediately. Keep it short and human.`;
 
         const vapiRes = await fetch('https://api.vapi.ai/assistant', {
             method: 'POST',
@@ -210,7 +209,7 @@ Be enthusiastic and professional. Start by warmly greeting ${name} by name and a
                             type: 'function',
                             function: {
                                 name: 'createEvent',
-                                description: 'Book an appointment and add it to the calendar',
+                                description: 'Book an appointment. You MUST use the pre-filled Name, Email, and Phone from the System Prompt. Do NOT ask the customer for these.',
                                 parameters: {
                                     type: 'object',
                                     properties: {
@@ -230,16 +229,16 @@ Be enthusiastic and professional. Start by warmly greeting ${name} by name and a
                             type: 'function',
                             function: {
                                 name: 'cancelEvent',
-                                description: 'Cancel an existing appointment',
+                                description: 'Cancel an existing appointment. Use the information you already have.',
                                 parameters: {
                                     type: 'object',
                                     properties: {
-                                        date: { type: 'string' },
-                                        time: { type: 'string' },
-                                        name: { type: 'string' },
-                                        email: { type: 'string' }
+                                        date: { type: 'string', description: 'Date of the appointment' },
+                                        time: { type: 'string', description: 'Time of the appointment' },
+                                        name: { type: 'string', description: 'Name used for booking' },
+                                        email: { type: 'string', description: 'Email used for booking' }
                                     },
-                                    required: ['name']
+                                    required: ['name', 'date']
                                 }
                             }
                         }
@@ -264,6 +263,23 @@ Be enthusiastic and professional. Start by warmly greeting ${name} by name and a
 
         const assistantId = vapiData.id;
         console.log(`[Generate Agent API] Created Assistant ID: ${assistantId}`);
+
+        // TRACK FOR CLEANUP (Expires in 30 mins)
+        if (assistantId && adminDb) {
+            try {
+                const expiry = new Date(Date.now() + 30 * 60 * 1000);
+                await adminDb.collection('temporary_assistants').doc(assistantId).set({
+                    assistantId,
+                    company,
+                    leadEmail: email,
+                    expiresAt: expiry.toISOString(),
+                    createdAt: new Date().toISOString()
+                });
+                console.log(`[Generate Agent API] Assistant ${assistantId} tracked for cleanup at ${expiry.toISOString()}`);
+            } catch (dbErr) {
+                console.warn('[Generate Agent API] Failed to log tracking info to Firebase:', dbErr);
+            }
+        }
 
         // 2. Determine the host URL for the Test Drive link
         const testLink = `${protocol}://${host}/test/${assistantId}`;

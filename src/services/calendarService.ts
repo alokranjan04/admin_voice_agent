@@ -14,6 +14,14 @@ function buildTargetTzString(date: Date, tzOffset: string): string {
 }
 
 /**
+ * Normalizes a phone number by removing all non-numeric characters except the leading + (if any)
+ */
+function normalizePhone(phone: string): string {
+    if (!phone) return "";
+    return phone.replace(/[^\d+]/g, '');
+}
+
+/**
  * Check if a specific date/time is available
  */
 export async function checkAvailability(date: string, time?: string, service?: string) {
@@ -446,7 +454,8 @@ export async function cancelEvent(details: { date: string; time?: string; name?:
             );
 
             // Note: details.callerPhone usually starts with '+'
-            const matchPhone = details.callerPhone && details.callerPhone !== 'Unknown' && description.includes(details.callerPhone);
+            const searchPhone = normalizePhone(details.callerPhone || '');
+            const matchPhone = searchPhone && searchPhone !== 'Unknown' && normalizePhone(description).includes(searchPhone);
 
             let isTimeMatch = true;
             if (details.time && evt.start?.dateTime) {

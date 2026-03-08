@@ -360,6 +360,8 @@ export async function summarizeBusinessResearch(companyName: string, description
     Limit the output to 1500 characters.
   `;
 
+  console.log(`[Gemini Research] Summarizing for ${companyName}. Raw data length: ${JSON.stringify(researchData).length}`);
+
   try {
     const result = await model.generateContent(prompt);
     return result.response.text().trim();
