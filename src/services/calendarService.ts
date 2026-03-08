@@ -1,6 +1,23 @@
 import { getCalendarClient, getCalendarId, getBusinessHours, getAppointmentDuration } from '../lib/googleAuth';
 
 /**
+ * Safe date parser that treats YYYY-MM-DD strings as LOCAL time, not UTC.
+ * JavaScript's `new Date("YYYY-MM-DD")` parses as UTC midnight (which
+ * rolls back a day in IST +05:30). This helper avoids that shift.
+ */
+function parseDateSafe(dateStr: string): Date {
+    // Match YYYY-MM-DD pattern
+    const isoMatch = dateStr.match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if (isoMatch) {
+        const [, y, m, d] = isoMatch;
+        // Create in local time (no UTC shift)
+        return new Date(parseInt(y), parseInt(m) - 1, parseInt(d));
+    }
+    // For natural language strings like "March 8 2026", `new Date` is fine
+    return new Date(dateStr);
+}
+
+/**
  * Helper to ensure local Date objects from UTC servers securely format into absolute ISO strings with exact timezone offsets.
  */
 function buildTargetTzString(date: Date, tzOffset: string): string {
@@ -31,7 +48,7 @@ export async function checkAvailability(date: string, time?: string, service?: s
         const businessHours = getBusinessHours();
 
         // Parse the date and time
-        const requestedDate = new Date(date);
+        const requestedDate = parseDateSafe(date);
         if (isNaN(requestedDate.getTime())) {
             return {
                 available: false,
@@ -121,8 +138,8 @@ export async function findAvailableSlots(date: string, service?: string, duratio
         const businessHours = getBusinessHours();
         const slotDuration = duration || getAppointmentDuration();
 
-        // Parse the date
-        const requestedDate = new Date(date);
+        // Parse the date (safe: avoid UTC shift for YYYY-MM-DD strings)
+        const requestedDate = parseDateSafe(date);
         if (isNaN(requestedDate.getTime())) {
             return {
                 success: false,
@@ -260,7 +277,7 @@ export async function createEvent(details: {
         if (isPM && hours < 12) hours += 12;
         if (isAM && hours === 12) hours = 0;
 
-        const startDateTime = new Date(details.date);
+        const startDateTime = parseDateSafe(details.date);
 
         if (isNaN(startDateTime.getTime())) {
             return {
@@ -415,7 +432,7 @@ export async function cancelEvent(details: { date: string; time?: string; name?:
         const calendar = getCalendarClient();
         const calendarId = getCalendarId();
 
-        const requestedDate = new Date(details.date);
+        const requestedDate = parseDateSafe(details.date);
         if (isNaN(requestedDate.getTime())) {
             return {
                 success: false,
