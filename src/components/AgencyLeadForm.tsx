@@ -32,11 +32,13 @@ export default function AgencyLeadForm() {
     const [generatedServices, setGeneratedServices] = useState<Array<{ name: string, description: string }>>([]);
     const [callStatus, setCallStatus] = useState<string>('not_requested');
     const [callError, setCallError] = useState<string | null>(null);
+    const [isEditing, setIsEditing] = useState(false);
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
+    const handleSubmit = async (e?: React.FormEvent) => {
+        if (e) e.preventDefault();
         setStatus('loading');
         setErrorMessage('');
+        setIsEditing(false);
 
         sendGAEvent('event', 'lead_form_submit', {
             category: 'acquisition',
@@ -51,7 +53,12 @@ export default function AgencyLeadForm() {
             const res = await fetch('/api/generate-lead-agent', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ ...formData, deliveryOption, language }),
+                body: JSON.stringify({
+                    ...formData,
+                    deliveryOption,
+                    language,
+                    services: isEditing ? generatedServices : undefined // Send custom services if editing
+                }),
             });
 
             const data = await res.json();
@@ -159,18 +166,99 @@ export default function AgencyLeadForm() {
                         }}
                         className="bg-white/10 hover:bg-white/20 border border-white/20 text-white px-6 py-2 rounded-lg font-medium transition-colors cursor-pointer"
                     >
-                        Build Another
+                        Build New
                     </button>
+
+                    <button
+                        onClick={() => setIsEditing(true)}
+                        className="bg-indigo-600/30 hover:bg-indigo-600/50 border border-indigo-500/50 text-white px-6 py-2 rounded-lg font-medium transition-colors cursor-pointer flex items-center justify-center gap-2"
+                    >
+                        <Sparkles className="w-4 h-4" />
+                        Edit & Refine
+                    </button>
+
                     {deliveryOption === 'email' && (
                         <a
-                            href="https://vapi.ai"
-                            target="_blank"
-                            rel="noopener noreferrer"
+                            href="#"
                             className="bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-2 rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
                         >
                             Open Dashboard <ArrowRight className="w-4 h-4" />
                         </a>
                     )}
+                </div>
+            </motion.div>
+        );
+    }
+
+    if (isEditing) {
+        return (
+            <motion.div
+                key="editing"
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="bg-white/10 backdrop-blur-xl border border-white/20 p-8 rounded-2xl shadow-2xl relative z-30"
+            >
+                <div className="mb-6">
+                    <h3 className="text-2xl font-bold text-white mb-2">Refine Your AI Agent</h3>
+                    <p className="text-indigo-100/70 text-sm">Edit the details below to perfect your agent's capabilities before the next call.</p>
+                </div>
+
+                <div className="space-y-6">
+                    <div>
+                        <label className="block text-xs font-bold text-indigo-300 uppercase tracking-widest mb-2">Core Services / Capabilities</label>
+                        <div className="space-y-3">
+                            {generatedServices.map((service, idx) => (
+                                <div key={idx} className="bg-black/30 border border-white/10 rounded-xl p-3">
+                                    <input
+                                        className="w-full bg-transparent text-white font-semibold text-sm mb-1 focus:outline-none focus:ring-1 focus:ring-indigo-500 rounded px-1"
+                                        value={service.name}
+                                        onChange={(e) => {
+                                            const newServices = [...generatedServices];
+                                            newServices[idx].name = e.target.value;
+                                            setGeneratedServices(newServices);
+                                        }}
+                                    />
+                                    <textarea
+                                        className="w-full bg-transparent text-indigo-200/70 text-xs focus:outline-none focus:ring-1 focus:ring-indigo-500 rounded px-1 resize-none"
+                                        rows={2}
+                                        value={service.description}
+                                        onChange={(e) => {
+                                            const newServices = [...generatedServices];
+                                            newServices[idx].description = e.target.value;
+                                            setGeneratedServices(newServices);
+                                        }}
+                                    />
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    <div>
+                        <label className="block text-xs font-bold text-indigo-300 uppercase tracking-widest mb-2">Company Context</label>
+                        <textarea
+                            name="companyDetails"
+                            value={formData.companyDetails}
+                            onChange={handleChange}
+                            rows={4}
+                            className="w-full bg-black/30 border border-white/10 rounded-xl p-4 text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        />
+                    </div>
+
+                    <div className="flex gap-3">
+                        <button
+                            onClick={() => setIsEditing(false)}
+                            className="flex-1 bg-white/5 hover:bg-white/10 text-white px-6 py-3 rounded-xl font-bold transition-all"
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            onClick={() => handleSubmit()}
+                            className="flex-[2] bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold py-3 px-6 rounded-xl shadow-lg flex items-center justify-center gap-2"
+                        >
+                            <Phone className="w-5 h-5" />
+                            Update & Call Me Now
+                        </button>
+                    </div>
                 </div>
             </motion.div>
         );

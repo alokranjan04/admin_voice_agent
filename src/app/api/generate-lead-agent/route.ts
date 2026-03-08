@@ -50,10 +50,10 @@ export async function POST(req: Request) {
             }
         }
 
-        // 0.5 Smart Research Step: If scraping is thin (< 1000 chars) or missing, pick from Google (the "Swiddles and Siahi" fix)
+        // 0.5 Smart Research Step: Skip if services are already provided (Edit Mode)
         let researchSummary = '';
-        let extractedServices: Array<{ name: string, description: string }> = [];
-        const needsResearch = !website || websiteContent.length < 1000;
+        let extractedServices: Array<{ name: string, description: string }> = body.services || [];
+        const needsResearch = extractedServices.length === 0 && (!website || websiteContent.length < 1000);
 
         if (needsResearch) {
             try {
@@ -326,6 +326,55 @@ Be enthusiastic. Greet ${name} by name immediately. Keep it short and human.`;
                     assistantId,
                     customer: { number: phone.replace(/\s/g, '') }, // Ensure customer number is clean
                 };
+
+                // Smart Resolution & Auto-Import: If it's a raw number, ensure it's registered with Vapi
+                if (vapiPhoneNumberId && (vapiPhoneNumberId.startsWith('+') || /^\d+$/.test(vapiPhoneNumberId)) && vapiApiKey) {
+                    try {
+                        const rawNum = vapiPhoneNumberId.startsWith('+') ? vapiPhoneNumberId : `+${vapiPhoneNumberId}`;
+                        console.log(`[Generate Agent API] Checking Vapi registration for ${rawNum}...`);
+
+                        const listRes = await fetch('https://api.vapi.ai/phone-number', {
+                            headers: { 'Authorization': `Bearer ${vapiApiKey}` }
+                        });
+
+                        if (listRes.ok) {
+                            const numbers = await listRes.json() as any[];
+                            const match = numbers?.find((n: any) => n.number === rawNum);
+
+                            if (match) {
+                                console.log(`[Generate Agent API] Found existing Vapi ID: ${match.id}`);
+                                vapiPhoneNumberId = match.id;
+                            }
+                            else if (twilioSid && twilioToken) {
+                                // AUTO-IMPORT: If not found, try to import it using Twilio creds
+                                console.log(`[Generate Agent API] Number not found in Vapi. Attempting AUTO-IMPORT...`);
+                                const importRes = await fetch('https://api.vapi.ai/phone-number/import', {
+                                    method: 'POST',
+                                    headers: {
+                                        'Authorization': `Bearer ${vapiApiKey}`,
+                                        'Content-Type': 'application/json'
+                                    },
+                                    body: JSON.stringify({
+                                        provider: 'twilio',
+                                        number: rawNum,
+                                        twilioAccountSid: twilioSid,
+                                        twilioAuthToken: twilioToken
+                                    })
+                                });
+                                if (importRes.ok) {
+                                    const imported = await importRes.json();
+                                    console.log(`[Generate Agent API] ✅ Auto-Import Successful: ${imported.id}`);
+                                    vapiPhoneNumberId = imported.id;
+                                } else {
+                                    const errText = await importRes.text();
+                                    console.error(`[Generate Agent API] Auto-Import Failed:`, errText);
+                                }
+                            }
+                        }
+                    } catch (resErr) {
+                        console.warn(`[Generate Agent API] UUID Resolution/Import failed:`, resErr);
+                    }
+                }
 
                 // ID vs BYOD detection logic
                 const isUuid = vapiPhoneNumberId && vapiPhoneNumberId.includes('-') && vapiPhoneNumberId.length > 20;
