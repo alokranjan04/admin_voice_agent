@@ -10,20 +10,65 @@ export async function POST(req: NextRequest) {
         // --- End of Call Report Handling ---
         if (body.message?.type === 'end-of-call-report') {
             const report = body.message;
+            const assistantId = report.call?.assistant?.id || report.assistantId;
             const assistantMetadata = report.call?.assistant?.metadata;
+
             const customerEmail = assistantMetadata?.leadEmail;
             const customerName = assistantMetadata?.leadName || 'Valued Customer';
             const companyName = assistantMetadata?.leadCompany || 'your company';
+
             const summary = report.summary || 'Summary not available.';
             const transcript = report.transcript || 'Transcript not available.';
 
-            console.log(`[Vapi Webhook] Processing end-of-call. Metadata: email=${customerEmail}, name=${customerName}, company=${companyName}`);
+            console.log(`[Vapi Webhook] Processing end-of-call. Assistant: ${assistantId}, Email: ${customerEmail}`);
 
+            // 1. Persist to Database (Firebase Admin)
+            const { adminDb } = await import('@/lib/firebase-admin');
+            if (adminDb) {
+                try {
+                    // Update the Lead/Assistant record if it exists
+                    if (assistantId) {
+                        const leadRef = adminDb.collection('temporary_assistants').doc(assistantId);
+                        await leadRef.set({
+                            summary,
+                            transcript,
+                            status: 'completed',
+                            lastUpdatedAt: new Date().toISOString()
+                        }, { merge: true });
+                        console.log(`[Vapi Webhook] Updated temporary_assistants/${assistantId} with summary.`);
+                    }
+
+                    // Save to main summaries collection for Dashboard visibility
+                    // Check if it's a multi-tenant agent
+                    const orgId = assistantMetadata?.orgId;
+                    const agentId = assistantMetadata?.agentId;
+
+                    let summaryCollection;
+                    if (orgId && agentId) {
+                        summaryCollection = adminDb.collection('organizations').doc(orgId).collection('agents').doc(agentId).collection('summaries');
+                    } else {
+                        summaryCollection = adminDb.collection('summaries');
+                    }
+
+                    await summaryCollection.add({
+                        summary,
+                        transcript,
+                        metadata: assistantMetadata || {},
+                        createdAt: new Date().toISOString(),
+                        type: 'outbound_lead'
+                    });
+                    console.log(`[Vapi Webhook] Saved summary to Firestore.`);
+                } catch (dbErr) {
+                    console.error('[Vapi Webhook] Database Save failed:', dbErr);
+                }
+            }
+
+            // 2. Send Summary Email
             const gmailUser = process.env.GMAIL_USER;
             const gmailPass = process.env.GMAIL_APP_PASSWORD;
 
             if (customerEmail && gmailUser && gmailPass) {
-                console.log(`[Vapi Webhook] Attempting to send summary email...`);
+                console.log(`[Vapi Webhook] Attempting to send summary email to ${customerEmail}...`);
                 try {
                     const transporter = nodemailer.createTransport({
                         service: 'gmail',
