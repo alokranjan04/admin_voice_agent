@@ -44,12 +44,21 @@ export default function DemoBookingModal({ isOpen, onClose, vapiInstance, callSt
         e.preventDefault();
         if (!chatInput.trim() || !vapiInstance || callStatus !== 'active') return;
 
-        // Send a message to the AI
+        // Send the user's message to the AI
         vapiInstance.send({
             type: 'add-message',
             message: {
                 role: 'user',
                 content: chatInput
+            }
+        });
+
+        // FORCE the AI to acknowledge the typed input (since it sometimes ignores silent text injections if it expects voice)
+        vapiInstance.send({
+            type: 'add-message',
+            message: {
+                role: 'system',
+                content: `The user just typed the following into the chat box: "${chatInput}". You MUST accept this typed text as the absolute truth. Acknowledge what they typed immediately.`
             }
         });
 
