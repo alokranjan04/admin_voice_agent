@@ -113,7 +113,7 @@ export default function AgencyLandingPage() {
                 </div>
 
                 {/* Main Hero & Lead Capture Section */}
-                <div className="container mx-auto px-6 lg:px-12 py-0 relative z-10 w-full min-h-[calc(100vh-140px)] flex flex-col justify-center">
+                <div className="container mx-auto px-6 lg:px-12 py-8 lg:py-2 relative z-10 w-full min-h-[calc(100vh-140px)] flex flex-col justify-center">
 
                     {/* Background 3D Element wrapper */}
                     <div id="technology" className="absolute inset-0 z-0 opacity-40 lg:opacity-100 pointer-events-none overflow-hidden flex items-center justify-center lg:justify-start">
@@ -122,7 +122,7 @@ export default function AgencyLandingPage() {
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center relative z-10 pointer-events-none">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-10 xl:gap-16 items-center relative z-10 pointer-events-none">
                         {/* Left Column: Value Prop & Headline */}
                         <div id="services" className="flex flex-col items-center lg:items-start text-center lg:text-left pt-2 lg:pt-0">
                             <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full border border-indigo-400/30 bg-indigo-400/10 text-indigo-300 text-[11px] font-semibold mb-2 shadow-xl shadow-indigo-500/10 pointer-events-auto">
@@ -130,17 +130,17 @@ export default function AgencyLandingPage() {
                                 <span>TellYourJourney Exclusive Access</span>
                             </div>
 
-                            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-extrabold text-transparent bg-clip-text bg-gradient-to-tr from-white via-indigo-100 to-indigo-400 leading-[1.1] mb-0.5 py-1 flex flex-col gap-1 pointer-events-auto selection:bg-indigo-500/30">
+                            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-5xl xl:text-6xl 2xl:text-7xl font-extrabold text-transparent bg-clip-text bg-gradient-to-tr from-white via-indigo-100 to-indigo-400 leading-[1.1] mb-0.5 py-1 flex flex-col gap-1 pointer-events-auto selection:bg-indigo-500/30">
                                 <span>Voice AI That Converts</span>
                                 <span>Missed Calls Into Revenue.</span>
                             </h1>
 
-                            <p className="text-base md:text-lg font-medium text-indigo-100/90 max-w-xl leading-relaxed mb-6 pointer-events-auto selection:bg-indigo-500/30">
+                            <p className="text-base md:text-lg font-medium text-indigo-100/90 max-w-xl leading-relaxed mb-4 lg:mb-6 pointer-events-auto selection:bg-indigo-500/30">
                                 Built for SMBs and service businesses. No hiring. No training. Just booked appointments and handled calls — around the clock.
                             </p>
 
                             {/* High-Converting Hero CTA */}
-                            <div className="mb-10 mt-2 pointer-events-auto w-full flex flex-col sm:flex-row items-center justify-start gap-4">
+                            <div className="mb-6 lg:mb-10 mt-2 pointer-events-auto w-full flex flex-col sm:flex-row items-center justify-start gap-4">
                                 <DemoCallButton
                                     customClass="flex items-center justify-center px-6 py-2.5 rounded-full font-bold text-base transition-all bg-indigo-600 text-white hover:bg-indigo-500 hover:scale-105 shadow-[0_0_30px_rgba(79,70,229,0.4)] hover:shadow-[0_0_40px_rgba(79,70,229,0.6)] w-full sm:w-auto"
                                     text="Talk to Our AI Now"
@@ -180,7 +180,7 @@ export default function AgencyLandingPage() {
             </main>
 
             {/* Professional Custom Footer */}
-            <footer id="contact" className="w-full relative z-20 mt-20 border-t border-white/10 bg-slate-950 pt-16 pb-8">
+            <footer id="contact" className="w-full relative z-20 mt-10 lg:mt-20 border-t border-white/10 bg-slate-950 pt-16 pb-8">
                 <div className="absolute inset-0 overflow-hidden pointer-events-none">
                     <div className="absolute bottom-0 left-[20%] w-[40%] h-[300px] rounded-full opacity-10 blur-[100px] bg-indigo-500" />
                 </div>
