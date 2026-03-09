@@ -302,6 +302,20 @@ export async function createEvent(details: {
         // Handle overflow to next day natively
         const endString = `${endDateTime.toISOString().split('T')[0]}T${String(endHours).padStart(2, '0')}:${String(endMinutes).padStart(2, '0')}:00`;
 
+        // 🚨 CRITICAL FIX: Explicitly double-check availability to prevent double-booking 
+        // even if the LLM forgot to call the findAvailableSlots or checkAvailability tools first.
+        try {
+            const availability = await checkAvailability(details.date, details.time);
+            if (!availability.available && availability.reason === 'Time slot already booked') {
+                return {
+                    success: false,
+                    message: "I'm so sorry, but it looks like that exact time slot just became unavailable. Could we try a different time or date?"
+                };
+            }
+        } catch (e: any) {
+            console.warn('[Calendar] Pre-booking availability check failed, proceeding with caution...', e.message);
+        }
+
         const finalName = details.customerName && details.customerName !== 'undefined' ? details.customerName : 'Client';
 
         // --- Start of Manual ICS Helper ---

@@ -58,8 +58,11 @@ export default function DemoBookingModal({ isOpen, onClose, vapiInstance, callSt
         setChatInput('');
     };
 
-    const setHoldState = (hold: boolean) => {
+    const setHoldState = (hold: boolean, e?: React.SyntheticEvent) => {
+        if (e && e.cancelable) e.preventDefault();
+
         if (!vapiInstance || callStatus !== 'active') return;
+        if (hold === isOnHold) return;
 
         // Mute/unmute user
         vapiInstance.setMuted(hold);
@@ -69,6 +72,17 @@ export default function DemoBookingModal({ isOpen, onClose, vapiInstance, callSt
             type: 'control',
             control: hold ? 'mute-assistant' : 'unmute-assistant'
         });
+
+        // Prompt the AI to resume its thought when the user releases the hold button
+        if (!hold) {
+            vapiInstance.send({
+                type: 'add-message',
+                message: {
+                    role: 'system',
+                    content: 'The user was briefly on hold and has now returned. Please seamlessly resume your previous sentence or ask if they are ready to continue.'
+                }
+            });
+        }
 
         setIsOnHold(hold);
     };
@@ -167,11 +181,11 @@ export default function DemoBookingModal({ isOpen, onClose, vapiInstance, callSt
                         {callStatus === 'active' && (
                             <div className="flex flex-col items-center justify-center space-y-2 py-4 bg-slate-900/80 border-b border-white/5">
                                 <button
-                                    onMouseDown={() => setHoldState(true)}
-                                    onMouseUp={() => setHoldState(false)}
-                                    onMouseLeave={() => setHoldState(false)}
-                                    onTouchStart={() => setHoldState(true)}
-                                    onTouchEnd={() => setHoldState(false)}
+                                    onMouseDown={(e) => setHoldState(true, e)}
+                                    onMouseUp={(e) => setHoldState(false, e)}
+                                    onMouseLeave={(e) => setHoldState(false, e)}
+                                    onTouchStart={(e) => setHoldState(true, e)}
+                                    onTouchEnd={(e) => setHoldState(false, e)}
                                     className={`flex items-center justify-center space-x-2 px-6 py-3 rounded-full font-semibold transition-all select-none ${isOnHold ? 'bg-amber-500 text-slate-900 scale-95 shadow-inner' : 'bg-slate-800 text-white hover:bg-slate-700 hover:scale-105 shadow-md shadow-black/50'}`}
                                 >
                                     {isOnHold ? <Pause className="w-5 h-5 fill-current" /> : <Mic className="w-5 h-5" />}
