@@ -94,7 +94,7 @@ export default function AgencyLeadForm() {
         setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
     };
 
-    if (status === 'success') {
+    if (status === 'success' && !isEditing) {
         return (
             <motion.div
                 key="success"
