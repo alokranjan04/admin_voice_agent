@@ -229,8 +229,8 @@ export const serverCalendarService = {
             const userEmail = rawEmail.includes('@') ? rawEmail.replace(/\s/g, '') : "missing-email@example.com";
 
             const event = {
-                summary: `${bookingDetails.service || 'Appointment'} - ${bookingDetails.name || 'Customer'}`,
-                description: `Phone: ${bookingDetails.phone || 'N/A'}\nEmail: ${bookingDetails.email || 'N/A'}`,
+                summary: `TellYourJourney Demo - ${bookingDetails.name || 'Customer'}`,
+                description: `Phone: ${bookingDetails.phone || 'N/A'}\nEmail: ${bookingDetails.email || 'N/A'}\nService: ${bookingDetails.service || 'Demo'}`,
                 start: { dateTime: start.toISOString(), timeZone: 'UTC' },
                 end: { dateTime: end.toISOString(), timeZone: 'UTC' },
                 attendees: [

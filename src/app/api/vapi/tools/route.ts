@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { checkAvailability, findAvailableSlots, createEvent } from '@/services/calendarService';
+import { checkAvailability, findAvailableSlots, createEvent, cancelEvent } from '@/services/calendarService';
 
 export async function POST(req: NextRequest) {
     try {
@@ -61,6 +61,16 @@ export async function POST(req: NextRequest) {
                                 customerEmail: args.email || args.customerEmail,
                                 customerPhone: args.phone || args.customerPhone,
                                 duration: args.duration
+                            });
+                            break;
+
+                        case 'cancelEvent':
+                            result = await cancelEvent({
+                                date: args.date,
+                                time: args.time,
+                                name: args.customerName,
+                                email: args.customerEmail,
+                                callerPhone: args.customerPhone
                             });
                             break;
 

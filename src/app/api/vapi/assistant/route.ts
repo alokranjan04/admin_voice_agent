@@ -37,7 +37,7 @@ export async function POST(req: Request) {
             messages: [
                 {
                     role: 'system',
-                    content: `${systemPrompt}\n\n# DATE CHECK REQUIRED\nYou do not know the current date. To schedule ANY appointment, you MUST first call the "getCurrentDateTime" tool to get the current date and time. Do not guess or assume the date.\n\n# USER CONTEXT\n${(config.vapi.userName || config.vapi.userEmail || config.vapi.userPhone)
+                    content: `${systemPrompt}\n\n# DATE CHECK REQUIRED\nYou do not know the current date. To schedule ANY appointment, you MUST first call the "getCurrentDateTime" tool to get the current date and time. Do not guess or assume the date.\n\n# BEHAVIOR RULES:\n1. EMAIL CONFIRMATION: If the user provides their email by speaking it, you MUST spell it back to them character-by-character to confirm it is correct.\n2. PITCHING A DEMO: After explaining our services and how we can help in their domain, you MUST ask: 'Can I book a demo with the owner? He can explain things to you in more detail.'\n\n# USER CONTEXT\n${(config.vapi.userName || config.vapi.userEmail || config.vapi.userPhone)
                         ? `Information about the user is already known:\n` +
                         (config.vapi.userName ? `- Name: ${config.vapi.userName}\n` : '') +
                         (config.vapi.userEmail ? `- Email: ${config.vapi.userEmail}\n` : '') +
@@ -153,6 +153,24 @@ export async function POST(req: Request) {
                                 customerPhone: { type: "string", description: "Customer phone. If provided in USER CONTEXT, you MUST pass it exactly without asking the user." }
                             },
                             required: ["date", "time", "customerName", "service"]
+                        }
+                    }
+                },
+                {
+                    type: "function",
+                    function: {
+                        name: "cancelEvent",
+                        description: "Cancel an existing calendar appointment if the user requests it",
+                        parameters: {
+                            type: "object",
+                            properties: {
+                                date: { type: "string", description: "Date of the appointment to cancel in YYYY-MM-DD format" },
+                                time: { type: "string", description: "Time of the appointment to cancel in HH:MM format (24-hour)" },
+                                customerName: { type: "string", description: "Customer name" },
+                                customerEmail: { type: "string", description: "Customer email" },
+                                customerPhone: { type: "string", description: "Customer phone" }
+                            },
+                            required: ["date"]
                         }
                     }
                 },
