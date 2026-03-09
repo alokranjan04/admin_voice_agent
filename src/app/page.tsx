@@ -3,7 +3,7 @@
 import React from 'react';
 import ThreeDElement from '@/components/ThreeDElement';
 import AgencyLeadForm from '@/components/AgencyLeadForm';
-import { Bot, PhoneCall, CalendarCheck, Sparkles } from 'lucide-react';
+import { Bot, PhoneCall, CalendarCheck, Sparkles, Linkedin } from 'lucide-react';
 import { sendGAEvent } from '@next/third-parties/google';
 import DemoCallButton from '@/components/DemoCallButton';
 
@@ -170,6 +170,18 @@ export default function AgencyLandingPage() {
                                 <li className="flex flex-col">
                                     <span className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Direct Line</span>
                                     <a href="tel:7042915552" className="text-indigo-400 hover:text-indigo-300 transition-colors font-medium">7042915552</a>
+                                </li>
+                                <li className="flex flex-col">
+                                    <span className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Social</span>
+                                    <a
+                                        href="https://www.linkedin.com/in/alokranjan04/"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="flex items-center text-indigo-400 hover:text-indigo-300 transition-colors font-medium group"
+                                    >
+                                        <Linkedin className="w-4 h-4 mr-2" />
+                                        Connect on LinkedIn
+                                    </a>
                                 </li>
                             </ul>
                         </div>
