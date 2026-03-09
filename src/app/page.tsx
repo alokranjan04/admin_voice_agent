@@ -65,12 +65,9 @@ export default function AgencyLandingPage() {
                         </a>
                     </nav>
 
-                    <div className="flex items-center gap-4 z-50 relative">
-                        <a href="/login" className="hidden md:inline-flex items-center justify-center px-5 py-2 text-sm font-bold text-white bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 rounded-full transition-all">
-                            Client Login
-                        </a>
+                    <div className="flex items-center">
                         <button
-                            className="md:hidden p-2 -mr-2 text-slate-300 hover:text-white transition-colors"
+                            className="md:hidden p-2 -mr-2 text-slate-300 hover:text-white transition-colors relative z-50"
                             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                             aria-label="Toggle Menu"
                         >
@@ -85,10 +82,6 @@ export default function AgencyLandingPage() {
                         <a href="#services" onClick={(e) => { sendGAEvent('event', 'nav_click', { label: 'Services' }); scrollToSection(e, 'services'); }} className="hover:text-indigo-400 transition-colors">Services</a>
                         <a href="#technology" onClick={(e) => { sendGAEvent('event', 'nav_click', { label: 'Technology' }); scrollToSection(e, 'technology'); }} className="hover:text-indigo-400 transition-colors">Technology</a>
                         <a href="#contact" onClick={(e) => { sendGAEvent('event', 'nav_click', { label: 'Contact' }); scrollToSection(e, 'contact'); }} className="hover:text-indigo-400 transition-colors">Contact</a>
-                        <div className="h-px w-24 bg-white/10 my-4"></div>
-                        <a href="/login" className="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-full transition-all shadow-[0_0_20px_rgba(79,70,229,0.3)]">
-                            Client Login
-                        </a>
                     </nav>
                 </div>
             </header>
