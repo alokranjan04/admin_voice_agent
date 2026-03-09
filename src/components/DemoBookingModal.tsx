@@ -105,8 +105,8 @@ export default function DemoBookingModal({ isOpen, onClose, vapiInstance, callSt
                             onClick={callStatus === 'active' ? endCall : startCall}
                             disabled={callStatus === 'loading'}
                             className={`flex items-center justify-center px-4 py-2 rounded-lg font-bold text-sm transition-all ${callStatus === 'active'
-                                    ? 'bg-red-500/10 text-red-500 border border-red-500/20 hover:bg-red-500/20'
-                                    : 'bg-indigo-600 text-white hover:bg-indigo-500'
+                                ? 'bg-red-500/10 text-red-500 border border-red-500/20 hover:bg-red-500/20'
+                                : 'bg-indigo-600 text-white hover:bg-indigo-500'
                                 }`}
                         >
                             {callStatus === 'loading' ? (
@@ -137,14 +137,28 @@ export default function DemoBookingModal({ isOpen, onClose, vapiInstance, callSt
 
                 {/* Pre-Call State */}
                 {callStatus !== 'active' && transcript.length === 0 && (
-                    <div className="p-12 flex flex-col items-center justify-center text-center">
-                        <div className="w-16 h-16 bg-indigo-500/10 rounded-full flex items-center justify-center mb-6">
-                            <Mic className="w-8 h-8 text-indigo-400" />
+                    <div className="p-10 flex flex-col items-center justify-center text-center">
+                        <div className="w-20 h-20 bg-indigo-500/10 rounded-full flex items-center justify-center mb-6 ring-4 ring-indigo-500/20 animate-pulse">
+                            <Mic className="w-10 h-10 text-indigo-400" />
                         </div>
-                        <h3 className="text-xl font-bold text-white mb-2">Ready to Book Your Demo?</h3>
-                        <p className="text-slate-400 text-sm mb-6 max-w-sm">
-                            Click start and simply talk to our AI assistant. It will handle gathering your details and finding a time on our calendar.
+                        <h3 className="text-2xl font-bold text-white mb-3">Ready to Book Your Demo?</h3>
+                        <p className="text-slate-400 text-sm mb-8 max-w-sm">
+                            Simply talk to our AI assistant. It will handle gathering your details and finding a time on our calendar.
                         </p>
+                        <button
+                            onClick={startCall}
+                            disabled={callStatus === 'loading'}
+                            className="flex items-center justify-center px-8 py-4 rounded-full font-bold text-lg transition-all bg-indigo-600 text-white hover:bg-indigo-500 hover:scale-105 shadow-[0_0_20px_rgba(79,70,229,0.4)] disabled:opacity-50 disabled:hover:scale-100"
+                        >
+                            {callStatus === 'loading' ? (
+                                <Loader2 className="w-6 h-6 animate-spin" />
+                            ) : (
+                                <div className="flex items-center gap-2">
+                                    <Mic className="w-5 h-5" />
+                                    <span>Start Conversation</span>
+                                </div>
+                            )}
+                        </button>
                     </div>
                 )}
 
@@ -156,8 +170,8 @@ export default function DemoBookingModal({ isOpen, onClose, vapiInstance, callSt
                             {transcript.map((msg, i) => (
                                 <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                                     <div className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-relaxed ${msg.role === 'user'
-                                            ? 'bg-indigo-600 text-white rounded-tr-sm'
-                                            : 'bg-white/10 text-slate-200 rounded-tl-sm'
+                                        ? 'bg-indigo-600 text-white rounded-tr-sm'
+                                        : 'bg-white/10 text-slate-200 rounded-tl-sm'
                                         }`}>
                                         {msg.text}
                                     </div>
