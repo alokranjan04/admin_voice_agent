@@ -10,8 +10,12 @@ export async function POST(req: NextRequest) {
         // --- End of Call Report Handling ---
         if (body.message?.type === 'end-of-call-report') {
             const report = body.message;
-            const assistantId = report.call?.assistant?.id || report.assistantId;
-            const assistantMetadata = report.call?.assistant?.metadata;
+
+            // Log the call object to help debugging if needed
+            // console.log('[Vapi Webhook] Call Object:', JSON.stringify(report.call, null, 2));
+
+            const assistantId = report.call?.assistantId || report.call?.assistant?.id || report.assistantId;
+            const assistantMetadata = report.call?.assistant?.metadata || report.assistant?.metadata;
 
             let customerEmail = assistantMetadata?.leadEmail;
             let customerName = assistantMetadata?.leadName || 'Valued Customer';
