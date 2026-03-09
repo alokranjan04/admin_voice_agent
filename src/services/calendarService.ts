@@ -317,6 +317,7 @@ export async function createEvent(details: {
         }
 
         const finalName = details.customerName && details.customerName !== 'undefined' ? details.customerName : 'Client';
+        const eventTitle = `TellYourJourney Demo: ${finalName}${details.company && details.company !== 'undefined' ? ` (${details.company})` : ''}`;
 
         // --- Start of Manual ICS Helper ---
         const sendManualIcsInvite = async () => {
@@ -343,7 +344,7 @@ export async function createEvent(details: {
                     `DTSTAMP:${formatIcsTime(new Date())}`,
                     `DTSTART:${formatIcsTime(startDateTime)}`,
                     `DTEND:${formatIcsTime(endDateTime)}`,
-                    `SUMMARY:${details.service || 'Appointment'} - ${finalName}`,
+                    `SUMMARY:${eventTitle}`,
                     `DESCRIPTION:${details.problem ? 'Problem to solve: ' + details.problem : 'Voice AI Demo Call'}`,
                     `ORGANIZER;CN="TellYourJourney":mailto:${gmailUser}`,
                     `ATTENDEE;RSVP=TRUE;CN="${finalName}":mailto:${details.customerEmail}`,
@@ -360,7 +361,7 @@ export async function createEvent(details: {
                 await transporter.sendMail({
                     from: `"TellYourJourney AI" <${gmailUser}>`,
                     to: details.customerEmail,
-                    subject: `Invitation: ${details.service || 'Appointment'} - ${finalName}`,
+                    subject: `Invitation: ${eventTitle}`,
                     text: `Hi ${finalName},\n\nYour ${details.service || 'appointment'} has been successfully booked for ${formatDateTime(startDateTime)}.\n\nPlease find the calendar invite attached.\n\nBest,\nTellYourJourney Team`,
                     attachments: [
                         {
@@ -381,7 +382,7 @@ export async function createEvent(details: {
 
         // Create event
         const event = {
-            summary: `${details.service || 'Appointment'} - ${finalName}`,
+            summary: eventTitle,
             description: `
 Service: ${details.service || 'General Appointment'}
 Customer: ${finalName}
