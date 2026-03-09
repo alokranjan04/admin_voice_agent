@@ -3,7 +3,7 @@
 import React from 'react';
 import ThreeDElement from '@/components/ThreeDElement';
 import AgencyLeadForm from '@/components/AgencyLeadForm';
-import { Bot, PhoneCall, CalendarCheck, Sparkles, Linkedin } from 'lucide-react';
+import { Bot, PhoneCall, CalendarCheck, Sparkles, Linkedin, Mail } from 'lucide-react';
 import { sendGAEvent } from '@next/third-parties/google';
 import DemoCallButton from '@/components/DemoCallButton';
 
@@ -173,15 +173,24 @@ export default function AgencyLandingPage() {
                                 </li>
                                 <li className="flex flex-col">
                                     <span className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Social</span>
-                                    <a
-                                        href="https://www.linkedin.com/in/alokranjan04/"
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="flex items-center text-indigo-400 hover:text-indigo-300 transition-colors font-medium group"
-                                    >
-                                        <Linkedin className="w-4 h-4 mr-2" />
-                                        Connect on LinkedIn
-                                    </a>
+                                    <div className="flex flex-col space-y-2">
+                                        <a
+                                            href="https://www.linkedin.com/in/alokranjan04/"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="flex items-center text-indigo-400 hover:text-indigo-300 transition-colors font-medium group text-[13px]"
+                                        >
+                                            <Linkedin className="w-3.5 h-3.5 mr-2" />
+                                            Connect on LinkedIn
+                                        </a>
+                                        <a
+                                            href="mailto:alokranjan04@gmail.com"
+                                            className="flex items-center text-indigo-400 hover:text-indigo-300 transition-colors font-medium group text-[13px]"
+                                        >
+                                            <Mail className="w-3.5 h-3.5 mr-2" />
+                                            alokranjan04@gmail.com
+                                        </a>
+                                    </div>
                                 </li>
                             </ul>
                         </div>
