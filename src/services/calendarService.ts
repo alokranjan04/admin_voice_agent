@@ -1,4 +1,5 @@
 import { getCalendarClient, getCalendarId, getBusinessHours, getAppointmentDuration } from '../lib/googleAuth';
+import nodemailer from 'nodemailer';
 
 /**
  * Safe date parser that treats YYYY-MM-DD strings as LOCAL time, not UTC.
@@ -303,6 +304,65 @@ export async function createEvent(details: {
 
         const finalName = details.customerName && details.customerName !== 'undefined' ? details.customerName : 'Client';
 
+        // --- Start of Manual ICS Helper ---
+        const sendManualIcsInvite = async () => {
+            if (!details.customerEmail) return;
+            try {
+                const gmailUser = process.env.GMAIL_USER;
+                const gmailPass = process.env.GMAIL_APP_PASSWORD;
+                if (!gmailUser || !gmailPass) {
+                    console.warn('[Calendar ICS] Missing GMAIL credentials, cannot send manual invite.');
+                    return;
+                }
+
+                // Format dates for ICS (YYYYMMDDTHHMMSSZ, must be UTC)
+                const formatIcsTime = (date: Date) => date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+
+                const icsContent = [
+                    'BEGIN:VCALENDAR',
+                    'VERSION:2.0',
+                    'PRODID:-//TellYourJourney/VoiceAI//EN',
+                    'CALSCALE:GREGORIAN',
+                    'METHOD:REQUEST',
+                    'BEGIN:VEVENT',
+                    `UID:event-${Date.now()}@tellyourjourney.com`,
+                    `DTSTAMP:${formatIcsTime(new Date())}`,
+                    `DTSTART:${formatIcsTime(startDateTime)}`,
+                    `DTEND:${formatIcsTime(endDateTime)}`,
+                    `SUMMARY:${details.service || 'Appointment'} - ${finalName}`,
+                    `DESCRIPTION:${details.problem ? 'Problem to solve: ' + details.problem : 'Voice AI Demo Call'}`,
+                    `ORGANIZER;CN="TellYourJourney":mailto:${gmailUser}`,
+                    `ATTENDEE;RSVP=TRUE;CN="${finalName}":mailto:${details.customerEmail}`,
+                    'STATUS:CONFIRMED',
+                    'END:VEVENT',
+                    'END:VCALENDAR'
+                ].join('\r\n');
+
+                const transporter = nodemailer.createTransport({
+                    service: 'gmail',
+                    auth: { user: gmailUser, pass: gmailPass }
+                });
+
+                await transporter.sendMail({
+                    from: `"TellYourJourney AI" <${gmailUser}>`,
+                    to: details.customerEmail,
+                    subject: `Invitation: ${details.service || 'Appointment'} - ${finalName}`,
+                    text: `Hi ${finalName},\n\nYour ${details.service || 'appointment'} has been successfully booked for ${formatDateTime(startDateTime)}.\n\nPlease find the calendar invite attached.\n\nBest,\nTellYourJourney Team`,
+                    attachments: [
+                        {
+                            filename: 'invite.ics',
+                            content: icsContent,
+                            contentType: 'text/calendar; method=REQUEST'
+                        }
+                    ]
+                });
+                console.log(`[Calendar ICS] Manual calendar invite successfully sent to ${details.customerEmail}`);
+            } catch (err: any) {
+                console.error(`[Calendar ICS] Failed to send manual invite:`, err.message);
+            }
+        };
+        // --- End of Manual ICS Helper ---
+
 
 
         // Create event
@@ -368,11 +428,14 @@ ${details.problem ? `Problem to solve: ${details.problem}` : ''}
                         sendUpdates: 'none'
                     });
 
+                    // Google API blocked native emails, so we manually send the ICS via standard SMTP
+                    await sendManualIcsInvite();
+
                     return {
                         success: true,
                         eventId: tier1Response.data.id,
                         eventLink: tier1Response.data.htmlLink,
-                        message: `Perfect! I've booked your ${details.service || 'appointment'} for ${formatDateTime(startDateTime)}. Your appointment is confirmed and you are on the guest list!`
+                        message: `Perfect! I've booked your ${details.service || 'appointment'} for ${formatDateTime(startDateTime)}. Your appointment is confirmed and an invite has been sent to your email!`
                     };
                 } catch (tier1Error: any) {
                     // TIER 2: If the email itself is completely invalid, strip the guest list to save the booking.
@@ -384,6 +447,9 @@ ${details.problem ? `Problem to solve: ${details.problem}` : ''}
                         requestBody: FinalEvent,
                         sendUpdates: 'none'
                     });
+
+                    // Even if Google absolutely hated the email string, we still try our own SMTP delivery
+                    await sendManualIcsInvite();
 
                     return {
                         success: true,
