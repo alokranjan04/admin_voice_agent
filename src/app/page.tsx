@@ -66,8 +66,9 @@ export default function AgencyLandingPage() {
                             <Bot className="w-4 h-4" />
                             <span>TellYourJourney Exclusive Access</span>
                         </div>
-                        <h1 className="text-5xl md:text-6xl lg:text-8xl font-extrabold text-transparent bg-clip-text bg-gradient-to-tr from-white via-indigo-100 to-indigo-400 leading-[1.1] mb-4">
-                            Deploy Voice AI <br /> That Converts.
+                        <h1 className="text-5xl md:text-6xl lg:text-7xl font-extrabold text-transparent bg-clip-text bg-gradient-to-tr from-white via-indigo-100 to-indigo-400 leading-[1.1] mb-4 py-2 flex flex-col gap-2">
+                            <span>Voice AI That Converts</span>
+                            <span>Missed Calls Into Revenue.</span>
                         </h1>
                         <p className="text-xl text-indigo-100/70 max-w-2xl leading-relaxed">
                             Supercharge your business with completely autonomous AI Voice Agents that handle customer support, execute outbound sales, and automate calendar bookings 24/7.
