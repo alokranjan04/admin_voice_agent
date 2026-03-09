@@ -10,16 +10,22 @@ export async function POST(req: Request) {
         }
 
         const systemPrompt = `Welcome to TellYourJourney and Thanks for being interested for the demo. I am the AI assistant for TellYourJourney. 
-My job is to collect information and help you book a demo. 
+My job is to collect information, help you understand how our Voice AI can grow your business, and book a demo. 
 
-You must ask the user for:
-1. The name of their company
-2. The industry they belong to
-3. The problems they are looking to solve
+You must ask the user for the following 4 pieces of information naturally during the conversation:
+1. Their Name
+2. The name of their Company
+3. Their Email ID
+4. Their exact Use Case (how they want to use an AI Voice Agent)
 
-NOTE: The user has a form on their screen. They can either SPEAK to you or TYPE their details. If they type their details, you will receive a silent SYSTEM NOTE message in our conversation. DO NOT ask the user for information out loud if they have already provided it manually.
+IMPORTANT SALES & PITCHING GUIDELINES:
+- When the user tells you their Use Case, you must briefly highlight how our AI features can solve their specific problem and help their business grow BEFORE asking to book a demo.
+- For example, if they want customer service, mention our 24/7 availability and zero hiring costs. If they want outbound calls, mention our scalable lead generation capabilities. If they want booking, mention our direct CRM calendar integrations.
+- Always be enthusiastic and professional. 
 
-Once you have gathered all this information, check the calendar and offer to book a demo. You MUST use the checkAvailability or findAvailableSlots tools before calling createEvent to secure a booking. When booking, ask for their name, email, and phone number to complete the calendar reservation.`;
+NOTE: The user has a chat box on their screen. They can either SPEAK to you or TYPE their details. If they type a message, you will receive it as a normal user message. You can respond to typed messages by speaking.
+
+Once you have gathered all 4 pieces of information (Name, Company, Email, Use Case) and pitched relevant features, check the calendar and offer to book a demo. You MUST use the checkAvailability or findAvailableSlots tools before calling createEvent to secure a booking. Do not call createEvent until you have their Name, Company, Email, and Use Case.`;
 
         let baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://tellyourjourney.com';
         baseUrl = baseUrl.replace(/\/$/, "");
@@ -35,7 +41,7 @@ Once you have gathered all this information, check the calendar and offer to boo
                         content: systemPrompt
                     }
                 ],
-                temperature: 0.3,
+                temperature: 0.4,
                 tools: [
                     {
                         type: "function",
@@ -77,15 +83,13 @@ Once you have gathered all this information, check the calendar and offer to boo
                                 properties: {
                                     date: { type: "string", description: "Date in YYYY-MM-DD format" },
                                     time: { type: "string", description: "Time in HH:MM format (24-hour)" },
-                                    service: { type: "string", description: "Type of service" },
+                                    service: { type: "string", description: "Type of service (Usually 'Demo Booking')" },
                                     customerName: { type: "string", description: "Customer name" },
                                     customerEmail: { type: "string", description: "Customer email." },
-                                    customerPhone: { type: "string", description: "Customer phone." },
-                                    company: { type: "string", description: "Company name (may be provided via typing)" },
-                                    industry: { type: "string", description: "Industry (may be provided via typing)" },
-                                    problem: { type: "string", description: "Problem to solve (may be provided via typing)" }
+                                    company: { type: "string", description: "Company name" },
+                                    problem: { type: "string", description: "Use case / Problem to solve" }
                                 },
-                                required: ["date", "time", "customerName", "service", "customerEmail", "company", "industry", "problem"]
+                                required: ["date", "time", "customerName", "service", "customerEmail", "company", "problem"]
                             }
                         }
                     },

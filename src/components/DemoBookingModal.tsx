@@ -13,17 +13,8 @@ interface DemoBookingModalProps {
 }
 
 export default function DemoBookingModal({ isOpen, onClose, vapiInstance, callStatus, startCall, endCall }: DemoBookingModalProps) {
-    const [transcript, setTranscript] = useState<{ role: 'user' | 'assistant', text: string }[]>([]);
-
-    // User Manual Details
-    const [details, setDetails] = useState({
-        name: '',
-        email: '',
-        company: '',
-        industry: '',
-        problem: ''
-    });
-
+    const [transcript, setTranscript] = useState<Array<{ role: 'user' | 'assistant', text: string }>>([]);
+    const [chatInput, setChatInput] = useState('');
     const transcriptEndRef = useRef<HTMLDivElement>(null);
 
     // Auto-scroll transcript
@@ -47,33 +38,23 @@ export default function DemoBookingModal({ isOpen, onClose, vapiInstance, callSt
         };
     }, [vapiInstance, callStatus]);
 
-    // Handle manual form submission per field
-    const handleDetailSubmit = (field: keyof typeof details, value: string) => {
-        setDetails(prev => ({ ...prev, [field]: value }));
+    // Send a regular chat message to the Vapi assistant
+    const sendChatMessage = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!chatInput.trim() || !vapiInstance || callStatus !== 'active') return;
 
-        // Only send to Vapi if actively on a call
-        if (callStatus === 'active' && value.trim() !== '' && vapiInstance) {
-            const fieldNames: Record<string, string> = {
-                name: "Name",
-                email: "Email",
-                company: "Company Name",
-                industry: "Industry",
-                problem: "Core Problem to Solve"
-            };
+        // Send a message to the AI
+        vapiInstance.send({
+            type: 'add-message',
+            message: {
+                role: 'user',
+                content: chatInput
+            }
+        });
 
-            const systemMsg = `SYSTEM NOTE: The user has manually typed their ${fieldNames[field]} into the form. Value: "${value}". Do not ask them for this information over voice anymore.`;
-
-            vapiInstance.send({
-                type: 'add-message',
-                message: {
-                    role: 'system',
-                    content: systemMsg
-                }
-            });
-
-            // Add visual feedback to transcript
-            setTranscript(prev => [...prev, { role: 'user', text: `*[Typed ${fieldNames[field]}: ${value}]*` }]);
-        }
+        // Add visual feedback to transcript
+        setTranscript(prev => [...prev, { role: 'user', text: chatInput }]);
+        setChatInput('');
     };
 
     if (!isOpen) return null;
@@ -180,52 +161,26 @@ export default function DemoBookingModal({ isOpen, onClose, vapiInstance, callSt
                             <div ref={transcriptEndRef} />
                         </div>
 
-                        {/* Fast-track Form Elements (Only visible on active call naturally requested by user) */}
+                        {/* Standard Chat Input Field */}
                         {callStatus === 'active' && (
                             <div className="p-4 border-t border-white/10 bg-slate-900/50">
-                                <p className="text-xs text-slate-400 mb-3 text-center">Optional: Type details manually to speed up the process</p>
-                                <div className="grid grid-cols-2 gap-3">
-                                    <div className="relative">
-                                        <User className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-500" />
-                                        <input
-                                            type="text"
-                                            placeholder="Name"
-                                            value={details.name}
-                                            onChange={(e) => handleDetailSubmit('name', e.target.value)}
-                                            className="w-full bg-black/50 border border-white/10 rounded-lg py-2 pl-8 pr-3 text-xs text-white focus:outline-none focus:border-indigo-500"
-                                        />
-                                    </div>
-                                    <div className="relative">
-                                        <Mail className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-500" />
-                                        <input
-                                            type="email"
-                                            placeholder="Email"
-                                            value={details.email}
-                                            onChange={(e) => handleDetailSubmit('email', e.target.value)}
-                                            className="w-full bg-black/50 border border-white/10 rounded-lg py-2 pl-8 pr-3 text-xs text-white focus:outline-none focus:border-indigo-500"
-                                        />
-                                    </div>
-                                    <div className="relative">
-                                        <Briefcase className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-500" />
-                                        <input
-                                            type="text"
-                                            placeholder="Company"
-                                            value={details.company}
-                                            onChange={(e) => handleDetailSubmit('company', e.target.value)}
-                                            className="w-full bg-black/50 border border-white/10 rounded-lg py-2 pl-8 pr-3 text-xs text-white focus:outline-none focus:border-indigo-500"
-                                        />
-                                    </div>
-                                    <div className="relative">
-                                        <Briefcase className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-500" />
-                                        <input
-                                            type="text"
-                                            placeholder="Industry"
-                                            value={details.industry}
-                                            onChange={(e) => handleDetailSubmit('industry', e.target.value)}
-                                            className="w-full bg-black/50 border border-white/10 rounded-lg py-2 pl-8 pr-3 text-xs text-white focus:outline-none focus:border-indigo-500"
-                                        />
-                                    </div>
-                                </div>
+                                <form onSubmit={sendChatMessage} className="flex gap-2 relative">
+                                    <input
+                                        type="text"
+                                        placeholder="Type a message..."
+                                        value={chatInput}
+                                        onChange={(e) => setChatInput(e.target.value)}
+                                        className="w-full bg-black/50 border border-white/10 rounded-xl py-3 pl-4 pr-12 text-sm text-white focus:outline-none focus:border-indigo-500 transition-colors"
+                                    />
+                                    <button
+                                        type="submit"
+                                        disabled={!chatInput.trim()}
+                                        className="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-indigo-500 rounded-lg text-white disabled:opacity-50 disabled:bg-slate-700 transition-all hover:bg-indigo-400"
+                                    >
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+                                    </button>
+                                </form>
+                                <p className="text-[10px] text-slate-500 mt-2 text-center">You can speak naturally or type your responses.</p>
                             </div>
                         )}
                     </div>
