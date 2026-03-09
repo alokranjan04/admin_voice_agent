@@ -44,21 +44,12 @@ export default function DemoBookingModal({ isOpen, onClose, vapiInstance, callSt
         e.preventDefault();
         if (!chatInput.trim() || !vapiInstance || callStatus !== 'active') return;
 
-        // Send the user's message to the AI
-        vapiInstance.send({
-            type: 'add-message',
-            message: {
-                role: 'user',
-                content: chatInput
-            }
-        });
-
-        // FORCE the AI to acknowledge the typed input (since it sometimes ignores silent text injections if it expects voice)
+        // Guarantee that the AI processes the typed text instantly by injecting it as a commanding system prompt.
         vapiInstance.send({
             type: 'add-message',
             message: {
                 role: 'system',
-                content: `The user just typed the following into the chat box: "${chatInput}". You MUST accept this typed text as the absolute truth. Acknowledge what they typed immediately.`
+                content: `[URGENT SYSTEM OVERRIDE] The user just explicitly typed the following message into their screen's chat box: "${chatInput}". You MUST accept this typed text as absolute truth, stop asking for it verbally, and respond immediately to acknowledge you received it.`
             }
         });
 
