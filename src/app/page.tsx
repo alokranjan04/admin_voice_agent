@@ -5,10 +5,9 @@ import ThreeDElement from '@/components/ThreeDElement';
 import AgencyLeadForm from '@/components/AgencyLeadForm';
 import { Bot, PhoneCall, CalendarCheck, Sparkles } from 'lucide-react';
 import { sendGAEvent } from '@next/third-parties/google';
-import { PopupModal } from 'react-calendly';
+import DemoCallButton from '@/components/DemoCallButton';
 
 export default function AgencyLandingPage() {
-    const [isCalendlyOpen, setIsCalendlyOpen] = React.useState(false);
     const [isMounted, setIsMounted] = React.useState(false);
 
     React.useEffect(() => {
@@ -36,15 +35,7 @@ export default function AgencyLandingPage() {
                     </nav>
 
                     <div className="flex items-center">
-                        <button
-                            onClick={() => {
-                                sendGAEvent('event', 'book_demo_click', { category: 'engagement', label: 'Header CTA' });
-                                setIsCalendlyOpen(true);
-                            }}
-                            className="hidden sm:flex items-center justify-center px-6 py-2.5 rounded-full bg-white text-slate-900 font-bold text-sm hover:scale-105 transition-transform shadow-[0_0_20px_rgba(255,255,255,0.1)] cursor-pointer"
-                        >
-                            Book a Demo
-                        </button>
+                        <DemoCallButton />
                     </div>
                 </div>
             </header>
@@ -62,31 +53,31 @@ export default function AgencyLandingPage() {
                 <div className="container mx-auto px-6 lg:px-12 py-12 lg:py-20 relative z-10 w-full min-h-[calc(100vh-80px)] flex flex-col justify-center">
 
                     {/* Background 3D Element wrapper */}
-                    <div className="absolute inset-0 z-0 opacity-40 lg:opacity-100 pointer-events-none overflow-hidden flex items-center justify-center lg:justify-end">
-                        <div className="w-full lg:w-[60%] h-full pointer-events-auto mix-blend-screen mask-image-linear-to-b">
+                    <div className="absolute inset-0 z-0 opacity-40 lg:opacity-100 pointer-events-none overflow-hidden flex items-center justify-center lg:justify-start">
+                        <div className="w-full lg:w-[60%] h-full pointer-events-auto mix-blend-screen mask-image-linear-to-b lg:-ml-32 mt-20 lg:mt-0">
                             <ThreeDElement />
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center relative z-10">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center relative z-10 pointer-events-none">
                         {/* Left Column: Value Prop & Headline */}
                         <div className="flex flex-col items-center lg:items-start text-center lg:text-left pt-10 lg:pt-0">
-                            <div className="inline-flex items-center space-x-2 px-4 py-1.5 rounded-full border border-indigo-400/30 bg-indigo-400/10 text-indigo-300 text-sm font-semibold mb-6 shadow-xl shadow-indigo-500/10">
+                            <div className="inline-flex items-center space-x-2 px-4 py-1.5 rounded-full border border-indigo-400/30 bg-indigo-400/10 text-indigo-300 text-sm font-semibold mb-6 shadow-xl shadow-indigo-500/10 pointer-events-auto">
                                 <Bot className="w-4 h-4" />
                                 <span>TellYourJourney Exclusive Access</span>
                             </div>
 
-                            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold text-transparent bg-clip-text bg-gradient-to-tr from-white via-indigo-100 to-indigo-400 leading-[1.1] mb-6 py-2 flex flex-col gap-2">
+                            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold text-transparent bg-clip-text bg-gradient-to-tr from-white via-indigo-100 to-indigo-400 leading-[1.1] mb-6 py-2 flex flex-col gap-2 pointer-events-auto selection:bg-indigo-500/30">
                                 <span>Voice AI That Converts</span>
                                 <span>Missed Calls Into Revenue.</span>
                             </h1>
 
-                            <p className="text-lg md:text-xl text-indigo-100/80 max-w-xl leading-relaxed mb-10">
+                            <p className="text-lg md:text-xl text-indigo-100/80 max-w-xl leading-relaxed mb-10 pointer-events-auto selection:bg-indigo-500/30">
                                 Supercharge your business with completely autonomous AI Voice Agents that handle customer support, execute outbound sales, and automate calendar bookings <strong className="text-white">24/7</strong>.
                             </p>
 
                             {/* Trust Stats below headline */}
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-xl">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-xl pointer-events-auto">
                                 <div className="flex flex-col space-y-2 border-l-2 border-indigo-500 pl-4 bg-white/5 p-4 rounded-r-xl backdrop-blur-sm shadow-xl shadow-black/50">
                                     <span className="text-2xl font-bold flex items-center text-white">
                                         <PhoneCall className="w-5 h-5 mr-3 text-indigo-400" />
@@ -105,7 +96,7 @@ export default function AgencyLandingPage() {
                         </div>
 
                         {/* Right Column: Lead Capture Form */}
-                        <div className="w-full max-w-[540px] mx-auto lg:mr-0 lg:ml-auto relative z-20 mt-8 lg:mt-0">
+                        <div className="w-full max-w-[540px] mx-auto lg:mr-0 lg:ml-auto relative z-20 mt-8 lg:mt-0 pointer-events-auto">
                             {/* Decorative glow behind form */}
                             <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/20 to-purple-500/20 rounded-3xl blur-2xl -z-10" />
                             <AgencyLeadForm />
@@ -172,16 +163,6 @@ export default function AgencyLandingPage() {
                     </div>
                 </div>
             </footer>
-
-            {/* Calendly Interactive Popup */}
-            {isMounted && (
-                <PopupModal
-                    url={process.env.NEXT_PUBLIC_CALENDAR_BOOKING_LINK || "https://calendly.com/"}
-                    onModalClose={() => setIsCalendlyOpen(false)}
-                    open={isCalendlyOpen}
-                    rootElement={document.getElementById("__next") || document.body}
-                />
-            )}
         </div>
     );
 }
