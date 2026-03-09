@@ -35,7 +35,7 @@ export default function AgencyLandingPage() {
                     </nav>
 
                     <div className="flex items-center">
-                        <DemoCallButton />
+                        {/* Removed DemoCallButton per user request as there is a prominent CTA in hero now */}
                     </div>
                 </div>
             </header>
