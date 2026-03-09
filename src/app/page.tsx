@@ -47,7 +47,7 @@ export default function AgencyLandingPage() {
             </div>
 
             {/* Main Content Container */}
-            <main className="flex-grow relative z-10 pt-20">
+            <main className="flex-grow relative z-10 pt-14">
 
                 {/* Trust/Social Proof Strip */}
                 <div className="w-full border-b border-white/5 bg-slate-900/80 backdrop-blur-md py-4 z-20 relative pointer-events-auto">
@@ -67,7 +67,7 @@ export default function AgencyLandingPage() {
                 </div>
 
                 {/* Main Hero & Lead Capture Section */}
-                <div className="container mx-auto px-6 lg:px-12 py-10 lg:py-16 relative z-10 w-full min-h-[calc(100vh-130px)] flex flex-col justify-center">
+                <div className="container mx-auto px-6 lg:px-12 py-4 lg:py-6 relative z-10 w-full min-h-[calc(100vh-100px)] flex flex-col justify-center">
 
                     {/* Background 3D Element wrapper */}
                     <div className="absolute inset-0 z-0 opacity-40 lg:opacity-100 pointer-events-none overflow-hidden flex items-center justify-center lg:justify-start">
@@ -84,17 +84,17 @@ export default function AgencyLandingPage() {
                                 <span>TellYourJourney Exclusive Access</span>
                             </div>
 
-                            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold text-transparent bg-clip-text bg-gradient-to-tr from-white via-indigo-100 to-indigo-400 leading-[1.1] mb-6 py-2 flex flex-col gap-2 pointer-events-auto selection:bg-indigo-500/30">
+                            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold text-transparent bg-clip-text bg-gradient-to-tr from-white via-indigo-100 to-indigo-400 leading-[1.1] mb-3 py-2 flex flex-col gap-2 pointer-events-auto selection:bg-indigo-500/30">
                                 <span>Voice AI That Converts</span>
                                 <span>Missed Calls Into Revenue.</span>
                             </h1>
 
-                            <p className="text-lg md:text-xl font-medium text-indigo-100/90 max-w-xl leading-relaxed mb-8 pointer-events-auto selection:bg-indigo-500/30">
+                            <p className="text-lg md:text-xl font-medium text-indigo-100/90 max-w-xl leading-relaxed mb-4 pointer-events-auto selection:bg-indigo-500/30">
                                 Built for SMBs and service businesses. No hiring. No training. Just booked appointments and handled calls — around the clock.
                             </p>
 
                             {/* High-Converting Hero CTA */}
-                            <div className="mb-10 pointer-events-auto w-full flex flex-col sm:flex-row items-center justify-start gap-4">
+                            <div className="mb-6 pointer-events-auto w-full flex flex-col sm:flex-row items-center justify-start gap-4">
                                 <DemoCallButton
                                     customClass="flex items-center justify-center px-8 py-4 rounded-full font-bold text-lg transition-all bg-indigo-600 text-white hover:bg-indigo-500 hover:scale-105 shadow-[0_0_30px_rgba(79,70,229,0.4)] hover:shadow-[0_0_40px_rgba(79,70,229,0.6)] w-full sm:w-auto"
                                     text="Talk to Our AI Now"
@@ -106,15 +106,15 @@ export default function AgencyLandingPage() {
 
                             {/* Trust Stats below headline */}
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-xl pointer-events-auto">
-                                <div className="flex flex-col space-y-2 border-l-2 border-indigo-500 pl-4 bg-white/5 p-4 rounded-r-xl backdrop-blur-sm shadow-xl shadow-black/50 hover:bg-white/10 transition-colors">
-                                    <span className="text-2xl font-bold flex items-center text-white">
+                                <div className="flex flex-col space-y-1 border-l-2 border-indigo-500 pl-4 bg-white/5 p-3 rounded-r-xl backdrop-blur-sm shadow-xl shadow-black/50 hover:bg-white/10 transition-colors">
+                                    <span className="text-xl font-bold flex items-center text-white">
                                         <PhoneCall className="w-5 h-5 mr-3 text-emerald-400" />
                                         24/7 Uptime
                                     </span>
                                     <span className="text-xs md:text-sm text-indigo-200">Answer every customer without a single break.</span>
                                 </div>
-                                <div className="flex flex-col space-y-2 border-l-2 border-purple-500 pl-4 bg-white/5 p-4 rounded-r-xl backdrop-blur-sm shadow-xl shadow-black/50 hover:bg-white/10 transition-colors">
-                                    <span className="text-2xl font-bold flex items-center text-white">
+                                <div className="flex flex-col space-y-1 border-l-2 border-purple-500 pl-4 bg-white/5 p-3 rounded-r-xl backdrop-blur-sm shadow-xl shadow-black/50 hover:bg-white/10 transition-colors">
+                                    <span className="text-xl font-bold flex items-center text-white">
                                         <CalendarCheck className="w-5 h-5 mr-3 text-amber-400" />
                                         100% Scalable
                                     </span>

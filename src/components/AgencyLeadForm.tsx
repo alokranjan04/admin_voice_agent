@@ -301,14 +301,14 @@ export default function AgencyLeadForm() {
             key="form"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-white/10 backdrop-blur-xl border border-indigo-500/40 p-8 rounded-2xl shadow-[0_0_40px_rgba(79,70,229,0.15)] relative z-20"
+            className="bg-white/10 backdrop-blur-xl border border-indigo-500/40 p-6 lg:p-8 rounded-2xl shadow-[0_0_40px_rgba(79,70,229,0.15)] relative z-20"
         >
-            <div className="mb-6 text-center sm:text-left">
-                <h3 className="text-2xl font-bold text-white mb-2">Generate Your Custom AI Agent</h3>
+            <div className="mb-4 text-center sm:text-left">
+                <h3 className="text-2xl font-bold text-white mb-1.5">Generate Your Custom AI Agent</h3>
                 <p className="text-indigo-100 text-sm">See the magic in action. Instantly build an AI Voice Agent tailored to your exact business needs.</p>
 
                 {/* Progress Indicator */}
-                <div className="flex items-center gap-2 mt-5">
+                <div className="flex items-center gap-2 mt-4">
                     <div className={`h-1.5 flex-1 rounded-full transition-colors ${currentStep >= 1 ? 'bg-indigo-500 shadow-[0_0_10px_rgba(99,102,241,0.5)]' : 'bg-white/10'}`} />
                     <div className={`h-1.5 flex-1 rounded-full transition-colors ${currentStep >= 2 ? 'bg-indigo-500 shadow-[0_0_10px_rgba(99,102,241,0.5)]' : 'bg-white/10'}`} />
                 </div>
@@ -325,7 +325,7 @@ export default function AgencyLeadForm() {
                             <label className="block text-sm font-medium text-indigo-100 mb-1">Full Name</label>
                             <input
                                 required type="text" name="name" value={formData.name} onChange={handleChange}
-                                className="w-full bg-black/20 border border-white/10 rounded-lg px-4 py-2.5 text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                className="w-full bg-black/20 border border-white/10 rounded-lg px-4 py-2 text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                                 placeholder="Elon Musk"
                             />
                         </div>
@@ -333,7 +333,7 @@ export default function AgencyLeadForm() {
                             <label className="block text-sm font-medium text-indigo-100 mb-1">Work Email</label>
                             <input
                                 required type="email" name="email" value={formData.email} onChange={handleChange}
-                                className="w-full bg-black/20 border border-white/10 rounded-lg px-4 py-2.5 text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                className="w-full bg-black/20 border border-white/10 rounded-lg px-4 py-2 text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                                 placeholder="elon@tesla.com"
                             />
                         </div>
@@ -341,7 +341,7 @@ export default function AgencyLeadForm() {
                             <label className="block text-sm font-medium text-indigo-100 mb-1">Company Name</label>
                             <input
                                 required type="text" name="company" value={formData.company} onChange={handleChange}
-                                className="w-full bg-black/20 border border-white/10 rounded-lg px-4 py-2.5 text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                className="w-full bg-black/20 border border-white/10 rounded-lg px-4 py-2 text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                                 placeholder="Tesla"
                             />
                         </div>
