@@ -44,9 +44,10 @@ export default function ThreeDElement() {
 
                 <Environment preset="night" />
 
-                <AnimatedShape />
+                {/* Removing the rotating shape as per user request */}
+                {/* <AnimatedShape /> */}
 
-                {/* Floating glowing particles */}
+                {/* Floating glowing particles (The "Dots") */}
                 <Sparkles count={200} scale={8} size={5} speed={0.4} opacity={0.6} color="#c084fc" />
 
 
