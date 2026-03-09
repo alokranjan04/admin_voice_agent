@@ -293,6 +293,7 @@ Be enthusiastic. Greet ${name} by name immediately. Keep it short and human.`;
                     assistantId,
                     company,
                     leadEmail: email,
+                    leadName: name,
                     expiresAt: expiry.toISOString(),
                     createdAt: new Date().toISOString()
                 });

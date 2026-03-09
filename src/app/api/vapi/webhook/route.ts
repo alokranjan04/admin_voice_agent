@@ -13,22 +13,34 @@ export async function POST(req: NextRequest) {
             const assistantId = report.call?.assistant?.id || report.assistantId;
             const assistantMetadata = report.call?.assistant?.metadata;
 
-            const customerEmail = assistantMetadata?.leadEmail;
-            const customerName = assistantMetadata?.leadName || 'Valued Customer';
-            const companyName = assistantMetadata?.leadCompany || 'your company';
+            let customerEmail = assistantMetadata?.leadEmail;
+            let customerName = assistantMetadata?.leadName || 'Valued Customer';
+            let companyName = assistantMetadata?.leadCompany || 'your company';
 
             const summary = report.summary || 'Summary not available.';
             const transcript = report.transcript || 'Transcript not available.';
 
-            console.log(`[Vapi Webhook] Processing end-of-call. Assistant: ${assistantId}, Email: ${customerEmail}`);
+            console.log(`[Vapi Webhook] Processing end-of-call. Assistant: ${assistantId}, Metadata Email: ${customerEmail}`);
 
-            // 1. Persist to Database (Firebase Admin)
+            // 1. Persist to Database (Firebase Admin) and Fetch Missing Metadata
             const { adminDb } = await import('@/lib/firebase-admin');
             if (adminDb) {
                 try {
                     // Update the Lead/Assistant record if it exists
                     if (assistantId) {
                         const leadRef = adminDb.collection('temporary_assistants').doc(assistantId);
+
+                        if (!customerEmail) {
+                            const leadDoc = await leadRef.get();
+                            if (leadDoc.exists) {
+                                const data = leadDoc.data();
+                                if (data?.leadEmail) customerEmail = data.leadEmail;
+                                if (data?.leadName) customerName = data.leadName;
+                                if (data?.company) companyName = data.company;
+                                console.log(`[Vapi Webhook] Retrieved missing email from DB: ${customerEmail}`);
+                            }
+                        }
+
                         await leadRef.set({
                             summary,
                             transcript,

@@ -77,6 +77,13 @@ export async function POST(req: Request) {
             transcriber: transcriberObj,
             backgroundSound: (config.vapi.backgroundSound === 'default' || !config.vapi.backgroundSound) ? 'off' : config.vapi.backgroundSound,
             firstMessage: String(firstMessage),
+            metadata: {
+                leadEmail: config.vapi.transcriber?.userEmail || config.vapi.userEmail || '',
+                leadName: config.vapi.transcriber?.userName || config.vapi.userName || '',
+                leadCompany: companyName,
+                orgId: config.metadata?.orgId || '',
+                agentId: config.metadata?.agentId || ''
+            }
         };
 
         if (config.vapi.knowledgeBase) {
