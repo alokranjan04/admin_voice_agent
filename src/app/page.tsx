@@ -169,7 +169,7 @@ export default function AgencyLandingPage() {
                                 </li>
                                 <li className="flex flex-col">
                                     <span className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Direct Line</span>
-                                    <a href="tel:7042915552" className="text-indigo-400 hover:text-indigo-300 transition-colors font-medium">7042915552</a>
+                                    <a href="tel:+917042915552" className="text-indigo-400 hover:text-indigo-300 transition-colors font-medium tracking-wide">+91 7042915552</a>
                                 </li>
                                 <li className="flex flex-col">
                                     <span className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Social</span>
