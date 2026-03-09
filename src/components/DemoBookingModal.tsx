@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from 'react';
-import { X, Mic, MicOff, Loader2, MessageSquare, Briefcase, FileText, User, Mail, Send, Bot } from 'lucide-react';
+import { X, Mic, MicOff, Loader2, MessageSquare, Briefcase, FileText, User, Mail, Send, Bot, Pause, Play } from 'lucide-react';
 
 interface DemoBookingModalProps {
     isOpen: boolean;
@@ -15,6 +15,7 @@ interface DemoBookingModalProps {
 export default function DemoBookingModal({ isOpen, onClose, vapiInstance, callStatus, startCall, endCall }: DemoBookingModalProps) {
     const [transcript, setTranscript] = useState<Array<{ role: 'user' | 'assistant', text: string }>>([]);
     const [chatInput, setChatInput] = useState('');
+    const [isOnHold, setIsOnHold] = useState(false);
     const transcriptEndRef = useRef<HTMLDivElement>(null);
 
     // Auto-scroll transcript
@@ -57,6 +58,21 @@ export default function DemoBookingModal({ isOpen, onClose, vapiInstance, callSt
         setChatInput('');
     };
 
+    const setHoldState = (hold: boolean) => {
+        if (!vapiInstance || callStatus !== 'active') return;
+
+        // Mute/unmute user
+        vapiInstance.setMuted(hold);
+
+        // Mute/unmute assistant
+        vapiInstance.send({
+            type: 'control',
+            control: hold ? 'mute-assistant' : 'unmute-assistant'
+        });
+
+        setIsOnHold(hold);
+    };
+
     if (!isOpen) return null;
 
     return (
@@ -94,7 +110,7 @@ export default function DemoBookingModal({ isOpen, onClose, vapiInstance, callSt
                                 <Loader2 className="w-4 h-4 animate-spin" />
                             ) : callStatus === 'active' ? (
                                 <div className="flex items-center gap-2">
-                                    <MicOff className="w-4 h-4" />
+                                    <X className="w-4 h-4" />
                                     <span>End Call</span>
                                 </div>
                             ) : (
@@ -146,6 +162,25 @@ export default function DemoBookingModal({ isOpen, onClose, vapiInstance, callSt
                 {/* Active Call UI */}
                 {(callStatus === 'active' || transcript.length > 0) && (
                     <div className="flex flex-col flex-grow overflow-hidden relative">
+
+                        {/* Call Controls Bar */}
+                        {callStatus === 'active' && (
+                            <div className="flex flex-col items-center justify-center space-y-2 py-4 bg-slate-900/80 border-b border-white/5">
+                                <button
+                                    onMouseDown={() => setHoldState(true)}
+                                    onMouseUp={() => setHoldState(false)}
+                                    onMouseLeave={() => setHoldState(false)}
+                                    onTouchStart={() => setHoldState(true)}
+                                    onTouchEnd={() => setHoldState(false)}
+                                    className={`flex items-center justify-center space-x-2 px-6 py-3 rounded-full font-semibold transition-all select-none ${isOnHold ? 'bg-amber-500 text-slate-900 scale-95 shadow-inner' : 'bg-slate-800 text-white hover:bg-slate-700 hover:scale-105 shadow-md shadow-black/50'}`}
+                                >
+                                    {isOnHold ? <Pause className="w-5 h-5 fill-current" /> : <Mic className="w-5 h-5" />}
+                                    <span>{isOnHold ? 'Call Paused...' : 'Hold to Pause'}</span>
+                                </button>
+                                <p className="text-[10px] text-slate-500">Press and hold to mute yourself and the AI.</p>
+                            </div>
+                        )}
+
                         {/* Transcript Area */}
                         <div className="flex-grow p-4 overflow-y-auto space-y-4 max-h-[300px]">
                             {transcript.map((msg, i) => (
