@@ -158,9 +158,14 @@ export default function AgencyLandingPage() {
                         <div className="lg:col-span-1">
                             <h4 className="text-white font-semibold mb-6 tracking-wide uppercase text-xs">Contact Us</h4>
                             <ul className="space-y-4 text-sm text-slate-400">
-                                <li className="flex flex-col">
-                                    <span className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Director</span>
-                                    <span className="text-slate-200">Alok Ranjan</span>
+                                <li className="flex items-center space-x-4">
+                                    <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-indigo-500/30 flex-shrink-0">
+                                        <img src="/images/alok.jpg" alt="Alok Ranjan - Director" className="w-full h-full object-cover" />
+                                    </div>
+                                    <div className="flex flex-col">
+                                        <span className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-0.5">Director</span>
+                                        <span className="text-slate-200 font-semibold tracking-tight">Alok Ranjan</span>
+                                    </div>
                                 </li>
                                 <li className="flex flex-col">
                                     <span className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Direct Line</span>
