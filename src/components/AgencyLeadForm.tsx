@@ -120,13 +120,15 @@ export default function AgencyLeadForm() {
         setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
     };
 
+    const [currentStep, setCurrentStep] = useState<1 | 2>(1);
+
     if (status === 'success' && !isEditing) {
         return (
             <motion.div
                 key="success"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="bg-white/10 backdrop-blur-xl border border-white/20 p-8 rounded-2xl shadow-2xl text-center relative z-30"
+                className="bg-white/10 backdrop-blur-xl border border-indigo-500/30 p-8 rounded-2xl shadow-[0_0_40px_rgba(79,70,229,0.1)] text-center relative z-30"
             >
                 <motion.div
                     initial={{ scale: 0 }}
@@ -192,6 +194,7 @@ export default function AgencyLeadForm() {
                             setGeneratedServices([]);
                             setCallStatus('not_requested');
                             setCallError(null);
+                            setCurrentStep(1);
                         }}
                         className="bg-white/10 hover:bg-white/20 border border-white/20 text-white px-6 py-2 rounded-lg font-medium transition-colors cursor-pointer"
                     >
@@ -225,7 +228,7 @@ export default function AgencyLeadForm() {
                 key="editing"
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className="bg-white/10 backdrop-blur-xl border border-white/20 p-8 rounded-2xl shadow-2xl relative z-30"
+                className="bg-white/10 backdrop-blur-xl border border-indigo-500/30 p-8 rounded-2xl shadow-[0_0_40px_rgba(79,70,229,0.1)] relative z-30"
             >
                 <div className="mb-6">
                     <h3 className="text-2xl font-bold text-white mb-2">Refine Your AI Agent</h3>
@@ -298,160 +301,190 @@ export default function AgencyLeadForm() {
             key="form"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-white/10 backdrop-blur-xl border border-white/20 p-8 rounded-2xl shadow-2xl relative z-20"
+            className="bg-white/10 backdrop-blur-xl border border-indigo-500/40 p-8 rounded-2xl shadow-[0_0_40px_rgba(79,70,229,0.15)] relative z-20"
         >
             <div className="mb-6 text-center sm:text-left">
-                <h3 className="text-2xl font-bold text-white mb-2">Get Your Free AI Agent</h3>
-                <p className="text-indigo-100 text-sm">See the magic in action. Enter your details and we'll instantly generate a custom AI Voice Agent for your business.</p>
+                <h3 className="text-2xl font-bold text-white mb-2">Generate Your Custom AI Agent</h3>
+                <p className="text-indigo-100 text-sm">See the magic in action. Instantly build an AI Voice Agent tailored to your exact business needs.</p>
+
+                {/* Progress Indicator */}
+                <div className="flex items-center gap-2 mt-5">
+                    <div className={`h-1.5 flex-1 rounded-full transition-colors ${currentStep >= 1 ? 'bg-indigo-500 shadow-[0_0_10px_rgba(99,102,241,0.5)]' : 'bg-white/10'}`} />
+                    <div className={`h-1.5 flex-1 rounded-full transition-colors ${currentStep >= 2 ? 'bg-indigo-500 shadow-[0_0_10px_rgba(99,102,241,0.5)]' : 'bg-white/10'}`} />
+                </div>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-4">
-                {/* Row 1: Name + Company */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label className="block text-sm font-medium text-indigo-100 mb-1">Full Name</label>
-                        <input
-                            required type="text" name="name" value={formData.name} onChange={handleChange}
-                            className="w-full bg-black/20 border border-white/10 rounded-lg px-4 py-2.5 text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                            placeholder="Elon Musk"
-                        />
-                    </div>
-                    <div>
-                        <label className="block text-sm font-medium text-indigo-100 mb-1">Company Name</label>
-                        <input
-                            required type="text" name="company" value={formData.company} onChange={handleChange}
-                            className="w-full bg-black/20 border border-white/10 rounded-lg px-4 py-2.5 text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                            placeholder="Tesla"
-                        />
-                    </div>
-                </div>
+                {currentStep === 1 && (
+                    <motion.div
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        className="space-y-4"
+                    >
+                        <div>
+                            <label className="block text-sm font-medium text-indigo-100 mb-1">Full Name</label>
+                            <input
+                                required type="text" name="name" value={formData.name} onChange={handleChange}
+                                className="w-full bg-black/20 border border-white/10 rounded-lg px-4 py-2.5 text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                placeholder="Elon Musk"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-indigo-100 mb-1">Work Email</label>
+                            <input
+                                required type="email" name="email" value={formData.email} onChange={handleChange}
+                                className="w-full bg-black/20 border border-white/10 rounded-lg px-4 py-2.5 text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                placeholder="elon@tesla.com"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-indigo-100 mb-1">Company Name</label>
+                            <input
+                                required type="text" name="company" value={formData.company} onChange={handleChange}
+                                className="w-full bg-black/20 border border-white/10 rounded-lg px-4 py-2.5 text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                placeholder="Tesla"
+                            />
+                        </div>
 
-                {/* Row 2: Email + Phone */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label className="block text-sm font-medium text-indigo-100 mb-1">Work Email</label>
-                        <input
-                            required type="email" name="email" value={formData.email} onChange={handleChange}
-                            className="w-full bg-black/20 border border-white/10 rounded-lg px-4 py-2.5 text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                            placeholder="elon@tesla.com"
-                        />
-                    </div>
-                    <div>
-                        <label className="block text-sm font-medium text-indigo-100 mb-1">Phone Number</label>
-                        <input
-                            required type="tel" name="phone" value={formData.phone} onChange={handleChange}
-                            className="w-full bg-black/20 border border-white/10 rounded-lg px-4 py-2.5 text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                            placeholder="+1 (555) 000-0000"
-                        />
-                    </div>
-                </div>
-
-                {/* Row 3: Company Website + Industry */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label className="block text-sm font-medium text-indigo-100 mb-1">Company Website <span className="text-white/30 text-xs">(optional)</span></label>
-                        <input
-                            type="url" name="website" value={formData.website} onChange={handleChange}
-                            className="w-full bg-black/20 border border-white/10 rounded-lg px-4 py-2.5 text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                            placeholder="https://tesla.com"
-                        />
-                    </div>
-                    <div>
-                        <label className="block text-sm font-medium text-indigo-100 mb-1">Industry <span className="text-white/30 text-xs">(optional)</span></label>
-                        <input
-                            type="text" name="industry" value={formData.industry} onChange={handleChange}
-                            className="w-full bg-black/20 border border-white/10 rounded-lg px-4 py-2.5 text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                            placeholder="e.g. Legal & Compliance, Healthcare, SaaS"
-                        />
-                    </div>
-                </div>
-
-                {/* Company Details */}
-                <div>
-                    <label className="block text-sm font-medium text-indigo-100 mb-1">What does your company do? <span className="text-white/30 text-xs">(optional but helps the AI)</span></label>
-                    <textarea
-                        name="companyDetails" value={formData.companyDetails} onChange={handleChange} rows={3}
-                        className="w-full bg-black/20 border border-white/10 rounded-lg px-4 py-2.5 text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
-                        placeholder="e.g. We help factories get Factories Act licenses, ESI & PF compliance, Pollution NOC, Fire Safety NOC, and more across UP..."
-                    />
-                </div>
-
-                {/* Row 4: Agent Language */}
-                <div>
-                    <label className="block text-sm font-medium text-indigo-100 mb-3">Agent Language</label>
-                    <div className="flex flex-wrap gap-2">
-                        {LANGUAGES.map(lang => (
-                            <button
-                                key={lang.code}
-                                type="button"
-                                onClick={() => setLanguage(lang.code)}
-                                className={`flex items-center gap-1.5 px-3 py-2 rounded-xl border-2 font-semibold text-xs transition-all ${language === lang.code
-                                    ? 'border-indigo-400 bg-indigo-500/30 text-white scale-105'
-                                    : 'border-white/10 bg-black/20 text-white/50 hover:border-white/30'
-                                    }`}
-                            >
-                                <span className="text-base">{lang.flag}</span>
-                                {lang.label}
-                            </button>
-                        ))}
-                    </div>
-                </div>
-                <div>
-                    <label className="block text-sm font-medium text-indigo-100 mb-3">How would you like to receive your agent?</label>
-                    <div className="grid grid-cols-2 gap-3">
                         <button
                             type="button"
-                            onClick={() => setDeliveryOption('email')}
-                            className={`flex items-center justify-center gap-2 px-4 py-3 rounded-xl border-2 font-semibold text-sm transition-all ${deliveryOption === 'email'
-                                ? 'border-indigo-400 bg-indigo-500/30 text-white'
-                                : 'border-white/10 bg-black/20 text-white/50 hover:border-white/30'
-                                }`}
+                            onClick={() => {
+                                if (formData.name && formData.email && formData.company) {
+                                    setCurrentStep(2);
+                                } else {
+                                    // Let native form validation or simple alert handle empty fields
+                                    if (document.querySelector('form')?.checkValidity()) {
+                                        setCurrentStep(2);
+                                    } else {
+                                        document.querySelector('form')?.reportValidity();
+                                    }
+                                }
+                            }}
+                            className="w-full mt-6 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold py-3.5 px-6 rounded-lg shadow-lg flex items-center justify-center transition-all cursor-pointer"
                         >
-                            <Mail className="w-4 h-4" />
-                            Email Me the Agent
+                            Continue to Step 2 <ArrowRight className="w-5 h-5 ml-2" />
                         </button>
-                        <button
-                            type="button"
-                            onClick={() => setDeliveryOption('call')}
-                            className={`flex items-center justify-center gap-2 px-4 py-3 rounded-xl border-2 font-semibold text-sm transition-all ${deliveryOption === 'call'
-                                ? 'border-purple-400 bg-purple-500/30 text-white'
-                                : 'border-white/10 bg-black/20 text-white/50 hover:border-white/30'
-                                }`}
-                        >
-                            <Phone className="w-4 h-4" />
-                            Call Me Now
-                        </button>
-                    </div>
-                </div>
-
-                {status === 'error' && (
-                    <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-red-400 text-sm p-3 bg-red-400/10 rounded-lg border border-red-400/20">
-                        {errorMessage}
-                    </motion.p>
+                    </motion.div>
                 )}
 
-                <button
-                    type="submit"
-                    disabled={status === 'loading'}
-                    className="w-full mt-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold py-3 px-6 rounded-lg shadow-lg flex items-center justify-center transition-all disabled:opacity-70 disabled:cursor-not-allowed"
-                >
-                    {status === 'loading' ? (
-                        <>
-                            <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                            {deliveryOption === 'call' ? 'Calling You...' : 'Building Your AI...'}
-                        </>
-                    ) : (
-                        <>
-                            {deliveryOption === 'call' ? <Phone className="w-5 h-5 mr-2" /> : <ArrowRight className="w-5 h-5 ml-2 order-last" />}
-                            {deliveryOption === 'call' ? 'Call Me with My Agent' : 'Generate & Email My Agent'}
-                        </>
-                    )}
-                </button>
-                <p className="text-xs text-white/40 text-center mt-2">
-                    {deliveryOption === 'call'
-                        ? '~5 seconds to build, then your phone will ring.'
-                        : 'Takes ~5 seconds to build. We will email you the secure link.'}
-                </p>
+                {currentStep === 2 && (
+                    <motion.div
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        className="space-y-4"
+                    >
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label className="block text-sm font-medium text-indigo-100 mb-1">Phone Number</label>
+                                <input
+                                    required type="tel" name="phone" value={formData.phone} onChange={handleChange}
+                                    className="w-full bg-black/20 border border-white/10 rounded-lg px-4 py-2.5 text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                    placeholder="+1 (555) 000-0000"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-indigo-100 mb-1">Industry <span className="text-white/30 text-xs">(optional)</span></label>
+                                <input
+                                    type="text" name="industry" value={formData.industry} onChange={handleChange}
+                                    className="w-full bg-black/20 border border-white/10 rounded-lg px-4 py-2.5 text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                    placeholder="e.g. Healthcare, SaaS"
+                                />
+                            </div>
+                        </div>
+
+                        {/* Company Details */}
+                        <div>
+                            <label className="block text-sm font-medium text-indigo-100 mb-1">What does your company do? <span className="text-white/30 text-xs">(optional)</span></label>
+                            <textarea
+                                name="companyDetails" value={formData.companyDetails} onChange={handleChange} rows={2}
+                                className="w-full bg-black/20 border border-white/10 rounded-lg px-4 py-2.5 text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
+                                placeholder="e.g. We help factories get licenses..."
+                            />
+                        </div>
+
+                        {/* Row 4: Agent Language */}
+                        <div>
+                            <label className="block text-sm font-medium text-indigo-100 mb-2">Agent Language</label>
+                            <div className="flex flex-wrap gap-2">
+                                {LANGUAGES.map(lang => (
+                                    <button
+                                        key={lang.code}
+                                        type="button"
+                                        onClick={() => setLanguage(lang.code)}
+                                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border-2 font-semibold text-xs transition-all ${language === lang.code
+                                            ? 'border-indigo-400 bg-indigo-500/30 text-white scale-105'
+                                            : 'border-white/10 bg-black/20 text-white/50 hover:border-white/30'
+                                            }`}
+                                    >
+                                        <span className="text-sm">{lang.flag}</span>
+                                        {lang.label}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-indigo-100 mb-2">How would you like to receive your agent?</label>
+                            <div className="grid grid-cols-2 gap-3">
+                                <button
+                                    type="button"
+                                    onClick={() => setDeliveryOption('email')}
+                                    className={`flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl border-2 font-semibold text-xs transition-all ${deliveryOption === 'email'
+                                        ? 'border-indigo-400 bg-indigo-500/30 text-white'
+                                        : 'border-white/10 bg-black/20 text-white/50 hover:border-white/30'
+                                        }`}
+                                >
+                                    <Mail className="w-3.5 h-3.5" />
+                                    Email Me
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setDeliveryOption('call')}
+                                    className={`flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl border-2 font-semibold text-xs transition-all ${deliveryOption === 'call'
+                                        ? 'border-purple-400 bg-purple-500/30 text-white'
+                                        : 'border-white/10 bg-black/20 text-white/50 hover:border-white/30'
+                                        }`}
+                                >
+                                    <Phone className="w-3.5 h-3.5" />
+                                    Call Me Now
+                                </button>
+                            </div>
+                        </div>
+
+                        {status === 'error' && (
+                            <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-red-400 text-sm p-3 bg-red-400/10 rounded-lg border border-red-400/20">
+                                {errorMessage}
+                            </motion.p>
+                        )}
+
+                        <div className="flex gap-3 pt-4">
+                            <button
+                                type="button"
+                                onClick={() => setCurrentStep(1)}
+                                className="px-5 py-3 rounded-lg border border-white/10 bg-black/20 text-white/80 hover:bg-black/40 hover:text-white transition-all text-sm font-semibold border-b-4 border-b-black/50 active:border-b-0 active:translate-y-[4px]"
+                            >
+                                Back
+                            </button>
+                            <button
+                                type="submit"
+                                disabled={status === 'loading'}
+                                className="flex-1 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold py-3 px-6 rounded-lg shadow-lg flex items-center justify-center transition-all disabled:opacity-70 disabled:cursor-not-allowed text-sm border-b-4 border-b-indigo-800 active:border-b-0 active:translate-y-[4px]"
+                            >
+                                {status === 'loading' ? (
+                                    <>
+                                        <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                                        {deliveryOption === 'call' ? 'Calling...' : 'Building...'}
+                                    </>
+                                ) : (
+                                    <>
+                                        {deliveryOption === 'call' ? <Phone className="w-5 h-5 mr-2" /> : <Sparkles className="w-5 h-5 mr-2" />}
+                                        {deliveryOption === 'call' ? 'Call Me With My Agent' : 'Generate Agent'}
+                                    </>
+                                )}
+                            </button>
+                        </div>
+                    </motion.div>
+                )}
             </form>
         </motion.div>
     );

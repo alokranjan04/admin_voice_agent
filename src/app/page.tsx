@@ -49,8 +49,25 @@ export default function AgencyLandingPage() {
             {/* Main Content Container */}
             <main className="flex-grow relative z-10 pt-20">
 
+                {/* Trust/Social Proof Strip */}
+                <div className="w-full border-b border-white/5 bg-slate-900/80 backdrop-blur-md py-4 z-20 relative pointer-events-auto">
+                    <div className="container mx-auto px-6 lg:px-12 flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-12 text-sm font-semibold text-slate-300">
+                        <span className="flex items-center gap-2">
+                            <span className="relative flex h-2.5 w-2.5">
+                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+                            </span>
+                            2,400+ Calls Handled This Week
+                        </span>
+                        <span className="hidden sm:inline text-slate-600">|</span>
+                        <span>Trusted by 50+ Local & SaaS Businesses</span>
+                        <span className="hidden sm:inline text-slate-600">|</span>
+                        <span>Avg. 35% Conversion Increase</span>
+                    </div>
+                </div>
+
                 {/* Main Hero & Lead Capture Section */}
-                <div className="container mx-auto px-6 lg:px-12 py-12 lg:py-20 relative z-10 w-full min-h-[calc(100vh-80px)] flex flex-col justify-center">
+                <div className="container mx-auto px-6 lg:px-12 py-10 lg:py-16 relative z-10 w-full min-h-[calc(100vh-130px)] flex flex-col justify-center">
 
                     {/* Background 3D Element wrapper */}
                     <div className="absolute inset-0 z-0 opacity-40 lg:opacity-100 pointer-events-none overflow-hidden flex items-center justify-center lg:justify-start">
@@ -72,22 +89,33 @@ export default function AgencyLandingPage() {
                                 <span>Missed Calls Into Revenue.</span>
                             </h1>
 
-                            <p className="text-lg md:text-xl text-indigo-100/80 max-w-xl leading-relaxed mb-10 pointer-events-auto selection:bg-indigo-500/30">
-                                Supercharge your business with completely autonomous AI Voice Agents that handle customer support, execute outbound sales, and automate calendar bookings <strong className="text-white">24/7</strong>.
+                            <p className="text-lg md:text-xl font-medium text-indigo-100/90 max-w-xl leading-relaxed mb-8 pointer-events-auto selection:bg-indigo-500/30">
+                                Built for SMBs and service businesses. No hiring. No training. Just booked appointments and handled calls — around the clock.
                             </p>
+
+                            {/* High-Converting Hero CTA */}
+                            <div className="mb-10 pointer-events-auto w-full flex flex-col sm:flex-row items-center justify-start gap-4">
+                                <DemoCallButton
+                                    customClass="flex items-center justify-center px-8 py-4 rounded-full font-bold text-lg transition-all bg-indigo-600 text-white hover:bg-indigo-500 hover:scale-105 shadow-[0_0_30px_rgba(79,70,229,0.4)] hover:shadow-[0_0_40px_rgba(79,70,229,0.6)] w-full sm:w-auto"
+                                    text="Talk to Our AI Now"
+                                />
+                                <span className="text-sm text-slate-400 flex items-center gap-1">
+                                    <Bot className="w-4 h-4 text-slate-500" /> No form required. Just speak.
+                                </span>
+                            </div>
 
                             {/* Trust Stats below headline */}
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-xl pointer-events-auto">
-                                <div className="flex flex-col space-y-2 border-l-2 border-indigo-500 pl-4 bg-white/5 p-4 rounded-r-xl backdrop-blur-sm shadow-xl shadow-black/50">
+                                <div className="flex flex-col space-y-2 border-l-2 border-indigo-500 pl-4 bg-white/5 p-4 rounded-r-xl backdrop-blur-sm shadow-xl shadow-black/50 hover:bg-white/10 transition-colors">
                                     <span className="text-2xl font-bold flex items-center text-white">
-                                        <PhoneCall className="w-5 h-5 mr-3 text-indigo-400" />
+                                        <PhoneCall className="w-5 h-5 mr-3 text-emerald-400" />
                                         24/7 Uptime
                                     </span>
                                     <span className="text-xs md:text-sm text-indigo-200">Answer every customer without a single break.</span>
                                 </div>
-                                <div className="flex flex-col space-y-2 border-l-2 border-purple-500 pl-4 bg-white/5 p-4 rounded-r-xl backdrop-blur-sm shadow-xl shadow-black/50">
+                                <div className="flex flex-col space-y-2 border-l-2 border-purple-500 pl-4 bg-white/5 p-4 rounded-r-xl backdrop-blur-sm shadow-xl shadow-black/50 hover:bg-white/10 transition-colors">
                                     <span className="text-2xl font-bold flex items-center text-white">
-                                        <CalendarCheck className="w-5 h-5 mr-3 text-purple-400" />
+                                        <CalendarCheck className="w-5 h-5 mr-3 text-amber-400" />
                                         100% Scalable
                                     </span>
                                     <span className="text-xs md:text-sm text-indigo-200">Handle infinite callers & book meetings instantly.</span>
