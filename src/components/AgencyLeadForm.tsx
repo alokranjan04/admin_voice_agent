@@ -301,20 +301,20 @@ export default function AgencyLeadForm() {
             key="form"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-white/10 backdrop-blur-xl border border-indigo-500/40 p-6 lg:p-8 rounded-2xl shadow-[0_0_40px_rgba(79,70,229,0.15)] relative z-20"
+            className="bg-white/10 backdrop-blur-xl border border-indigo-500/40 p-4 lg:p-5 rounded-2xl shadow-[0_0_40px_rgba(79,70,229,0.15)] relative z-20"
         >
-            <div className="mb-4 text-center sm:text-left">
-                <h3 className="text-2xl font-bold text-white mb-1.5">Generate Your Custom AI Agent</h3>
+            <div className="mb-1.5 text-center sm:text-left">
+                <h3 className="text-xl font-bold text-white mb-1">Generate Your Custom AI Agent</h3>
                 <p className="text-indigo-100 text-sm">See the magic in action. Instantly build an AI Voice Agent tailored to your exact business needs.</p>
 
                 {/* Progress Indicator */}
-                <div className="flex items-center gap-2 mt-4">
+                <div className="flex items-center gap-2 mt-2">
                     <div className={`h-1.5 flex-1 rounded-full transition-colors ${currentStep >= 1 ? 'bg-indigo-500 shadow-[0_0_10px_rgba(99,102,241,0.5)]' : 'bg-white/10'}`} />
                     <div className={`h-1.5 flex-1 rounded-full transition-colors ${currentStep >= 2 ? 'bg-indigo-500 shadow-[0_0_10px_rgba(99,102,241,0.5)]' : 'bg-white/10'}`} />
                 </div>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-2.5">
                 {currentStep === 1 && (
                     <motion.div
                         initial={{ opacity: 0, x: -20 }}
@@ -322,26 +322,26 @@ export default function AgencyLeadForm() {
                         className="space-y-4"
                     >
                         <div>
-                            <label className="block text-sm font-medium text-indigo-100 mb-1">Full Name</label>
+                            <label className="block text-[13px] font-medium text-indigo-100 mb-0.5">Full Name</label>
                             <input
                                 required type="text" name="name" value={formData.name} onChange={handleChange}
-                                className="w-full bg-black/20 border border-white/10 rounded-lg px-4 py-2 text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                className="w-full bg-black/20 border border-white/10 rounded-lg px-4 py-1.5 text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                                 placeholder="Elon Musk"
                             />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-indigo-100 mb-1">Work Email</label>
+                            <label className="block text-[13px] font-medium text-indigo-100 mb-0.5">Work Email</label>
                             <input
                                 required type="email" name="email" value={formData.email} onChange={handleChange}
-                                className="w-full bg-black/20 border border-white/10 rounded-lg px-4 py-2 text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                className="w-full bg-black/20 border border-white/10 rounded-lg px-4 py-1.5 text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                                 placeholder="elon@tesla.com"
                             />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-indigo-100 mb-1">Company Name</label>
+                            <label className="block text-[13px] font-medium text-indigo-100 mb-0.5">Company Name</label>
                             <input
                                 required type="text" name="company" value={formData.company} onChange={handleChange}
-                                className="w-full bg-black/20 border border-white/10 rounded-lg px-4 py-2 text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                className="w-full bg-black/20 border border-white/10 rounded-lg px-4 py-1.5 text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                                 placeholder="Tesla"
                             />
                         </div>
@@ -360,7 +360,7 @@ export default function AgencyLeadForm() {
                                     }
                                 }
                             }}
-                            className="w-full mt-6 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold py-3.5 px-6 rounded-lg shadow-lg flex items-center justify-center transition-all cursor-pointer"
+                            className="w-full mt-4 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold py-2.5 px-6 rounded-lg shadow-lg flex items-center justify-center transition-all cursor-pointer"
                         >
                             Continue to Step 2 <ArrowRight className="w-5 h-5 ml-2" />
                         </button>

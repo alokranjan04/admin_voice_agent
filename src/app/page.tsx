@@ -17,10 +17,10 @@ export default function AgencyLandingPage() {
     return (
         <div className="min-h-screen bg-slate-950 overflow-x-hidden flex flex-col font-sans">
             {/* Top Navigation Bar / Branding */}
-            <header className="fixed top-0 left-0 right-0 z-50 w-full py-4 px-6 lg:px-12 border-b border-white/5 bg-slate-950/60 backdrop-blur-xl transition-all duration-300">
+            <header className="fixed top-0 left-0 right-0 z-50 w-full py-2.5 px-6 lg:px-12 border-b border-white/5 bg-slate-950/60 backdrop-blur-xl transition-all duration-300">
                 <div className="container mx-auto flex items-center justify-between">
                     <div className="flex items-center space-x-3">
-                        <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-fuchsia-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/20">
+                        <div className="w-9 h-9 bg-gradient-to-br from-indigo-500 to-fuchsia-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/20">
                             <Sparkles className="w-5 h-5 text-white" />
                         </div>
                         <span className="text-2xl font-black text-white tracking-tighter">
@@ -47,10 +47,10 @@ export default function AgencyLandingPage() {
             </div>
 
             {/* Main Content Container */}
-            <main className="flex-grow relative z-10 pt-14">
+            <main className="flex-grow relative z-10 pt-10">
 
                 {/* Trust/Social Proof Strip */}
-                <div className="w-full border-b border-white/5 bg-slate-900/80 backdrop-blur-md py-4 z-20 relative pointer-events-auto">
+                <div className="w-full border-b border-white/5 bg-slate-900/80 backdrop-blur-md py-1.5 z-20 relative pointer-events-auto">
                     <div className="container mx-auto px-6 lg:px-12 flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-12 text-sm font-semibold text-slate-300">
                         <span className="flex items-center gap-2">
                             <span className="relative flex h-2.5 w-2.5">
@@ -67,7 +67,7 @@ export default function AgencyLandingPage() {
                 </div>
 
                 {/* Main Hero & Lead Capture Section */}
-                <div className="container mx-auto px-6 lg:px-12 py-4 lg:py-6 relative z-10 w-full min-h-[calc(100vh-100px)] flex flex-col justify-center">
+                <div className="container mx-auto px-6 lg:px-12 py-2 lg:py-3 relative z-10 w-full min-h-[calc(100vh-80px)] flex flex-col justify-center">
 
                     {/* Background 3D Element wrapper */}
                     <div className="absolute inset-0 z-0 opacity-40 lg:opacity-100 pointer-events-none overflow-hidden flex items-center justify-center lg:justify-start">
@@ -84,17 +84,17 @@ export default function AgencyLandingPage() {
                                 <span>TellYourJourney Exclusive Access</span>
                             </div>
 
-                            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold text-transparent bg-clip-text bg-gradient-to-tr from-white via-indigo-100 to-indigo-400 leading-[1.1] mb-3 py-2 flex flex-col gap-2 pointer-events-auto selection:bg-indigo-500/30">
+                            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold text-transparent bg-clip-text bg-gradient-to-tr from-white via-indigo-100 to-indigo-400 leading-[1.1] mb-1.5 py-2 flex flex-col gap-2 pointer-events-auto selection:bg-indigo-500/30">
                                 <span>Voice AI That Converts</span>
                                 <span>Missed Calls Into Revenue.</span>
                             </h1>
 
-                            <p className="text-lg md:text-xl font-medium text-indigo-100/90 max-w-xl leading-relaxed mb-4 pointer-events-auto selection:bg-indigo-500/30">
+                            <p className="text-lg md:text-xl font-medium text-indigo-100/90 max-w-xl leading-relaxed mb-2 pointer-events-auto selection:bg-indigo-500/30">
                                 Built for SMBs and service businesses. No hiring. No training. Just booked appointments and handled calls — around the clock.
                             </p>
 
                             {/* High-Converting Hero CTA */}
-                            <div className="mb-6 pointer-events-auto w-full flex flex-col sm:flex-row items-center justify-start gap-4">
+                            <div className="mb-3 pointer-events-auto w-full flex flex-col sm:flex-row items-center justify-start gap-4">
                                 <DemoCallButton
                                     customClass="flex items-center justify-center px-8 py-4 rounded-full font-bold text-lg transition-all bg-indigo-600 text-white hover:bg-indigo-500 hover:scale-105 shadow-[0_0_30px_rgba(79,70,229,0.4)] hover:shadow-[0_0_40px_rgba(79,70,229,0.6)] w-full sm:w-auto"
                                     text="Talk to Our AI Now"
@@ -106,15 +106,15 @@ export default function AgencyLandingPage() {
 
                             {/* Trust Stats below headline */}
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-xl pointer-events-auto">
-                                <div className="flex flex-col space-y-1 border-l-2 border-indigo-500 pl-4 bg-white/5 p-3 rounded-r-xl backdrop-blur-sm shadow-xl shadow-black/50 hover:bg-white/10 transition-colors">
-                                    <span className="text-xl font-bold flex items-center text-white">
+                                <div className="flex flex-col space-y-1 border-l-2 border-indigo-500 pl-4 bg-white/5 p-2 rounded-r-xl backdrop-blur-sm shadow-xl shadow-black/50 hover:bg-white/10 transition-colors">
+                                    <span className="text-lg font-bold flex items-center text-white">
                                         <PhoneCall className="w-5 h-5 mr-3 text-emerald-400" />
                                         24/7 Uptime
                                     </span>
                                     <span className="text-xs md:text-sm text-indigo-200">Answer every customer without a single break.</span>
                                 </div>
-                                <div className="flex flex-col space-y-1 border-l-2 border-purple-500 pl-4 bg-white/5 p-3 rounded-r-xl backdrop-blur-sm shadow-xl shadow-black/50 hover:bg-white/10 transition-colors">
-                                    <span className="text-xl font-bold flex items-center text-white">
+                                <div className="flex flex-col space-y-1 border-l-2 border-purple-500 pl-4 bg-white/5 p-2 rounded-r-xl backdrop-blur-sm shadow-xl shadow-black/50 hover:bg-white/10 transition-colors">
+                                    <span className="text-lg font-bold flex items-center text-white">
                                         <CalendarCheck className="w-5 h-5 mr-3 text-amber-400" />
                                         100% Scalable
                                     </span>
