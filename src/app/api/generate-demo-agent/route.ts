@@ -119,8 +119,9 @@ CRITICAL - AVOID SILENCE: Before calling ANY tool (checkAvailability, findAvaila
             transcriber: {
                 provider: "deepgram",
                 model: "nova-2",
-                language: "en",
-                smartFormat: true
+                language: "en-IN",
+                smartFormat: true,
+                keywords: ["AeroHyre", "TellYourJourney", "aviation", "Alok", "AI"]
             },
             firstMessage: "Welcome to Tell Your Journey and thank you for being interested in a demo! I'd love to help you get scheduled. Could I start by getting your name?",
             // Prevent Vapi from ejecting the session during calendar API calls (default is 30s)
