@@ -189,7 +189,10 @@ export async function POST(req: NextRequest) {
                                 customerName: args.name || args.customerName || "Customer",
                                 customerEmail: args.email || args.customerEmail,
                                 customerPhone: args.phone || args.customerPhone || callerPhone,
-                                duration: args.duration
+                                duration: args.duration,
+                                company: args.company,
+                                industry: args.industry,
+                                problem: args.problem
                             });
                             console.log(`[Vapi Tools] createEvent result:`, JSON.stringify(result, null, 2));
                             break;

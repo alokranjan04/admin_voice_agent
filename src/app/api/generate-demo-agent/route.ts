@@ -17,7 +17,9 @@ You must ask the user for:
 2. The industry they belong to
 3. The problems they are looking to solve
 
-Once you have gathered this information, check the calendar and offer to book a demo. You MUST use the checkAvailability or findAvailableSlots tools before calling createEvent to secure a booking. When booking, ask for their name, email, and phone number to complete the calendar reservation.`;
+NOTE: The user has a form on their screen. They can either SPEAK to you or TYPE their details. If they type their details, you will receive a silent SYSTEM NOTE message in our conversation. DO NOT ask the user for information out loud if they have already provided it manually.
+
+Once you have gathered all this information, check the calendar and offer to book a demo. You MUST use the checkAvailability or findAvailableSlots tools before calling createEvent to secure a booking. When booking, ask for their name, email, and phone number to complete the calendar reservation.`;
 
         let baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://tellyourjourney.com';
         baseUrl = baseUrl.replace(/\/$/, "");
@@ -78,9 +80,12 @@ Once you have gathered this information, check the calendar and offer to book a 
                                     service: { type: "string", description: "Type of service" },
                                     customerName: { type: "string", description: "Customer name" },
                                     customerEmail: { type: "string", description: "Customer email." },
-                                    customerPhone: { type: "string", description: "Customer phone." }
+                                    customerPhone: { type: "string", description: "Customer phone." },
+                                    company: { type: "string", description: "Company name (may be provided via typing)" },
+                                    industry: { type: "string", description: "Industry (may be provided via typing)" },
+                                    problem: { type: "string", description: "Problem to solve (may be provided via typing)" }
                                 },
-                                required: ["date", "time", "customerName", "service", "customerEmail"]
+                                required: ["date", "time", "customerName", "service", "customerEmail", "company", "industry", "problem"]
                             }
                         }
                     },

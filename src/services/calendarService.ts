@@ -245,6 +245,9 @@ export async function createEvent(details: {
     customerEmail?: string;
     customerPhone?: string;
     duration?: number;
+    company?: string;
+    industry?: string;
+    problem?: string;
 }) {
     try {
         const calendar = getCalendarClient();
@@ -310,6 +313,9 @@ Service: ${details.service || 'General Appointment'}
 Customer: ${finalName}
 ${details.customerEmail ? `Email: ${details.customerEmail}` : ''}
 ${details.customerPhone ? `Phone: ${details.customerPhone}` : ''}
+${details.company ? `Company: ${details.company}` : ''}
+${details.industry ? `Industry: ${details.industry}` : ''}
+${details.problem ? `Problem to solve: ${details.problem}` : ''}
       `.trim(),
             start: {
                 dateTime: startString,
@@ -329,7 +335,7 @@ ${details.customerPhone ? `Phone: ${details.customerPhone}` : ''}
         };
 
         let FinalEvent: any = event;
-        const shouldInvite = process.env.ENABLE_CALENDAR_INVITES === 'true' && details.customerEmail && details.customerEmail.includes('@');
+        const shouldInvite = details.customerEmail && details.customerEmail.includes('@');
 
         if (shouldInvite) {
             FinalEvent.attendees = [{ email: details.customerEmail }];
