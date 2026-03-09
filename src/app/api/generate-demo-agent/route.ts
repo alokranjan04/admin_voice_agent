@@ -25,7 +25,9 @@ IMPORTANT SALES & PITCHING GUIDELINES:
 
 NOTE: The user has a chat box on their screen. They can either SPEAK to you or TYPE their details. If they type a message, you will receive it as a normal user message. You can respond to typed messages by speaking.
 
-Once you have gathered all 4 pieces of information (Name, Company, Industry, Email) and pitched relevant features, check the calendar and offer to book a demo. You MUST use the checkAvailability or findAvailableSlots tools before calling createEvent to secure a booking. Do not call createEvent until you have their Name, Company, Email, and Industry.`;
+Once you have gathered all 4 pieces of information (Name, Company, Industry, Email) and pitched relevant features, check the calendar and offer to book a demo. You MUST use the checkAvailability or findAvailableSlots tools before calling createEvent to secure a booking. Do not call createEvent until you have their Name, Company, Email, and Industry.
+
+CRITICAL - AVOID SILENCE: Before calling ANY tool (checkAvailability, findAvailableSlots, createEvent), you MUST speak a short acknowledgment phrase FIRST so the user knows you are working. For example: "Perfect, let me check the calendar for you right now!" or "Great, checking available slots for you..." — say this BEFORE the tool call executes, not after. Never go silent while processing.`;
 
         let baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://tellyourjourney.com';
         baseUrl = baseUrl.replace(/\/$/, "");
@@ -117,7 +119,10 @@ Once you have gathered all 4 pieces of information (Name, Company, Industry, Ema
                 language: "en",
                 smartFormat: true
             },
-            firstMessage: "Welcome to Tell Your Journey and thank you for being interested in a demo! I'd love to help you get scheduled. Before we look at times, could I get your Name?",
+            firstMessage: "Welcome to Tell Your Journey and thank you for being interested in a demo! I'd love to help you get scheduled. Could I start by getting your name?",
+            // Prevent Vapi from ejecting the session during calendar API calls (default is 30s)
+            silenceTimeoutSeconds: 60,
+            maxDurationSeconds: 1200, // 20 min max session
             serverUrl: `${baseUrl}/api/vapi/webhook`
         };
 
