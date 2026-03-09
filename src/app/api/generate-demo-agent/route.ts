@@ -9,23 +9,23 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: 'VAPI Private Key is missing on the server' }, { status: 500 });
         }
 
-        const systemPrompt = `Welcome to TellYourJourney and Thanks for being interested for the demo. I am the AI assistant for TellYourJourney. 
+        const systemPrompt = `Welcome to TellYourJourney and Thanks for being interested in a demo. I am the AI assistant for TellYourJourney. 
 My job is to collect information, help you understand how our Voice AI can grow your business, and book a demo. 
 
-You must ask the user for the following 4 pieces of information naturally during the conversation:
-1. Their Name
-2. The name of their Company
-3. Their Email ID
-4. Their exact Use Case (how they want to use an AI Voice Agent)
+You must ask the user for the following 4 pieces of information NATURALLY and ONE AT A TIME:
+1. Their Name. (IMPORTANT: Since I am an AI, I sometimes mishear names. Please ask them to spell it out or type it in the chat box to confirm).
+2. The name of their Company.
+3. Their Industry. 
+4. Their Email ID. (IMPORTANT: Again, please ask them to spell out their email or type it in the chat box to ensure we don't send the invite to the wrong place).
 
 IMPORTANT SALES & PITCHING GUIDELINES:
-- When the user tells you their Use Case, you must briefly highlight how our AI features can solve their specific problem and help their business grow BEFORE asking to book a demo.
-- For example, if they want customer service, mention our 24/7 availability and zero hiring costs. If they want outbound calls, mention our scalable lead generation capabilities. If they want booking, mention our direct CRM calendar integrations.
-- Always be enthusiastic and professional. 
+- Once the user tells you their Industry (Step 3), you must autonomously suggest 2 or 3 of the BEST use cases for an AI Voice Agent in their specific industry BEFORE asking for their email to book a demo.
+- For example, if they are in "Real Estate", say something like: "Since you're in real estate, we could build an agent to instantly call your Zillow leads, or have an AI handle your inbound booking calls 24/7..."
+- Always be enthusiastic, professional, and confident in the AI's ability to help them.
 
 NOTE: The user has a chat box on their screen. They can either SPEAK to you or TYPE their details. If they type a message, you will receive it as a normal user message. You can respond to typed messages by speaking.
 
-Once you have gathered all 4 pieces of information (Name, Company, Email, Use Case) and pitched relevant features, check the calendar and offer to book a demo. You MUST use the checkAvailability or findAvailableSlots tools before calling createEvent to secure a booking. Do not call createEvent until you have their Name, Company, Email, and Use Case.`;
+Once you have gathered all 4 pieces of information (Name, Company, Industry, Email) and pitched relevant features, check the calendar and offer to book a demo. You MUST use the checkAvailability or findAvailableSlots tools before calling createEvent to secure a booking. Do not call createEvent until you have their Name, Company, Email, and Industry.`;
 
         let baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://tellyourjourney.com';
         baseUrl = baseUrl.replace(/\/$/, "");
@@ -87,9 +87,9 @@ Once you have gathered all 4 pieces of information (Name, Company, Email, Use Ca
                                     customerName: { type: "string", description: "Customer name" },
                                     customerEmail: { type: "string", description: "Customer email." },
                                     company: { type: "string", description: "Company name" },
-                                    problem: { type: "string", description: "Use case / Problem to solve" }
+                                    industry: { type: "string", description: "The industry the customer operates in" }
                                 },
-                                required: ["date", "time", "customerName", "service", "customerEmail", "company", "problem"]
+                                required: ["date", "time", "customerName", "service", "customerEmail", "company", "industry"]
                             }
                         }
                     },
@@ -117,7 +117,7 @@ Once you have gathered all 4 pieces of information (Name, Company, Email, Use Ca
                 language: "en",
                 smartFormat: true
             },
-            firstMessage: "Welcome to Tell Your Journey and thank you for being interested in a demo! I'd love to help you get scheduled. Before we look at times, could I get the name of your company?",
+            firstMessage: "Welcome to Tell Your Journey and thank you for being interested in a demo! I'd love to help you get scheduled. Before we look at times, could I get your Name?",
             serverUrl: `${baseUrl}/api/vapi/webhook`
         };
 
