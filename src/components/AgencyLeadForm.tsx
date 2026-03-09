@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Loader2, CheckCircle, ArrowRight, Phone, Mail, Sparkles } from 'lucide-react';
 import { sendGAEvent } from '@next/third-parties/google';
@@ -33,12 +33,37 @@ export default function AgencyLeadForm() {
     const [callStatus, setCallStatus] = useState<string>('not_requested');
     const [callError, setCallError] = useState<string | null>(null);
     const [isEditing, setIsEditing] = useState(false);
+    const [assistantId, setAssistantId] = useState<string | null>(null);
+    const [callEnded, setCallEnded] = useState(false);
+
+    useEffect(() => {
+        let interval: NodeJS.Timeout;
+        if (status === 'success' && deliveryOption === 'call' && assistantId && !callEnded) {
+            // Poll for call completion
+            interval = setInterval(async () => {
+                try {
+                    const res = await fetch(`/api/check-call-status?assistantId=${assistantId}`);
+                    if (res.ok) {
+                        const data = await res.json();
+                        if (data.status === 'completed') {
+                            setCallEnded(true);
+                            clearInterval(interval);
+                        }
+                    }
+                } catch (e) {
+                    console.error('Failed to poll call status', e);
+                }
+            }, 3000);
+        }
+        return () => clearInterval(interval);
+    }, [status, deliveryOption, assistantId, callEnded]);
 
     const handleSubmit = async (e?: React.FormEvent) => {
         if (e) e.preventDefault();
         setStatus('loading');
         setErrorMessage('');
         setIsEditing(false);
+        setCallEnded(false); // Reset on new submission
 
         sendGAEvent('event', 'lead_form_submit', {
             category: 'acquisition',
@@ -70,6 +95,7 @@ export default function AgencyLeadForm() {
             setGeneratedServices(data.services || []);
             setCallStatus(data.callStatus || 'not_requested');
             setCallError(data.callError || null);
+            setAssistantId(data.assistantId || null);
             setStatus('success');
 
             sendGAEvent('event', 'lead_agent_generated_success', {
@@ -111,7 +137,7 @@ export default function AgencyLeadForm() {
                 </motion.div>
                 <h3 className="text-2xl font-bold text-white mb-2">
                     {deliveryOption === 'call'
-                        ? (callStatus === 'failed' ? 'Agent Ready, but Call Failed ⚠️' : 'Calling You Now! 📞')
+                        ? (callStatus === 'failed' ? 'Agent Ready, but Call Failed ⚠️' : (callEnded ? 'Call Ended ✅' : 'Calling You Now! 📞'))
                         : 'Agent Generated! 🚀'
                     }
                 </h3>
@@ -119,7 +145,10 @@ export default function AgencyLeadForm() {
                     {deliveryOption === 'call'
                         ? (callStatus === 'failed'
                             ? `We built your agent, but couldn't trigger the call: ${callError || 'Check server Twilio config'}.`
-                            : `Your phone (${formData.phone}) should be ringing in seconds with a live call from your new ${formData.company} AI Agent!`)
+                            : (callEnded
+                                ? `The conversation and summary email has been sent to your email ID (${formData.email}).`
+                                : `Your phone (${formData.phone}) should be ringing in seconds with a live call from your new ${formData.company} AI Agent!`)
+                        )
                         : `We've built a custom Voice AI agent for ${formData.company}. Check ${formData.email} for the exclusive test link!`
                     }
                 </p>

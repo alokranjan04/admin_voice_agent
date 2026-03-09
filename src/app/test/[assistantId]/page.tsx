@@ -13,6 +13,7 @@ export default function TestAssistantPage() {
     const [isPulsing, setIsPulsing] = useState(false);
     const [callStatus, setCallStatus] = useState<'idle' | 'loading' | 'active'>('idle');
     const [transcript, setTranscript] = useState<{ role: string, text: string }[]>([]);
+    const [callEnded, setCallEnded] = useState(false);
 
     // We expect the user to have NEXT_PUBLIC_VAPI_PUBLIC_KEY in environment
     const vapiPublicKey = process.env.NEXT_PUBLIC_VAPI_PUBLIC_KEY || process.env.VITE_VAPI_PUBLIC_KEY || "fb3fd3dd-8d96-419b-a794-2ec5055b40d5"; // Ensure this fallback or required env is properly set 
@@ -29,11 +30,13 @@ export default function TestAssistantPage() {
         vapiInstance.on('call-start', () => {
             setCallStatus('active');
             setTranscript([]);
+            setCallEnded(false);
         });
 
         vapiInstance.on('call-end', () => {
             setCallStatus('idle');
             setIsPulsing(false);
+            setCallEnded(true);
         });
 
         vapiInstance.on('speech-start', () => {
@@ -111,8 +114,8 @@ export default function TestAssistantPage() {
                         onClick={toggleCall}
                         disabled={callStatus === 'loading'}
                         className={`relative z-20 w-32 h-32 rounded-full flex items-center justify-center shadow-2xl transition-all duration-500 ${callStatus === 'active'
-                                ? 'bg-gradient-to-br from-red-500 to-rose-600 hover:shadow-red-500/40 animate-pulse'
-                                : 'bg-gradient-to-br from-indigo-500 to-purple-600 hover:shadow-indigo-500/40 hover:scale-105'
+                            ? 'bg-gradient-to-br from-red-500 to-rose-600 hover:shadow-red-500/40 animate-pulse'
+                            : 'bg-gradient-to-br from-indigo-500 to-purple-600 hover:shadow-indigo-500/40 hover:scale-105'
                             }`}
                     >
                         {callStatus === 'loading' ? (
@@ -129,6 +132,13 @@ export default function TestAssistantPage() {
                     <p className={`text-lg font-medium transition-colors ${callStatus === 'active' ? 'text-green-400' : 'text-slate-400'}`}>
                         {callStatus === 'loading' ? 'Connecting to Agent...' : callStatus === 'active' ? 'Call in progress. Speak now.' : 'Tap to start call'}
                     </p>
+                    {callEnded && (
+                        <div className="mt-4 p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-xl inline-block animate-in fade-in zoom-in duration-500">
+                            <p className="text-sm font-medium text-emerald-400">
+                                ✅ The conversation and summary email has been sent to your email ID!
+                            </p>
+                        </div>
+                    )}
                 </div>
 
                 {/* Live Transcript Box */}
