@@ -17,9 +17,11 @@ export async function POST(req: NextRequest) {
             const assistantId = report.call?.assistantId || report.call?.assistant?.id || report.assistantId;
             const assistantMetadata = report.call?.assistant?.metadata || report.assistant?.metadata;
 
-            let customerEmail = assistantMetadata?.leadEmail;
-            let customerName = assistantMetadata?.leadName || 'Valued Customer';
-            let companyName = assistantMetadata?.leadCompany || 'your company';
+            const extractedData = report.analysis?.structuredData || {};
+
+            let customerEmail = assistantMetadata?.leadEmail || extractedData.customerEmail;
+            let customerName = assistantMetadata?.leadName || extractedData.customerName || 'Valued Customer';
+            let companyName = assistantMetadata?.leadCompany || extractedData.companyName || 'your company';
 
             const summary = report.summary || 'Summary not available.';
             const transcript = report.transcript || 'Transcript not available.';

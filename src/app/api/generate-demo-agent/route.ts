@@ -127,7 +127,28 @@ CRITICAL - AVOID SILENCE: Before calling ANY tool (checkAvailability, findAvaila
             // Prevent Vapi from ejecting the session during calendar API calls (default is 30s)
             silenceTimeoutSeconds: 60,
             maxDurationSeconds: 1200, // 20 min max session
-            serverUrl: `${baseUrl}/api/vapi/webhook`
+            serverUrl: `${baseUrl}/api/vapi/webhook`,
+            analysisPlan: {
+                structuredDataPlan: {
+                    schema: {
+                        type: "object",
+                        properties: {
+                            customerEmail: {
+                                type: "string",
+                                description: "The email address the user provided during the call."
+                            },
+                            customerName: {
+                                type: "string",
+                                description: "The name of the user."
+                            },
+                            companyName: {
+                                type: "string",
+                                description: "The name of the user's company."
+                            }
+                        }
+                    }
+                }
+            }
         };
 
         const response = await axios({
