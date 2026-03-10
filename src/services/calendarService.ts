@@ -317,7 +317,13 @@ export async function createEvent(details: {
         }
 
         const finalName = details.customerName && details.customerName !== 'undefined' ? details.customerName : 'Client';
-        const eventTitle = `TellYourJourney Demo: ${finalName}${details.company && details.company !== 'undefined' ? ` (${details.company})` : ''}`;
+
+        // Use the dynamically inferred service if available, otherwise default to "TellYourJourney Demo"
+        const serviceNameRaw = details.service && details.service !== 'undefined' ? details.service : 'TellYourJourney Demo';
+        // Capitalize the first letter for cleaner aesthetic
+        const serviceName = serviceNameRaw.charAt(0).toUpperCase() + serviceNameRaw.slice(1);
+
+        const eventTitle = `${serviceName}: ${finalName}${details.company && details.company !== 'undefined' ? ` (${details.company})` : ''}`;
 
         // --- Start of Manual ICS Helper ---
         const sendManualIcsInvite = async () => {
