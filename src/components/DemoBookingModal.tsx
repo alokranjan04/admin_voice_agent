@@ -90,7 +90,7 @@ export default function DemoBookingModal({ isOpen, onClose, vapiInstance, callSt
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-[100] flex items-start justify-center bg-[#0a1628]/95 backdrop-blur-md pt-[10vh] overflow-y-auto p-4 animate-in fade-in duration-300">
+        <div className="fixed inset-0 z-[100] flex items-start justify-center bg-[#0a1628]/90 backdrop-blur-md pt-[15vh] overflow-y-auto p-4 transition-all duration-300">
             <div className="relative w-full max-w-lg bg-[#0a1628] border border-white/10 rounded-[2rem] shadow-2xl shadow-red-500/5 overflow-hidden flex flex-col max-h-[90vh]">
 
                 {/* Header */}
