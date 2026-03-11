@@ -13,6 +13,7 @@ const LANGUAGES = [
     { code: 'French', flag: '🇫🇷', label: 'Français' },
     { code: 'German', flag: '🇩🇪', label: 'Deutsch' },
     { code: 'Spanish', flag: '🇪🇸', label: 'Español' },
+    { code: 'Arabic', flag: '🇸🇦', label: 'العربية' },
 ];
 
 export default function AgencyLeadForm() {

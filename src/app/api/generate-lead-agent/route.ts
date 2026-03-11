@@ -99,16 +99,18 @@ export async function POST(req: Request) {
             'French': 'fr',
             'German': 'de',
             'Spanish': 'es',
+            'Arabic': 'ar',
         };
         const langCode = languageCodeMap[language] || 'en';
 
         // Language-aware first message
         const firstMessageMap: Record<string, string> = {
-            'English': `Hello ${name}! Welcome to your custom ${company} AI demo. How can I help you today?`,
-            'Hindi': `Arre ${name} ji! ${company} ke liye aapka custom AI demo ready hai — let's go! Main aapki kaise help kar sakta hoon aaj?`,
-            'French': `Bonjour ${name} ! Bienvenue dans votre démo IA personnalisée pour ${company}. Comment puis-je vous aider ?`,
-            'German': `Hallo ${name}! Willkommen zu Ihrer maßgeschneiderten ${company} KI-Demo. Wie kann ich Ihnen helfen?`,
-            'Spanish': `¡Hola ${name}! Bienvenido a tu demostración de IA personalizada de ${company}. ¿Cómo puedo ayudarte?`,
+            'English': `Hello ${name}! Welcome to your custom ${company} AI demo. I'd love to share how AI is transforming your industry, saving money, and generating new revenue. Should we dive in?`,
+            'Hindi': `Arre ${name} ji! ${company} ke liye aapka custom AI demo ready hai. Main batana chahunga ki AI aapki industry mein kaise paise bacha raha hai aur nayi revenue generate kar raha hai. Shuru karein?`,
+            'French': `Bonjour ${name} ! Bienvenue dans votre démo IA personnalisée pour ${company}. J'adorerais partager comment l'IA transforme votre secteur, en économisant de l'argent et en générant de nouveaux revenus. On y va ?`,
+            'German': `Hallo ${name}! Willkommen zu Ihrer maßgeschneiderten ${company} KI-Demo. Ich würde gerne teilen, wie KI Ihre Branche verändert, Geld spart und neue Einnahmen generiert. Sollen wir anfangen?`,
+            'Spanish': `¡Hola ${name}! Bienvenido a tu demostración de IA personalizada de ${company}. Me encantaría compartir cómo la IA está transformando tu industria, ahorrando dinero y generando nuevos ingresos. ¿Empezamos?`,
+            'Arabic': `مرحباً ${name}! مرحباً بك في العرض التجريبي المخصص للذكاء الاصطناعي لـ ${company}. أود أن أشاركك كيف يغير الذكاء الاصطناعي مجال عملك، ويوفر المال، ويولد إيرادات جديدة. هل نبدأ؟`,
         };
         const firstMessage = firstMessageMap[language] || firstMessageMap['English'];
 
@@ -147,16 +149,17 @@ Today is ${nowIST} (IST). ALWAYS use this as the real current date when referrin
 - Prospect Email: ${email}
 - Prospect Phone: ${phone}
 - Prospect Company: ${company}
+- Prospect Industry: ${industry || 'their industry'}
 
 ${businessContext}
 
 == CRITICAL INSTRUCTIONS (MANDATORY) ==
 1. **DATE AWARENESS:** Today is ${nowIST}. When someone says "tomorrow" or "next Monday", calculate correctly from this real date.
 2. **NO REPETITIVE QUESTIONS:** You strictly already have the user's details. ${name}'s email is ${email} and phone is ${phone}. If they ask to book or reschedule, use these details IMMEDIATELY without asking for them. 
-3. **Reference Social Proof:** During the conversation, mention positive feedback found in the "Customer Feedback" section above to build trust (e.g., "Customers love our fast service!").
-4. **The Strategic Pitch:** Explain that this Voice AI isn't just a bot—it improves **Quality** (no missed calls), catches **Feedback** earlier, and slashes **Operational Costs**.
-5. **Seamless Booking:** Confirmation is key. Just say: "${name}, I'm booking that for you now using your contact info on file (${phone})." Then call the tool.
-6. **Demo Offer:** Suggest a demo of the "AI Builder" platform once the primary topic is handled.
+3. **PROACTIVE PITCH, DO NOT ASK WHAT THEY WANT:** NEVER ask what service they are interested in. Instead, PROACTIVELY suggest the best Voice AI use case tailored specifically for their industry (${industry || 'their business'}).
+4. **INDUSTRY & ROI FOCUS:** Explain how their competitors are already utilizing Voice AI, and highlight specifically how it can help ${company} generate more income and save money.
+5. **DRIVE TO DEMO:** Your main focus is getting them to schedule a detailed demo. Constantly guide the conversation towards booking a demo to explore these custom use cases in detail.
+6. **Seamless Booking:** When they agree to book, just say: "${name}, I'm booking that for you now using your contact info on file (${phone})." Then call the createEvent tool.
 7. **Language:** Respond EXCLUSIVELY in ${language === 'Hindi' ? 'Hinglish' : language}.
 
 Be enthusiastic. Greet ${name} by name immediately. Keep it short and human.`;
@@ -270,6 +273,11 @@ Be enthusiastic. Greet ${name} by name immediately. Keep it short and human.`;
                     voiceId: 'bIHbv24MWmeRgasZH58o', // Willa — supports eleven_multilingual_v2
                     model: 'eleven_multilingual_v2',
                     language: langCode,
+                },
+                transcriber: {
+                    provider: "deepgram",
+                    model: "nova-2",
+                    language: langCode
                 },
                 firstMessage,
             })
