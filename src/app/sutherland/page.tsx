@@ -68,7 +68,7 @@ export default function SutherlandLandingPage() {
             <main className="flex-grow flex flex-col justify-start">
                 
                 {/* Full-width Dark Hero Section matching the Screenshot */}
-                <section className="relative w-full pt-28 lg:pt-36 pb-20 lg:pb-32 overflow-hidden bg-[#0A0E17]">
+                <section className="relative w-full pt-20 lg:pt-24 pb-12 lg:pb-16 overflow-hidden bg-[#0A0E17]">
                     
                     {/* Dark Background Effects mimicking the Server Room / Circuit Board aesthetic */}
                     <div className="absolute inset-0 z-0">
@@ -89,11 +89,11 @@ export default function SutherlandLandingPage() {
                             {/* Left Column: Exact Text/Layout from Screenshot */}
                             <div className="xl:col-span-6 flex flex-col justify-center order-2 xl:order-1 text-center xl:text-left pr-0 xl:pr-10">
                                 
-                                <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-[4rem] font-extrabold text-white leading-[1.1] mb-6 tracking-tight">
+                                <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-[3.5rem] font-extrabold text-white leading-[1.1] mb-4 tracking-tight">
                                     Outlook 2026: The Road to the <br className="hidden lg:block"/>Agentic Enterprise
                                 </h1>
 
-                                <p className="text-lg md:text-xl lg:text-[22px] font-medium text-gray-300 leading-relaxed mb-10 max-w-2xl mx-auto xl:mx-0">
+                                <p className="text-base md:text-lg lg:text-[20px] font-medium text-gray-300 leading-relaxed mb-8 max-w-2xl mx-auto xl:mx-0">
                                     A step-by-step path to building AI-native, self-optimizing enterprises.
                                 </p>
 
@@ -104,7 +104,7 @@ export default function SutherlandLandingPage() {
                                 </div>
                                 
                                 {/* Bottom Slide Indicators matching screenshot */}
-                                <div className="flex items-center justify-center xl:justify-start mt-16 space-x-2">
+                                <div className="flex items-center justify-center xl:justify-start mt-10 space-x-2">
                                     <button className="w-8 h-8 rounded border border-white/30 flex items-center justify-center text-white hover:bg-white/10 transition-colors">
                                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
                                     </button>
@@ -138,7 +138,7 @@ export default function SutherlandLandingPage() {
                     </div>
                 </section>
 
-                <section className="bg-white pt-20 pb-16">
+                <section className="bg-white pt-12 pb-10">
                     <div className="container mx-auto px-6 lg:px-12 text-center text-[#1D1D3A]">
                         <h2 className="text-3xl font-bold mb-4">Enterprise Voice AI Platform</h2>
                         <p className="text-[#4C535F] max-w-2xl mx-auto">Experience our real-time voice intelligence integrated with Sutherland's deep BPO expertise. The perfect synergy of technology and human-level nuance.</p>

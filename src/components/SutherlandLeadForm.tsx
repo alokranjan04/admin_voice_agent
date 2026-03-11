@@ -2,8 +2,9 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Loader2, CheckCircle, ArrowRight, Phone, Mail, Sparkles } from 'lucide-react';
+import { Loader2, CheckCircle, ArrowRight, Phone, Mail, Sparkles, Building2 } from 'lucide-react';
 import { sendGAEvent } from '@next/third-parties/google';
+import { SUPPORTED_INDUSTRIES } from '@/types';
 
 type DeliveryOption = 'email' | 'call';
 
@@ -21,7 +22,7 @@ export default function SutherlandLeadForm() {
         name: '',
         email: '',
         phone: '',
-        company: 'Sutherland Global', // Hardcoded for this specific page
+        company: 'Sutherland Global', 
         website: 'sutherlandglobal.com',
         companyDetails: 'We are a digital transformation company providing BPO and customer experience solutions.',
         industry: 'BPO & Customer Experience',
@@ -237,9 +238,9 @@ export default function SutherlandLeadForm() {
                 animate={{ opacity: 1, scale: 1 }}
                 className="bg-white/10 backdrop-blur-xl border border-blue-500/30 p-8 rounded-2xl shadow-[0_0_40px_rgba(37,99,235,0.1)] relative z-30"
             >
-                <div className="mb-6">
-                    <h3 className="text-2xl font-bold text-white mb-2">Refine Sutherland AI Agent</h3>
-                    <p className="text-blue-100/70 text-sm">Edit the details below to perfect your agent's capabilities before the next call.</p>
+                <div className="mb-4">
+                    <h3 className="text-xl font-bold text-white mb-1">Refine Sutherland AI Agent</h3>
+                    <p className="text-blue-100/70 text-xs text-balance">Edit the details below to perfect your agent's capabilities before the next call.</p>
                 </div>
 
                 <div className="space-y-6">
@@ -272,14 +273,39 @@ export default function SutherlandLeadForm() {
                         </div>
                     </div>
 
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div>
+                            <label className="block text-[10px] font-bold text-blue-300 uppercase tracking-widest mb-1">Company Name</label>
+                            <input
+                                name="company"
+                                value={formData.company}
+                                onChange={handleChange}
+                                className="w-full bg-black/30 border border-white/10 rounded-xl px-3 py-2 text-white text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-[10px] font-bold text-blue-300 uppercase tracking-widest mb-1">Industry</label>
+                            <select
+                                name="industry"
+                                value={formData.industry}
+                                onChange={(e) => setFormData(prev => ({ ...prev, industry: e.target.value }))}
+                                className="w-full bg-black/30 border border-white/10 rounded-xl px-3 py-2 text-white text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none cursor-pointer"
+                            >
+                                {SUPPORTED_INDUSTRIES.map(ind => (
+                                    <option key={ind} value={ind} className="bg-slate-900 text-white">{ind}</option>
+                                ))}
+                            </select>
+                        </div>
+                    </div>
+
                     <div>
-                        <label className="block text-xs font-bold text-blue-300 uppercase tracking-widest mb-2">Sutherland Context</label>
+                        <label className="block text-[10px] font-bold text-blue-300 uppercase tracking-widest mb-1">Sutherland Context</label>
                         <textarea
                             name="companyDetails"
                             value={formData.companyDetails}
                             onChange={handleChange}
-                            rows={4}
-                            className="w-full bg-black/30 border border-white/10 rounded-xl p-4 text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            rows={3}
+                            className="w-full bg-black/30 border border-white/10 rounded-xl p-3 text-white text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
                     </div>
 
@@ -308,11 +334,11 @@ export default function SutherlandLeadForm() {
             key="form"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-[#1D1D3A]/80 backdrop-blur-2xl border border-white/10 p-6 lg:p-8 rounded-2xl shadow-2xl relative z-20"
+            className="bg-[#1D1D3A]/80 backdrop-blur-2xl border border-white/10 p-5 lg:p-6 rounded-2xl shadow-2xl relative z-20"
         >
-            <div className="mb-6 text-center sm:text-left">
-                <h3 className="text-2xl font-bold text-white mb-2">Generate Your AI Agent</h3>
-                <p className="text-gray-300 text-sm">Experience Sutherland's enterprise voice AI solutions directly on your phone.</p>
+            <div className="mb-4 text-center sm:text-left">
+                <h3 className="text-xl font-bold text-white mb-1">Generate Your AI Agent</h3>
+                <p className="text-gray-300 text-xs">Experience Sutherland's enterprise voice AI solutions directly on your phone.</p>
 
                 {/* Progress Indicator */}
                 <div className="flex items-center gap-2 mt-4">
@@ -321,49 +347,75 @@ export default function SutherlandLeadForm() {
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-5 pt-2">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
                     <div>
-                        <label className="block text-[13px] font-semibold text-gray-300 mb-1.5 uppercase tracking-wider">Full Name</label>
+                        <label className="block text-[11px] font-semibold text-gray-300 mb-1 uppercase tracking-wider">Full Name</label>
                         <input
                             required type="text" name="name" value={formData.name} onChange={handleChange}
-                            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/30 focus:outline-none focus:border-[#E31837] focus:ring-1 focus:ring-[#E31837] transition-all"
+                            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-white placeholder-white/30 focus:outline-none focus:border-[#E31837] focus:ring-1 focus:ring-[#E31837] transition-all text-sm"
                             placeholder="John Doe"
                         />
                     </div>
                     <div>
-                        <label className="block text-[13px] font-semibold text-gray-300 mb-1.5 uppercase tracking-wider">Work Email</label>
+                        <label className="block text-[11px] font-semibold text-gray-300 mb-1 uppercase tracking-wider">Work Email</label>
                         <input
                             required type="email" name="email" value={formData.email} onChange={handleChange}
-                            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/30 focus:outline-none focus:border-[#E31837] focus:ring-1 focus:ring-[#E31837] transition-all"
+                            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-white placeholder-white/30 focus:outline-none focus:border-[#E31837] focus:ring-1 focus:ring-[#E31837] transition-all text-sm"
                             placeholder="john@example.com"
                         />
                     </div>
                 </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+                    <div>
+                        <label className="block text-[11px] font-semibold text-gray-300 mb-1 uppercase tracking-wider">Company Name</label>
+                        <input
+                            required type="text" name="company" value={formData.company} onChange={handleChange}
+                            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-white placeholder-white/30 focus:outline-none focus:border-[#E31837] focus:ring-1 focus:ring-[#E31837] transition-all text-sm"
+                            placeholder="Sutherland Global"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-[11px] font-semibold text-gray-300 mb-1 uppercase tracking-wider">Industry</label>
+                        <select
+                            required
+                            name="industry"
+                            value={formData.industry}
+                            onChange={(e) => setFormData(prev => ({ ...prev, industry: e.target.value }))}
+                            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-white placeholder-white/30 focus:outline-none focus:border-[#E31837] focus:ring-1 focus:ring-[#E31837] transition-all text-sm appearance-none cursor-pointer"
+                        >
+                            <option value="" disabled className="bg-slate-900 text-slate-400">Select Industry...</option>
+                            {SUPPORTED_INDUSTRIES.map(ind => (
+                                <option key={ind} value={ind} className="bg-slate-900 text-white">{ind}</option>
+                            ))}
+                        </select>
+                    </div>
+                </div>
                 
                 <div>
-                    <label className="block text-[13px] font-semibold text-gray-300 mb-1.5 uppercase tracking-wider">Phone Number</label>
+                    <label className="block text-[11px] font-semibold text-gray-300 mb-1 uppercase tracking-wider">Phone Number</label>
                     <input
                         required type="tel" name="phone" value={formData.phone} onChange={handleChange}
-                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/30 focus:outline-none focus:border-[#E31837] focus:ring-1 focus:ring-[#E31837] transition-all"
+                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-white placeholder-white/30 focus:outline-none focus:border-[#E31837] focus:ring-1 focus:ring-[#E31837] transition-all text-sm"
                         placeholder="+1 (555) 000-0000"
                     />
                 </div>
 
                 {/* Row 4: Agent Language */}
                 <div>
-                    <label className="block text-[13px] font-semibold text-gray-300 mb-2.5 uppercase tracking-wider">Agent Language</label>
-                    <div className="flex flex-wrap gap-2.5">
+                    <label className="block text-[11px] font-semibold text-gray-300 mb-1.5 uppercase tracking-wider">Agent Language</label>
+                    <div className="flex flex-wrap gap-2">
                         {LANGUAGES.map(lang => (
                             <button
                                 key={lang.code}
                                 type="button"
                                 onClick={() => setLanguage(lang.code)}
-                                className={`flex items-center gap-2 px-3.5 py-2 rounded-xl border font-semibold text-sm transition-all ${language === lang.code
+                                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border font-semibold text-xs transition-all ${language === lang.code
                                     ? 'border-[#E31837] bg-[#E31837] text-white shadow-lg shadow-[#E31837]/20 scale-[1.02]'
                                     : 'border-white/10 bg-white/5 text-gray-400 hover:border-white/30 hover:text-white'
                                     }`}
                             >
-                                <span className="text-base">{lang.flag}</span>
+                                <span className="text-sm">{lang.flag}</span>
                                 {lang.label}
                             </button>
                         ))}
@@ -371,28 +423,28 @@ export default function SutherlandLeadForm() {
                 </div>
 
                 <div>
-                    <label className="block text-[13px] font-semibold text-gray-300 mb-2.5 uppercase tracking-wider">Delivery Method</label>
+                    <label className="block text-[11px] font-semibold text-gray-300 mb-1.5 uppercase tracking-wider">Delivery Method</label>
                     <div className="grid grid-cols-2 gap-3">
                         <button
                             type="button"
                             onClick={() => setDeliveryOption('email')}
-                            className={`flex items-center justify-center gap-2 px-4 py-3.5 rounded-xl border font-semibold text-sm transition-all ${deliveryOption === 'email'
+                            className={`flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl border font-semibold text-xs transition-all ${deliveryOption === 'email'
                                 ? 'border-[#E31837] bg-[#E31837]/10 text-[#E31837]'
                                 : 'border-white/10 bg-white/5 text-gray-400 hover:border-white/30 hover:text-white'
                                 }`}
                         >
-                            <Mail className="w-4 h-4" />
+                            <Mail className="w-3.5 h-3.5" />
                             Email Me
                         </button>
                         <button
                             type="button"
                             onClick={() => setDeliveryOption('call')}
-                            className={`flex items-center justify-center gap-2 px-4 py-3.5 rounded-xl border font-semibold text-sm transition-all ${deliveryOption === 'call'
+                            className={`flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl border font-semibold text-xs transition-all ${deliveryOption === 'call'
                                 ? 'border-[#E31837] bg-[#E31837]/10 text-[#E31837]'
                                 : 'border-white/10 bg-white/5 text-gray-400 hover:border-white/30 hover:text-white'
                                 }`}
                         >
-                            <Phone className="w-4 h-4" />
+                            <Phone className="w-3.5 h-3.5" />
                             Call Me Now
                         </button>
                     </div>
@@ -404,20 +456,20 @@ export default function SutherlandLeadForm() {
                     </motion.p>
                 )}
 
-                <div className="pt-2">
+                <div className="pt-0.5">
                     <button
                         type="submit"
                         disabled={status === 'loading'}
-                        className="w-full bg-[#E31837] hover:bg-[#C2142E] text-white font-bold py-4 px-6 rounded-xl shadow-lg shadow-[#E31837]/20 flex items-center justify-center transition-all disabled:opacity-70 disabled:cursor-not-allowed text-base tracking-wide"
+                        className="w-full bg-[#E31837] hover:bg-[#C2142E] text-white font-bold py-3 px-6 rounded-xl shadow-lg shadow-[#E31837]/20 flex items-center justify-center transition-all disabled:opacity-70 disabled:cursor-not-allowed text-sm tracking-wide"
                     >
                         {status === 'loading' ? (
                             <>
-                                <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                                 {deliveryOption === 'call' ? 'Calling...' : 'Building...'}
                             </>
                         ) : (
                             <>
-                                {deliveryOption === 'call' ? <Phone className="w-5 h-5 mr-2" /> : <Sparkles className="w-5 h-5 mr-2" />}
+                                {deliveryOption === 'call' ? <Phone className="w-4 h-4 mr-2" /> : <Sparkles className="w-4 h-4 mr-2" />}
                                 {deliveryOption === 'call' ? 'Deploy & Call Now' : 'Generate Agent'}
                             </>
                         )}

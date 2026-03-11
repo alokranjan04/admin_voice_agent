@@ -267,13 +267,38 @@ export default function AgencyLeadForm() {
                         </div>
                     </div>
 
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label className="block text-xs font-bold text-indigo-300 uppercase tracking-widest mb-2">Company Name</label>
+                            <input
+                                name="company"
+                                value={formData.company}
+                                onChange={handleChange}
+                                className="w-full bg-black/30 border border-white/10 rounded-xl p-3 text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-xs font-bold text-indigo-300 uppercase tracking-widest mb-2">Industry</label>
+                            <select
+                                name="industry"
+                                value={formData.industry}
+                                onChange={(e) => setFormData(prev => ({ ...prev, industry: e.target.value }))}
+                                className="w-full bg-black/30 border border-white/10 rounded-xl p-3 text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 appearance-none cursor-pointer"
+                            >
+                                {SUPPORTED_INDUSTRIES.map(ind => (
+                                    <option key={ind} value={ind} className="bg-slate-900 text-white">{ind}</option>
+                                ))}
+                            </select>
+                        </div>
+                    </div>
+
                     <div>
                         <label className="block text-xs font-bold text-indigo-300 uppercase tracking-widest mb-2">Company Context</label>
                         <textarea
                             name="companyDetails"
                             value={formData.companyDetails}
                             onChange={handleChange}
-                            rows={4}
+                            rows={3}
                             className="w-full bg-black/30 border border-white/10 rounded-xl p-4 text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                         />
                     </div>
