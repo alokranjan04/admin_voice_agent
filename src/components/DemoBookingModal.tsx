@@ -200,41 +200,60 @@ export default function DemoBookingModal({ isOpen, onClose, vapiInstance, callSt
                             </div>
                         )}
 
-                        {/* Transcript Area */}
-                        <div className="flex-grow p-6 overflow-y-auto space-y-4 max-h-[300px] scrollbar-hide">
-                            {transcript.map((msg, i) => (
-                                <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                                    <div className={`max-w-[85%] rounded-[1.25rem] px-5 py-3.5 text-[11px] font-medium leading-relaxed ${msg.role === 'user'
-                                        ? 'bg-[#CC0000] text-white rounded-tr-none'
-                                        : 'bg-white/5 text-gray-300 border border-white/5 rounded-tl-none'
-                                        }`}>
-                                        {msg.text}
+                        {/* Grounded Transcript Area */}
+                        <div className="flex-grow flex flex-col justify-end bg-black/10">
+                            <div className="p-6 overflow-y-auto space-y-4 max-h-[400px] scroll-smooth">
+                                {transcript.length === 0 && callStatus === 'active' && (
+                                    <div className="flex justify-start">
+                                        <div className="bg-white/5 text-gray-400 text-[10px] font-black uppercase tracking-widest px-4 py-2 rounded-lg border border-white/5">
+                                            Initializing strategist session...
+                                        </div>
                                     </div>
-                                </div>
-                            ))}
-                            <div ref={transcriptEndRef} />
+                                )}
+                                {transcript.map((msg, i) => (
+                                    <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'} animate-in slide-in-from-bottom-2 duration-300`}>
+                                        <div className={`max-w-[85%] rounded-[1.5rem] px-5 py-3.5 text-[11px] font-medium leading-relaxed shadow-sm ${msg.role === 'user'
+                                            ? 'bg-[#CC0000] text-white rounded-tr-none'
+                                            : 'bg-white/5 text-gray-300 border border-white/5 rounded-tl-none'
+                                            }`}>
+                                            {msg.text}
+                                        </div>
+                                    </div>
+                                ))}
+                                <div ref={transcriptEndRef} />
+                            </div>
                         </div>
 
-                        {/* Standard Chat Input Field */}
+                        {/* Integrated Chat Input Field */}
                         {callStatus === 'active' && (
-                            <div className="p-6 border-t border-white/5 bg-white/[0.01]">
-                                <form onSubmit={sendChatMessage} className="flex gap-3 relative">
+                            <div className="p-6 bg-white/[0.02] border-t border-white/5">
+                                <form onSubmit={sendChatMessage} className="flex gap-3 relative group">
                                     <input
                                         type="text"
-                                        placeholder="Type naturally..."
+                                        placeholder="Type your goals or response..."
                                         value={chatInput}
                                         onChange={(e) => setChatInput(e.target.value)}
-                                        className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-5 pr-14 text-xs text-white focus:outline-none focus:border-[#CC0000] transition-all placeholder:text-gray-600 font-medium"
+                                        className="w-full bg-white/5 border border-white/10 rounded-2xl py-4.5 pl-6 pr-14 text-xs text-white focus:outline-none focus:border-[#CC0000]/50 transition-all placeholder:text-gray-600 font-medium"
                                     />
                                     <button
                                         type="submit"
                                         disabled={!chatInput.trim()}
-                                        className="absolute right-2 top-1/2 -translate-y-1/2 p-2.5 bg-[#CC0000] rounded-xl text-white disabled:opacity-20 transition-all hover:bg-[#AA0000] shadow-lg shadow-red-900/20"
+                                        className="absolute right-2.5 top-1/2 -translate-y-1/2 p-3 bg-[#CC0000] rounded-xl text-white disabled:opacity-10 transition-all hover:bg-[#AA0000] shadow-xl shadow-red-900/40"
                                     >
-                                        <Send className="w-4 h-4" />
+                                        <Send className="w-4.5 h-4.5" />
                                     </button>
                                 </form>
-                                <p className="text-[9px] text-gray-600 font-black uppercase tracking-[0.2em] mt-4 text-center">Multi-modal interaction ready</p>
+                                <div className="flex items-center justify-center gap-4 mt-6">
+                                    <div className="flex items-center gap-1.5 opacity-30">
+                                        <div className="w-1 h-1 rounded-full bg-white animate-pulse" />
+                                        <span className="text-[8px] font-black uppercase tracking-widest text-white">Voice Enabled</span>
+                                    </div>
+                                    <div className="w-px h-2 bg-white/10" />
+                                    <div className="flex items-center gap-1.5 opacity-30">
+                                        <div className="w-1 h-1 rounded-full bg-white animate-pulse" />
+                                        <span className="text-[8px] font-black uppercase tracking-widest text-white">Multimodal Chat</span>
+                                    </div>
+                                </div>
                             </div>
                         )}
                     </div>
