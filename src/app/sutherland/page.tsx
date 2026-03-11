@@ -133,35 +133,36 @@ export default function SutherlandLandingPage() {
                                 
                                 <div className="h-[280px] sm:h-[320px] lg:h-[380px] relative">
                                     <AnimatePresence mode="wait" initial={false} custom={direction}>
-                                        <motion.div
-                                            key={activeSlide}
-                                            custom={direction}
-                                            initial={{ opacity: 0, x: direction > 0 ? 50 : -50 }}
-                                            animate={{ opacity: 1, x: 0 }}
-                                            exit={{ opacity: 0, x: direction > 0 ? -50 : 50 }}
-                                            transition={{ duration: 0.5, ease: "easeInOut" }}
-                                            className="absolute inset-0 flex flex-col justify-center xl:justify-start"
-                                        >
-                                            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-[3.5rem] font-extrabold text-white leading-[1.1] mb-4 tracking-tight">
-                                                {SUTHERLAND_QUOTES[activeSlide].title.split(': ').map((part, i) => (
-                                                    <React.Fragment key={i}>
-                                                        {part}
-                                                        {i === 0 && part.includes('Outlook') && <><br className="hidden lg:block"/> {SUTHERLAND_QUOTES[activeSlide].title.split(': ')[1]}</>}
-                                                        {i === 0 && !part.includes('Outlook') && <br className="hidden lg:block"/>}
-                                                    </React.Fragment>
-                                                ))[0]}
-                                            </h1>
+                                        {isMounted && (
+                                            <motion.div
+                                                key={activeSlide}
+                                                custom={direction}
+                                                initial={{ opacity: 0, x: direction > 0 ? 50 : -50 }}
+                                                animate={{ opacity: 1, x: 0 }}
+                                                exit={{ opacity: 0, x: direction > 0 ? -50 : 50 }}
+                                                transition={{ duration: 0.5, ease: "easeInOut" }}
+                                                className="absolute inset-0 flex flex-col justify-center xl:justify-start"
+                                            >
+                                                <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-[3.5rem] font-extrabold text-white leading-[1.1] mb-4 tracking-tight">
+                                                    {SUTHERLAND_QUOTES[activeSlide].title.split(': ').map((part, i, arr) => (
+                                                        <React.Fragment key={i}>
+                                                            {part}
+                                                            {i === 0 && arr.length > 1 && <br className="hidden lg:block"/>}
+                                                        </React.Fragment>
+                                                    ))}
+                                                </h1>
 
-                                            <p className="text-base md:text-lg lg:text-[20px] font-medium text-gray-300 leading-relaxed mb-8 max-w-2xl mx-auto xl:mx-0">
-                                                {SUTHERLAND_QUOTES[activeSlide].description}
-                                            </p>
+                                                <p className="text-base md:text-lg lg:text-[20px] font-medium text-gray-300 leading-relaxed mb-8 max-w-2xl mx-auto xl:mx-0">
+                                                    {SUTHERLAND_QUOTES[activeSlide].description}
+                                                </p>
 
-                                            <div className="flex flex-col sm:flex-row gap-4 justify-center xl:justify-start">
-                                                <button className="bg-[#E31837] hover:bg-[#C2142E] text-white px-8 py-4 rounded-md text-base font-bold transition-all shadow-[0_0_20px_rgba(227,24,55,0.3)] hover:shadow-[0_0_30px_rgba(227,24,55,0.5)] w-full sm:w-auto tracking-wide scale-100 hover:scale-[1.02]">
-                                                    {SUTHERLAND_QUOTES[activeSlide].cta}
-                                                </button>
-                                            </div>
-                                        </motion.div>
+                                                <div className="flex flex-col sm:flex-row gap-4 justify-center xl:justify-start">
+                                                    <button className="bg-[#E31837] hover:bg-[#C2142E] text-white px-8 py-4 rounded-md text-base font-bold transition-all shadow-[0_0_20px_rgba(227,24,55,0.3)] hover:shadow-[0_0_30px_rgba(227,24,55,0.5)] w-full sm:w-auto tracking-wide scale-100 hover:scale-[1.02]">
+                                                        {SUTHERLAND_QUOTES[activeSlide].cta}
+                                                    </button>
+                                                </div>
+                                            </motion.div>
+                                        )}
                                     </AnimatePresence>
                                 </div>
                                 
