@@ -77,7 +77,7 @@ export default function SutherlandLandingPage() {
 
             <main className="relative pt-32 pb-20">
                 {/* Hero Section */}
-                <section className="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-2 gap-20 items-center mb-32 lg:mb-48">
+                <section className="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-2 gap-12 xl:gap-20 items-center mb-32 lg:mb-48">
                     <motion.div
                         initial={{ opacity: 0, x: -30 }}
                         animate={{ opacity: 1, x: 0 }}

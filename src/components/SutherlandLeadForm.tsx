@@ -39,6 +39,14 @@ const INDUSTRIES = [
     "Media & Entertainment",
     "Professional Services"
 ];
+const LANGUAGES = [
+    "English",
+    "Hindi",
+    "French",
+    "German",
+    "Spanish",
+    "Arabic"
+];
 
 const INTERESTS = [
     { id: "Customer Support", label: "Support", fullLabel: "Customer Support", icon: Headphones, desc: "Digital CX" },
@@ -53,6 +61,7 @@ export default function SutherlandLeadForm() {
         company: '',
         phone: '',
         industry: '',
+        language: 'English',
         interest: 'Customer Support'
     });
     const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
@@ -78,7 +87,6 @@ export default function SutherlandLeadForm() {
                 body: JSON.stringify({
                     ...formData,
                     deliveryOption: 'email',
-                    language: 'English',
                 }),
             });
 
@@ -108,7 +116,6 @@ export default function SutherlandLeadForm() {
                 body: JSON.stringify({
                     ...formData,
                     deliveryOption: 'call',
-                    language: 'English',
                 }),
             });
             alert("Call initiated! Your phone should ring shortly.");
@@ -227,54 +234,65 @@ export default function SutherlandLeadForm() {
                                         placeholder="+1 (555) 000-0000"
                                     />
                                 </div>
-                            </div>
-
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                                 <div className="space-y-1">
                                     <label className="flex items-center gap-1 text-[8px] font-black text-gray-500 uppercase tracking-widest ml-1">
                                         <Globe className="w-2.5 h-2.5" /> Industry
                                     </label>
                                     <select
                                         required name="industry" value={formData.industry} onChange={handleChange}
-                                        className="glass-input w-full appearance-none cursor-pointer py-2 text-[11px]"
+                                        className="glass-input w-full appearance-none cursor-pointer py-2 px-3 text-[11px] bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23666666%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.4-12.8z%22%2F%3E%3C%2Fsvg%3E')] bg-[length:8px_8px] bg-[right_0.75rem_center] bg-no-repeat"
                                     >
                                         <option value="" disabled className="bg-[#0a1628]">Select Industry</option>
                                         {INDUSTRIES.map(i => <option key={i} value={i} className="bg-[#0a1628]">{i}</option>)}
                                     </select>
                                 </div>
                                 <div className="space-y-1">
-                                    <label className="flex items-center gap-1 text-[8px] font-black text-gray-400/80 uppercase tracking-widest ml-1">
-                                        <Target className="w-2.5 h-2.5" /> Focal Area
+                                    <label className="flex items-center gap-1 text-[8px] font-black text-gray-500 uppercase tracking-widest ml-1">
+                                        <Globe className="w-2.5 h-2.5" /> Language
                                     </label>
-                                    <div className="grid grid-cols-3 gap-2">
-                                        {INTERESTS.map(item => {
-                                            const Icon = item.icon;
-                                            const isActive = formData.interest === item.id;
-                                            return (
-                                                <button
-                                                    key={item.id}
-                                                    type="button"
-                                                    onClick={() => setFormData(p => ({ ...p, interest: item.id }))}
-                                                    className={`relative flex flex-col items-center justify-center py-2 px-1 rounded-xl border transition-all duration-300 ${
-                                                        isActive 
-                                                        ? 'bg-[#CC0000]/10 border-[#CC0000] text-white shadow-[0_0_15px_rgba(204,0,0,0.1)]' 
-                                                        : 'bg-white/5 border-white/5 text-gray-500 hover:border-white/20 hover:bg-white/[0.07]'
-                                                    }`}
-                                                >
-                                                    <Icon className={`w-3.5 h-3.5 mb-1 transition-colors ${isActive ? 'text-[#CC0000]' : 'text-gray-500'}`} />
-                                                    <div className="font-black text-[8px] uppercase tracking-tight">{item.label}</div>
-                                                    <div className="text-[6px] opacity-40 font-medium tracking-tighter truncate w-full text-center">{item.desc}</div>
-                                                    {isActive && (
-                                                        <motion.div 
-                                                            layoutId="activeGlow"
-                                                            className="absolute inset-0 rounded-xl border border-[#CC0000]/30 pointer-events-none"
-                                                            transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
-                                                        />
-                                                    )}
-                                                </button>
-                                            );
-                                        })}
-                                    </div>
+                                    <select
+                                        required name="language" value={formData.language} onChange={handleChange}
+                                        className="glass-input w-full appearance-none cursor-pointer py-2 px-3 text-[11px] bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23666666%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.4-12.8z%22%2F%3E%3C%2Fsvg%3E')] bg-[length:8px_8px] bg-[right_0.75rem_center] bg-no-repeat"
+                                    >
+                                        {LANGUAGES.map(l => <option key={l} value={l} className="bg-[#0a1628]">{l}</option>)}
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div className="space-y-1">
+                                <label className="flex items-center gap-1 text-[8px] font-black text-gray-400/80 uppercase tracking-widest ml-1">
+                                    <Target className="w-2.5 h-2.5" /> Focal Area
+                                </label>
+                                <div className="grid grid-cols-3 gap-2">
+                                    {INTERESTS.map(item => {
+                                        const Icon = item.icon;
+                                        const isActive = formData.interest === item.id;
+                                        return (
+                                            <button
+                                                key={item.id}
+                                                type="button"
+                                                onClick={() => setFormData(p => ({ ...p, interest: item.id }))}
+                                                className={`relative flex flex-col items-center justify-center py-2.5 px-1 rounded-2xl border transition-all duration-500 overflow-hidden ${
+                                                    isActive 
+                                                    ? 'bg-gradient-to-br from-[#CC0000]/20 to-[#CC0000]/5 border-[#CC0000] text-white shadow-[0_0_20px_rgba(204,0,0,0.15)]' 
+                                                    : 'bg-white/5 border-white/5 text-gray-400 hover:border-white/20 hover:bg-white/[0.08] hover:-translate-y-0.5'
+                                                }`}
+                                            >
+                                                <Icon className={`w-4 h-4 mb-1.5 transition-all duration-500 ${isActive ? 'text-[#CC0000] scale-110' : 'text-gray-500 group-hover:text-gray-300'}`} />
+                                                <div className="font-black text-[9px] uppercase tracking-wider mb-0.5">{item.label}</div>
+                                                <div className="text-[7px] opacity-40 font-bold tracking-tight truncate w-full text-center px-1">{item.desc}</div>
+                                                {isActive && (
+                                                    <motion.div 
+                                                        layoutId="activeGlow"
+                                                        className="absolute inset-0 bg-gradient-to-t from-[#CC0000]/10 to-transparent pointer-events-none"
+                                                        initial={{ opacity: 0 }}
+                                                        animate={{ opacity: 1 }}
+                                                        transition={{ duration: 0.4 }}
+                                                    />
+                                                )}
+                                            </button>
+                                        );
+                                    })}
                                 </div>
                             </div>
 
