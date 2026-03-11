@@ -37,7 +37,7 @@ export default function SutherlandLandingPage() {
     };
 
     return (
-        <div className="min-h-screen bg-slate-950 overflow-x-hidden flex flex-col font-sans">
+        <div className="min-h-screen bg-white overflow-x-hidden flex flex-col font-sans">
             {/* Top Navigation Bar / Branding */}
             <header className="fixed top-0 left-0 right-0 z-50 w-full py-4 px-6 lg:px-12 border-b border-gray-200 bg-white shadow-sm transition-all duration-300">
                 <div className="container mx-auto flex items-center justify-between max-w-[1400px]">
@@ -106,76 +106,47 @@ export default function SutherlandLandingPage() {
             </div>
 
             {/* Main Content Container */}
-            <main className="flex-grow relative z-10 pt-14">
-
-                {/* Trust/Social Proof Strip */}
-                <div className="w-full border-b border-white/5 bg-slate-900/80 backdrop-blur-md py-1 z-20 relative pointer-events-auto">
-                    <div className="container mx-auto px-6 lg:px-12 flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-12 text-sm font-semibold text-slate-300">
-                        <span className="flex items-center gap-2">
-                            <span className="relative flex h-2.5 w-2.5">
-                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
-                            </span>
-                            Enterprise Grade Voice AI
-                        </span>
-                        <span className="hidden sm:inline text-slate-600">|</span>
-                        <span>Infinite Scalability for Support</span>
-                        <span className="hidden sm:inline text-slate-600">|</span>
-                        <span>Multi-language Global Coverage</span>
-                    </div>
-                </div>
-
+            <main className="flex-grow relative z-10 pt-20 lg:pt-28 pb-12">
+                
                 {/* Main Hero & Lead Capture Section */}
-                <div className="container mx-auto px-6 lg:px-12 py-8 lg:py-2 relative z-10 w-full min-h-[calc(100vh-140px)] flex flex-col justify-center">
+                <div className="container mx-auto px-6 lg:px-12 w-full flex flex-col justify-center">
 
-                    {/* Background 3D Element wrapper */}
-                    <div id="technology" className="absolute inset-0 z-0 opacity-40 lg:opacity-100 pointer-events-none overflow-hidden flex items-center justify-center lg:justify-start">
-                        <div className="w-full lg:w-[60%] h-full pointer-events-auto mix-blend-screen mask-image-linear-to-b lg:-ml-32 mt-20 lg:mt-0">
-                            <ThreeDElement />
-                        </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-10 xl:gap-16 items-center relative z-10 pointer-events-none">
-                        {/* Left Column: Value Prop & Headline */}
-                        <div id="services" className="flex flex-col items-center lg:items-start text-center lg:text-left pt-2 lg:pt-0">
-                            <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full border border-blue-400/30 bg-blue-400/10 text-cyan-300 text-[11px] font-semibold mb-2 shadow-xl shadow-blue-500/10 pointer-events-auto">
-                                <Bot className="w-3.5 h-3.5" />
-                                <span>Sutherland Exclusive Platform</span>
+                    <div className="grid grid-cols-1 xl:grid-cols-2 gap-12 lg:gap-16 items-center relative z-10">
+                        {/* Left Column: Value Prop & Headline - Styled like the Image Banner */}
+                        <div id="services" className="relative rounded-2xl overflow-hidden shadow-2xl min-h-[500px] flex flex-col justify-end p-8 lg:p-12 order-2 xl:order-1">
+                            {/* Dark Blue Overlay / Background Image Placeholder */}
+                            <div className="absolute inset-0 bg-[#1D1D3A] z-0">
+                                <div className="absolute inset-0 opacity-40 mix-blend-overlay">
+                                     <ThreeDElement />
+                                </div>
+                                {/* Gradient fade exactly like the screenshot */}
+                                <div className="absolute inset-0 bg-gradient-to-r from-[#1D1D3A] via-[#1D1D3A]/80 to-transparent"></div>
+                                <div className="absolute inset-0 bg-gradient-to-t from-[#1D1D3A] via-[#1D1D3A]/50 to-transparent"></div>
                             </div>
 
-                            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-5xl xl:text-6xl 2xl:text-7xl font-extrabold text-transparent bg-clip-text bg-gradient-to-tr from-white via-blue-100 to-cyan-400 leading-[1.1] mb-0.5 py-1 flex flex-col gap-1 pointer-events-auto selection:bg-blue-500/30">
-                                <span>Autonomous Support</span>
-                                <span>At Infinite Scale.</span>
-                            </h1>
+                            <div className="relative z-10 max-w-xl">
+                                <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-5xl font-extrabold text-white leading-[1.2] mb-4">
+                                    Autonomous Support: The Road to the Agentic Enterprise
+                                </h1>
 
-                            <p className="text-base md:text-lg font-medium text-blue-100/90 max-w-xl leading-relaxed mb-4 lg:mb-6 pointer-events-auto selection:bg-blue-500/30">
-                                Built for enterprise BPO. Automate tier-1 support, deflect routine calls, and scale customer experience without expanding headcount — 24/7 across multiple languages.
-                            </p>
+                                <p className="text-base lg:text-lg font-medium text-white/90 leading-relaxed mb-8">
+                                    A step-by-step path to building AI-native, self-optimizing customer experiences with infinite scalability.
+                                </p>
 
-                            {/* Trust Stats below headline */}
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 w-full max-w-xl pointer-events-auto">
-                                <div className="flex flex-col space-y-0 border-l-2 border-cyan-500 pl-3 bg-white/5 p-1 rounded-r-xl backdrop-blur-sm shadow-xl shadow-black/50 hover:bg-white/10 transition-colors">
-                                    <span className="text-lg font-bold flex items-center text-white">
-                                        <PhoneCall className="w-4 h-4 mr-2 text-emerald-400" />
-                                        100% CSAT Focus
-                                    </span>
-                                    <span className="text-[11px] text-blue-200">Human-level empathy & resolution.</span>
-                                </div>
-                                <div className="flex flex-col space-y-0 border-l-2 border-blue-500 pl-3 bg-white/5 p-1 rounded-r-xl backdrop-blur-sm shadow-xl shadow-black/50 hover:bg-white/10 transition-colors">
-                                    <span className="text-lg font-bold flex items-center text-white">
-                                        <CalendarCheck className="w-4 h-4 mr-2 text-amber-400" />
-                                        Infinite Concurrency
-                                    </span>
-                                    <span className="text-[11px] text-blue-200">Handle 10,000 calls simultaneously.</span>
-                                </div>
+                                <button className="bg-[#E31837] hover:bg-[#C2142E] text-white px-8 py-3.5 rounded text-sm font-bold transition-colors w-fit tracking-wide shadow-lg shadow-red-500/20">
+                                    Unlock the Agentic Future
+                                </button>
                             </div>
                         </div>
 
                         {/* Right Column: Lead Capture Form */}
-                        <div className="w-full max-w-[540px] mx-auto lg:mr-0 lg:ml-auto relative z-20 mt-4 lg:mt-0 pointer-events-auto">
-                            {/* Decorative glow behind form */}
-                            <div className="absolute inset-0 bg-gradient-to-br from-blue-500/20 to-cyan-500/20 rounded-3xl blur-2xl -z-10" />
-                            <SutherlandLeadForm />
+                        <div className="w-full max-w-[540px] mx-auto xl:mr-0 xl:ml-auto relative z-20 order-1 xl:order-2">
+                            <h2 className="text-2xl lg:text-3xl font-bold text-[#1D1D3A] mb-2 text-center xl:text-left">Generate Your Agent</h2>
+                            <p className="text-[#4C535F] text-sm mb-6 text-center xl:text-left">Experience our voice AI solutions directly on your phone.</p>
+                            
+                            <div className="bg-white border text-left border-gray-200 shadow-xl rounded-2xl overflow-hidden">
+                                <SutherlandLeadForm />
+                            </div>
                         </div>
                     </div>
                 </div>
