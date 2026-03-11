@@ -117,7 +117,7 @@ export default function SutherlandLeadForm() {
     };
 
     return (
-        <div className="relative w-full max-w-[480px] mx-auto">
+        <div className="relative w-full max-w-[480px] lg:mr-0 lg:ml-auto">
             <AnimatePresence mode="wait">
                 {status === 'success' ? (
                     <motion.div
