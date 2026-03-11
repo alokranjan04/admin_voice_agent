@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { X, Mic, MicOff, Loader2, MessageSquare, Briefcase, FileText, User, Mail, Send, Bot, Pause, Play } from 'lucide-react';
 
 interface DemoBookingModalProps {
@@ -87,11 +88,17 @@ export default function DemoBookingModal({ isOpen, onClose, vapiInstance, callSt
         setIsOnHold(hold);
     };
 
-    if (!isOpen) return null;
+    const [mounted, setMounted] = useState(false);
+    useEffect(() => {
+        setMounted(true);
+        return () => setMounted(false);
+    }, []);
 
-    return (
-        <div className="fixed inset-0 z-[9999] flex items-start justify-center bg-[#0a1628]/95 backdrop-blur-xl pt-[12vh] overflow-y-auto p-4 cursor-default">
-            <div className="relative w-full max-w-lg bg-[#0a1628] border border-white/10 rounded-[2rem] shadow-2xl shadow-red-500/5 overflow-hidden flex flex-col max-h-[90vh]">
+    if (!isOpen || !mounted) return null;
+
+    const modalContent = (
+        <div className="fixed inset-0 z-[99999] flex items-start justify-center bg-black/80 backdrop-blur-xl pt-[10vh] overflow-y-auto p-4 cursor-default">
+            <div className="relative w-full max-w-lg bg-[#0a1628] border border-white/10 rounded-[2rem] shadow-2xl shadow-[#CC0000]/10 overflow-hidden flex flex-col max-h-[90vh]">
 
                 {/* Header */}
                 <div className="p-6 border-b border-white/5 flex items-center justify-between bg-white/[0.02] relative z-20">
@@ -261,4 +268,6 @@ export default function DemoBookingModal({ isOpen, onClose, vapiInstance, callSt
             </div>
         </div>
     );
+
+    return createPortal(modalContent, document.body);
 }
