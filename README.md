@@ -1,4 +1,4 @@
-# Voice AI Admin Configurator (Next.js Edition)
+# Sutherland Voice Support | Enterprise AI Platform (Admin Edition)
 
 An intelligent, full-stack administration dashboard for configuring and deploying sophisticated Voice AI agents. This tool allows users to define business metadata, services, and behavioral rules, leveraging Google Gemini for automated configuration, VAPI for voice agent deployment, and Stripe for secure organization-level billing.
 
