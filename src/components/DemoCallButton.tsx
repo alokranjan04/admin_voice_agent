@@ -97,7 +97,7 @@ export default function DemoCallButton({ customClass, text }: DemoCallButtonProp
 
             <button
                 onClick={handleOpenModal}
-                className={customClass || "relative z-20 flex items-center justify-center px-4 md:px-5 py-2.5 rounded-full font-bold text-sm transition-all duration-500 shadow-lg cursor-pointer bg-[#CC0000] text-white hover:bg-[#AA0000] hover:scale-105 ring-2 ring-[#CC0000]/30 ring-offset-2 ring-offset-[#0a1628]"}
+                className={customClass || "relative z-20 flex items-center justify-center px-6 py-3 rounded-xl font-black text-[10px] uppercase tracking-[0.2em] transition-all duration-500 shadow-xl cursor-pointer bg-[#CC0000] text-white hover:bg-[#AA0000] hover:scale-105 shadow-red-900/20"}
             >
                 <div className="flex items-center gap-2">
                     {callStatus === 'active' ? (
