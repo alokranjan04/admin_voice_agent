@@ -82,8 +82,12 @@ export default function DemoCallButton({ customClass, text }: DemoCallButtonProp
     };
 
     const handleOpenModal = () => {
-        sendGAEvent('event', 'book_demo_click', { category: 'engagement', label: 'Header Voice Demo CTA' });
         setIsModalOpen(true);
+        try {
+            sendGAEvent('event', 'book_demo_click', { category: 'engagement', label: 'Header Voice Demo CTA' });
+        } catch (e) {
+            console.error("GA Error:", e);
+        }
     };
 
     return (
