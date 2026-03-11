@@ -41,61 +41,20 @@ export default function SutherlandLandingPage() {
             {/* Top Navigation Bar / Branding */}
             <header className="fixed top-0 left-0 right-0 z-50 w-full py-4 px-6 lg:px-12 border-b border-gray-200 bg-white shadow-sm transition-all duration-300">
                 <div className="container mx-auto flex items-center justify-between max-w-[1400px]">
+                    
+                    {/* Real Sutherland Logo */}
                     <div className="flex items-center space-x-2 z-50 relative">
-                        {/* CSS-based approximated logo */}
-                        <div className="flex gap-[3px] transform rotate-45 mr-1 overflow-hidden h-6 w-5 justify-center">
-                            <div className="w-1.5 h-8 bg-[#E31837] rounded-full translate-y-[-4px]"></div>
-                            <div className="w-1.5 h-8 bg-[#1D1D3A] rounded-full translate-y-2"></div>
-                            <div className="w-1.5 h-8 bg-[#E31837] rounded-full translate-y-[-2px]"></div>
-                        </div>
-                        <span style={{color: '#1D1D3A'}} className="text-[22px] font-semibold tracking-[0.15em]">
-                            SUTHERLAND<sup className="text-[10px]">&reg;</sup>
-                        </span>
+                        <img 
+                            src="https://www.sutherlandglobal.com/wp-content/uploads/sites/2/2023/08/sutherland-logo-colour.png" 
+                            alt="Sutherland Logo" 
+                            className="h-8 md:h-10 w-auto object-contain"
+                        />
                     </div>
 
-                    <nav className="hidden lg:flex items-center space-x-6 text-[14.5px] font-medium text-[#4C535F]">
-                        <a href="#services" className="hover:text-[#E31837] transition-colors">Services</a>
-                        <a href="#industries" className="hover:text-[#E31837] transition-colors">Industries</a>
-                        <a href="#products" className="hover:text-[#E31837] transition-colors">Products and Platforms</a>
-                        <a href="#insights" className="hover:text-[#E31837] transition-colors">Insights</a>
-                        <a href="#about" className="hover:text-[#E31837] transition-colors">About Us</a>
-                        <a href="#careers" className="hover:text-[#E31837] transition-colors">Careers</a>
-                    </nav>
-
-                    <div className="hidden lg:flex items-center space-x-6">
-                        <button className="text-[#4C535F] hover:text-[#E31837] transition-colors">
-                            <Globe className="w-5 h-5 flex-shrink-0" />
-                        </button>
-                        <button className="text-[#4C535F] hover:text-[#E31837] transition-colors">
-                            <Search className="w-5 h-5 flex-shrink-0" />
-                        </button>
-                        <a href="#contact" className="bg-[#E31837] hover:bg-[#C2142E] text-white px-7 py-2.5 rounded text-sm font-semibold transition-colors shadow-none text-center inline-block">
-                            Contact Us
-                        </a>
+                    {/* Talk to AI Button */}
+                    <div className="flex items-center">
+                        <DemoCallButton />
                     </div>
-
-                    <div className="flex lg:hidden items-center">
-                        <button
-                            className="p-2 text-[#1D1D3A] hover:text-[#E31837] transition-colors relative z-50"
-                            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                            aria-label="Toggle Menu"
-                        >
-                            {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-                        </button>
-                    </div>
-                </div>
-
-                {/* Mobile Menu Overlay */}
-                <div className={`fixed inset-0 bg-white transition-all duration-300 ease-in-out z-40 lg:hidden flex flex-col pt-24 px-6 overflow-y-auto ${isMobileMenuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>
-                    <nav className="flex flex-col space-y-6 text-xl font-semibold text-[#1D1D3A]">
-                        <a href="#services" onClick={(e) => { scrollToSection(e, 'services'); }} className="hover:text-[#E31837] transition-colors border-b border-gray-100 pb-2">Services</a>
-                        <a href="#industries" onClick={(e) => { scrollToSection(e, 'industries'); }} className="hover:text-[#E31837] transition-colors border-b border-gray-100 pb-2">Industries</a>
-                        <a href="#products" onClick={(e) => { scrollToSection(e, 'products'); }} className="hover:text-[#E31837] transition-colors border-b border-gray-100 pb-2">Products and Platforms</a>
-                        <a href="#insights" onClick={(e) => { scrollToSection(e, 'insights'); }} className="hover:text-[#E31837] transition-colors border-b border-gray-100 pb-2">Insights</a>
-                        <a href="#about" onClick={(e) => { scrollToSection(e, 'about'); }} className="hover:text-[#E31837] transition-colors border-b border-gray-100 pb-2">About Us</a>
-                        <a href="#careers" onClick={(e) => { scrollToSection(e, 'careers'); }} className="hover:text-[#E31837] transition-colors">Careers</a>
-                        <a href="#contact" onClick={(e) => { scrollToSection(e, 'contact'); }} className="bg-[#E31837] text-white text-center py-3 rounded mt-4">Contact Us</a>
-                    </nav>
                 </div>
             </header>
 
