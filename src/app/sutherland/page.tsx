@@ -65,50 +65,86 @@ export default function SutherlandLandingPage() {
             </div>
 
             {/* Main Content Container */}
-            <main className="flex-grow relative z-10 pt-20 lg:pt-28 pb-12">
+            <main className="flex-grow flex flex-col justify-start">
                 
-                {/* Main Hero & Lead Capture Section */}
-                <div className="container mx-auto px-6 lg:px-12 w-full flex flex-col justify-center">
+                {/* Full-width Dark Hero Section matching the Screenshot */}
+                <section className="relative w-full pt-28 lg:pt-36 pb-20 lg:pb-32 overflow-hidden bg-[#0A0E17]">
+                    
+                    {/* Dark Background Effects mimicking the Server Room / Circuit Board aesthetic */}
+                    <div className="absolute inset-0 z-0">
+                        {/* A very faint instance of the 3D element to simulate background tech structures */}
+                        <div className="absolute inset-0 opacity-30 mix-blend-screen -ml-40 lg:-ml-20 scale-110 lg:scale-125 transform">
+                            <ThreeDElement />
+                        </div>
+                        {/* Gradients to mimic the lighting in the provided image (blue on left, strong red traces on right/bottom) */}
+                        <div className="absolute inset-0 bg-gradient-to-r from-[#0A0E17] via-[#0A0E17]/80 to-transparent z-10"></div>
+                        <div className="absolute inset-0 bg-gradient-to-t from-[#0A0E17] via-transparent to-transparent z-10"></div>
+                        <div className="absolute bottom-[-100px] right-0 w-full h-[300px] bg-[#E31837] opacity-[0.15] blur-[150px] z-10 pointer-events-none"></div>
+                        <div className="absolute top-0 right-[-10%] w-[50%] h-[500px] bg-blue-600 opacity-[0.1] blur-[150px] z-10 pointer-events-none"></div>
+                    </div>
 
-                    <div className="grid grid-cols-1 xl:grid-cols-2 gap-12 lg:gap-16 items-center relative z-10">
-                        {/* Left Column: Value Prop & Headline - Styled like the Image Banner */}
-                        <div id="services" className="relative rounded-2xl overflow-hidden shadow-2xl min-h-[500px] flex flex-col justify-end p-8 lg:p-12 order-2 xl:order-1">
-                            {/* Dark Blue Overlay / Background Image Placeholder */}
-                            <div className="absolute inset-0 bg-[#1D1D3A] z-0">
-                                <div className="absolute inset-0 opacity-40 mix-blend-overlay">
-                                     <ThreeDElement />
-                                </div>
-                                {/* Gradient fade exactly like the screenshot */}
-                                <div className="absolute inset-0 bg-gradient-to-r from-[#1D1D3A] via-[#1D1D3A]/80 to-transparent"></div>
-                                <div className="absolute inset-0 bg-gradient-to-t from-[#1D1D3A] via-[#1D1D3A]/50 to-transparent"></div>
-                            </div>
-
-                            <div className="relative z-10 max-w-xl">
-                                <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-5xl font-extrabold text-white leading-[1.2] mb-4">
-                                    Autonomous Support: The Road to the Agentic Enterprise
+                    <div className="container mx-auto px-6 lg:px-12 max-w-[1400px] relative z-20">
+                        <div className="grid grid-cols-1 xl:grid-cols-12 gap-12 lg:gap-16 items-center">
+                            
+                            {/* Left Column: Exact Text/Layout from Screenshot */}
+                            <div className="xl:col-span-6 flex flex-col justify-center order-2 xl:order-1 text-center xl:text-left pr-0 xl:pr-10">
+                                
+                                <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-[4rem] font-extrabold text-white leading-[1.1] mb-6 tracking-tight">
+                                    Outlook 2026: The Road to the <br className="hidden lg:block"/>Agentic Enterprise
                                 </h1>
 
-                                <p className="text-base lg:text-lg font-medium text-white/90 leading-relaxed mb-8">
-                                    A step-by-step path to building AI-native, self-optimizing customer experiences with infinite scalability.
+                                <p className="text-lg md:text-xl lg:text-[22px] font-medium text-gray-300 leading-relaxed mb-10 max-w-2xl mx-auto xl:mx-0">
+                                    A step-by-step path to building AI-native, self-optimizing enterprises.
                                 </p>
 
-                                <button className="bg-[#E31837] hover:bg-[#C2142E] text-white px-8 py-3.5 rounded text-sm font-bold transition-colors w-fit tracking-wide shadow-lg shadow-red-500/20">
-                                    Unlock the Agentic Future
-                                </button>
+                                <div className="flex flex-col sm:flex-row gap-4 justify-center xl:justify-start">
+                                    <button className="bg-[#E31837] hover:bg-[#C2142E] text-white px-8 py-4 rounded-md text-base font-bold transition-all shadow-[0_0_20px_rgba(227,24,55,0.3)] hover:shadow-[0_0_30px_rgba(227,24,55,0.5)] w-full sm:w-auto tracking-wide scale-100 hover:scale-[1.02]">
+                                        Unlock the Agentic Future
+                                    </button>
+                                </div>
+                                
+                                {/* Bottom Slide Indicators matching screenshot */}
+                                <div className="flex items-center justify-center xl:justify-start mt-16 space-x-2">
+                                    <button className="w-8 h-8 rounded border border-white/30 flex items-center justify-center text-white hover:bg-white/10 transition-colors">
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                                    </button>
+                                    <div className="flex space-x-2 px-2">
+                                        <div className="w-2 h-2 rounded-full bg-white opacity-50"></div>
+                                        <div className="w-2 h-2 rounded-full bg-[#E31837]"></div>
+                                        <div className="w-2 h-2 rounded-full bg-white opacity-50"></div>
+                                    </div>
+                                    <button className="w-8 h-8 rounded border border-white/30 flex items-center justify-center text-white hover:bg-white/10 transition-colors">
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                                    </button>
+                                </div>
                             </div>
-                        </div>
 
-                        {/* Right Column: Lead Capture Form */}
-                        <div className="w-full max-w-[540px] mx-auto xl:mr-0 xl:ml-auto relative z-20 order-1 xl:order-2">
-                            <h2 className="text-2xl lg:text-3xl font-bold text-[#1D1D3A] mb-2 text-center xl:text-left">Generate Your Agent</h2>
-                            <p className="text-[#4C535F] text-sm mb-6 text-center xl:text-left">Experience our voice AI solutions directly on your phone.</p>
-                            
-                            <div className="bg-white border text-left border-gray-200 shadow-xl rounded-2xl overflow-hidden">
+                            {/* Right Column: Lead Capture Form (Dark Glassmorphism) */}
+                            <div className="xl:col-span-6 w-full max-w-[600px] mx-auto xl:mr-0 relative z-20 order-1 xl:order-2">
                                 <SutherlandLeadForm />
                             </div>
+
                         </div>
                     </div>
-                </div>
+                    
+                    {/* Bottom Red Strip from Screenshot */}
+                    <div className="absolute bottom-0 left-0 right-0 w-full bg-[#E31837] py-3 px-6 z-30 flex items-center justify-between text-white text-sm">
+                        <div className="container mx-auto text-center font-medium pr-8">
+                            Outlook 2026: The Road to the Agentic Enterprise. <span className="font-bold underline cursor-pointer ml-1">Download Outlook 2026</span>
+                        </div>
+                        <button className="absolute right-4 top-1/2 -translate-y-1/2 opacity-70 hover:opacity-100 transition-opacity">
+                            <X className="w-5 h-5" />
+                        </button>
+                    </div>
+                </section>
+
+                <section className="bg-white pt-20 pb-16">
+                    <div className="container mx-auto px-6 lg:px-12 text-center text-[#1D1D3A]">
+                        <h2 className="text-3xl font-bold mb-4">Enterprise Voice AI Platform</h2>
+                        <p className="text-[#4C535F] max-w-2xl mx-auto">Experience our real-time voice intelligence integrated with Sutherland's deep BPO expertise. The perfect synergy of technology and human-level nuance.</p>
+                    </div>
+                </section>
+
             </main>
 
             {/* Professional Custom Footer */}
