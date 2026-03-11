@@ -2,8 +2,9 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Loader2, CheckCircle, ArrowRight, Phone, Mail, Sparkles } from 'lucide-react';
+import { Loader2, CheckCircle, ArrowRight, Phone, Mail, Sparkles, Building2 } from 'lucide-react';
 import { sendGAEvent } from '@next/third-parties/google';
+import { SUPPORTED_INDUSTRIES } from '@/types';
 
 type DeliveryOption = 'email' | 'call';
 
@@ -347,10 +348,26 @@ export default function AgencyLeadForm() {
                             />
                         </div>
 
+                        <div>
+                            <label className="block text-[13px] font-medium text-indigo-100 mb-0.5">Industry</label>
+                            <select
+                                required
+                                name="industry"
+                                value={formData.industry}
+                                onChange={(e) => setFormData(prev => ({ ...prev, industry: e.target.value }))}
+                                className="w-full bg-black/20 border border-white/10 rounded-lg px-4 py-1.5 text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-indigo-500 appearance-none cursor-pointer"
+                            >
+                                <option value="" disabled className="bg-slate-900 text-slate-400">Select Industry...</option>
+                                {SUPPORTED_INDUSTRIES.map(ind => (
+                                    <option key={ind} value={ind} className="bg-slate-900 text-white">{ind}</option>
+                                ))}
+                            </select>
+                        </div>
+
                         <button
                             type="button"
                             onClick={() => {
-                                if (formData.name && formData.email && formData.company) {
+                                if (formData.name && formData.email && formData.company && formData.industry) {
                                     setCurrentStep(2);
                                 } else {
                                     // Let native form validation or simple alert handle empty fields
@@ -374,21 +391,13 @@ export default function AgencyLeadForm() {
                         animate={{ opacity: 1, x: 0 }}
                         className="space-y-4"
                     >
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 gap-4">
                             <div>
                                 <label className="block text-sm font-medium text-indigo-100 mb-1">Phone Number</label>
                                 <input
                                     required type="tel" name="phone" value={formData.phone} onChange={handleChange}
                                     className="w-full bg-black/20 border border-white/10 rounded-lg px-4 py-2.5 text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                                     placeholder="+1 (555) 000-0000"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-indigo-100 mb-1">Industry <span className="text-white/30 text-xs">(optional)</span></label>
-                                <input
-                                    type="text" name="industry" value={formData.industry} onChange={handleChange}
-                                    className="w-full bg-black/20 border border-white/10 rounded-lg px-4 py-2.5 text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                                    placeholder="e.g. Healthcare, SaaS"
                                 />
                             </div>
                         </div>

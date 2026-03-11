@@ -477,7 +477,7 @@ Be enthusiastic. Greet ${name} by name immediately. Keep it short and human.`;
             : `Click the secure link below to interact with your new digital employee!`;
 
         const mailOptions = {
-            from: `"Voice AI Agency" <${gmailUser}>`,
+            from: `"${company} AI Voice Agent" <${gmailUser}>`,
             to: email, // Bcc ourselves to track leads
             bcc: gmailUser,
             subject: `Your Custom Voice AI Agent for ${company} is Ready! 🚀`,

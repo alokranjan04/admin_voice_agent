@@ -14,7 +14,7 @@ export async function OPTIONS() {
 export async function POST(req: Request) {
     try {
         const body = await req.json();
-        const { summary, transcript, targetEmail, ccEmail, customerName } = body;
+        const { summary, transcript, targetEmail, ccEmail, customerName, companyName } = body;
 
         if (!summary) {
             return NextResponse.json({ error: 'Missing summary content' }, { status: 400, headers: corsHeaders });
@@ -42,7 +42,7 @@ export async function POST(req: Request) {
         const primaryRecipient = targetEmail || notificationEmail;
 
         const mailOptions = {
-            from: `"Voice AI Assistant" <${gmailUser}>`,
+            from: `"${companyName || 'Voice AI'} AI Voice Agent" <${gmailUser}>`,
             to: primaryRecipient,
             bcc: gmailUser,  // Agency owner ALWAYS receives a copy
             subject: `Post-Call Summary: Voice AI Interaction with ${customerName || 'Customer'}`,

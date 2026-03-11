@@ -94,7 +94,7 @@ export async function POST(req: NextRequest) {
                     });
 
                     const info = await transporter.sendMail({
-                        from: `"Voice AI Agency" <${gmailUser}>`,
+                        from: `"${companyName} AI Voice Agent" <${gmailUser}>`,
                         to: customerEmail,
                         bcc: gmailUser,
                         subject: `Your AI Call Summary — ${companyName} Voice Agent 🎙️`,
