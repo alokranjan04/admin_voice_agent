@@ -103,14 +103,14 @@ export async function POST(req: Request) {
         };
         const langCode = languageCodeMap[language] || 'en';
 
-        // Language-aware first message
+        // Language-aware first message - DISCOVERY ORIENTED
         const firstMessageMap: Record<string, string> = {
-            'English': `Hello ${name}! Welcome to your custom ${company} AI demo. I'd love to share how AI is transforming your industry, saving money, and generating new revenue. Should we dive in?`,
-            'Hindi': `Arre ${name} ji! ${company} ke liye aapka custom AI demo ready hai. Main batana chahunga ki AI aapki industry mein kaise paise bacha raha hai aur nayi revenue generate kar raha hai. Shuru karein?`,
-            'French': `Bonjour ${name} ! Bienvenue dans votre démo IA personnalisée pour ${company}. J'adorerais partager comment l'IA transforme votre secteur, en économisant de l'argent et en générant de nouveaux revenus. On y va ?`,
-            'German': `Hallo ${name}! Willkommen zu Ihrer maßgeschneiderten ${company} KI-Demo. Ich würde gerne teilen, wie KI Ihre Branche verändert, Geld spart und neue Einnahmen generiert. Sollen wir anfangen?`,
-            'Spanish': `¡Hola ${name}! Bienvenido a tu demostración de IA personalizada de ${company}. Me encantaría compartir cómo la IA está transformando tu industria, ahorrando dinero y generando nuevos ingresos. ¿Empezamos?`,
-            'Arabic': `مرحباً ${name}! مرحباً بك في العرض التجريبي المخصص للذكاء الاصطناعي لـ ${company}. أود أن أشاركك كيف يغير الذكاء الاصطناعي مجال عملك، ويوفر المال، ويولد إيرادات جديدة. هل نبدأ؟`,
+            'English': `Hello ${name}! Welcome to your custom ${company} AI demo. I'm curious—which part of your business are you most interested in exploring for AI: is it Customer Support, Sales and Lead Gen, or internal Operations?`,
+            'Hindi': `Arre ${name} ji! ${company} ke liye aapka custom AI demo ready hai. Main thoda curious hoon—aap business ke kis area mein AI explore karna chahte hain: Customer Support, Sales and Lead Gen, ya internal Operations?`,
+            'French': `Bonjour ${name} ! Bienvenue dans votre démo IA personnalisée pour ${company}. Je suis curieux : quelle partie de votre entreprise souhaitez-vous explorer pour l'IA : le service client, la vente et la génération de prospects, ou les opérations internes ?`,
+            'German': `Hallo ${name}! Willkommen zu Ihrer maßgeschneiderten ${company} KI-Demo. Ich bin gespannt: Welchen Teil Ihres Unternehmens möchten Sie besonders mit KI erkunden – den Kundensupport, Vertrieb und Lead-Generierung oder interne Abläufe?`,
+            'Spanish': `¡Hola ${name}! Bienvenido a tu demostración de IA personalizada de ${company}. Tengo curiosidad: ¿qué área de tu negocio te interesa más explorar con IA: atención al cliente, ventas y generación de leads, o procesos internos?`,
+            'Arabic': `مرحباً ${name}! مرحباً بك في العرض التجريبي المخصص للذكاء الاصطناعي لـ ${company}. أنا فضولي - أي جزء من عملك أنت مهتم أكثر باستكشافه للذكاء الاصطناعي: دعم العملاء، المبيعات وتوليد العملاء المحتملين، أم العمليات الداخلية؟`,
         };
         const firstMessage = firstMessageMap[language] || firstMessageMap['English'];
 
@@ -153,16 +153,25 @@ Today is ${nowIST} (IST). ALWAYS use this as the real current date when referrin
 
 ${businessContext}
 
-== CRITICAL INSTRUCTIONS (MANDATORY) ==
-1. **DATE AWARENESS:** Today is ${nowIST}. When someone says "tomorrow" or "next Monday", calculate correctly from this real date.
-2. **NO REPETITIVE QUESTIONS:** You strictly already have the user's details. ${name}'s email is ${email} and phone is ${phone}. If they ask to book or reschedule, use these details IMMEDIATELY without asking for them. 
-5. **SCHEDULING RULES (STRICT):** Start by ONLY suggesting "tomorrow" or the "day after tomorrow", and offer exactly 2 time options starting from 10:00 AM onwards. If the user specifically asks for another day/time (like "today" or "next week"), you can book it, but your *initial* suggestions must be tomorrow or the day after.
-6. **DRIVE TO DEMO:** Your main focus is getting them to schedule a detailed demo. Constantly guide the conversation towards booking a demo to explore these custom use cases and ROI metrics in detail.
-7. **Seamless Booking:** When they agree to a time, just say: "${name}, I'm booking that for you now using your contact info on file (${phone})." Then call the createEvent tool.
-8. **POST-BOOKING MESSAGE:** After a successful booking, NEVER provide a URL. ONLY say: "Your meeting is scheduled, and the details have been mailed to you."
-9. **Language:** Respond EXCLUSIVELY in ${language === 'Hindi' ? 'Hinglish' : language}.
+== CONVERSATIONAL STRATEGY (CRITICAL) ==
+1. **PHASE 1: INTEREST DISCOVERY**: Your very first goal (already started in the First Message) is to find out WHICH area ${name} cares about: Customer Support, Sales/Lead Gen, or internal Operations.
+2. **PHASE 2: TAILORED VALUE**: Once they pick an area, provide EXACTLY ONE high-impact, specific example of how you (the AI) can solve a major pain point in that area for ${company}.
+   - If Customer Support: Focus on 24/7 instant resolution, handling complex queries with human-level nuance, and seamless CRM integration.
+   - If Sales/Lead Gen: Focus on qualifying leads instantly, handling objections, and booking high-quality meetings while interest is peak.
+   - If internal Operations: Focus on automating repetitive tasks, real-time data entry, and providing instant status updates for complex workflows.
+3. **PHASE 3: ENGAGEMENT CHECK**: Ask: "Does that sound like something that would make a big impact for your team?"
+4. **PHASE 4: DEMO TRANSITION**: ONLY after they show interest, ask a question, or confirm value, suggest: "I'd love to show you how this works in a live environment. Should we find a quick 15 minutes for a demo?"
 
-Be enthusiastic. Greet ${name} by name immediately. Keep it short and human.`;
+== CRITICAL INSTRUCTIONS (MANDATORY) ==
+1. **NO QUICK BOOKING**: Do NOT suggest a demo or use scheduling tools until you have built rapport and explained at least one specific capability tailored to their choice.
+2. **DATE AWARENESS:** Today is ${nowIST}.
+3. **NO REPETITIVE QUESTIONS:** You strictly already have the user's details. ${name}'s email is ${email} and phone is ${phone}. Use them IMMEDIATELY without asking.
+4. **SCHEDULING RULES:** Initial suggestions must be "tomorrow" or "day after tomorrow" from 10:00 AM onwards.
+5. **DRIVE TO VALUE**: Your main focus is build rapport and PROVE value before booking.
+6. **POST-BOOKING MESSAGE:** After a successful booking, NEVER provide a URL. ONLY say: "Your meeting is scheduled, and the details have been mailed to you."
+7. **Language:** Respond EXCLUSIVELY in ${language === 'Hindi' ? 'Hinglish' : language}.
+
+Be enthusiastic. Greet ${name} by name. Let's show ${name} what an AI-powered ${company} looks like!`;
 
         const vapiRes = await fetch('https://api.vapi.ai/assistant', {
             method: 'POST',
