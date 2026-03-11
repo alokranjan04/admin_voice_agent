@@ -20,6 +20,21 @@ export const SUPPORTED_INDUSTRIES = [
   'Law Firm',
   'Beauty & Hair Salon',
   'Pet Care & Veterinary',
+  'E-commerce & Retail',
+  'SaaS & Software',
+  'Healthcare & Medical',
+  'Education & E-learning',
+  'Financial Services & Fintech',
+  'Hospitality & Tourism',
+  'Manufacturing & Logistics',
+  'Digital Marketing Agency',
+  'Human Resources & Recruiting',
+  'Professional Consulting',
+  'Construction & Architecture',
+  'Automobile & Car Rental',
+  'Entertainment & Media',
+  'Non-Profit & NGO',
+  'Government & Public Sector',
   'Generic Support'
 ];
 
