@@ -79,7 +79,7 @@ export default function SutherlandLandingPage() {
     };
 
     return (
-        <div className="min-h-screen bg-white overflow-x-hidden flex flex-col font-sans">
+        <div className="bg-white overflow-x-hidden flex flex-col font-sans">
             {/* Top Navigation Bar / Branding */}
             <header className="fixed top-0 left-0 right-0 z-50 w-full py-4 px-6 lg:px-12 border-b border-gray-200 bg-white shadow-sm transition-all duration-300">
                 <div className="container mx-auto flex items-center justify-between max-w-[1400px]">
@@ -210,7 +210,7 @@ export default function SutherlandLandingPage() {
                     </div>
                 </section>
 
-                <section className="bg-white pt-12 pb-10">
+                <section className="bg-white pt-10 pb-4">
                     <div className="container mx-auto px-6 lg:px-12 text-center text-[#1D1D3A]">
                         <h2 className="text-3xl font-bold mb-4">Enterprise Voice AI Platform</h2>
                         <p className="text-[#4C535F] max-w-2xl mx-auto">Experience our real-time voice intelligence integrated with Sutherland's deep BPO expertise. The perfect synergy of technology and human-level nuance.</p>
@@ -220,7 +220,7 @@ export default function SutherlandLandingPage() {
             </main>
 
             {/* Professional Custom Footer */}
-            <footer id="contact" className="w-full bg-[#f8f9fa] py-8 border-t border-gray-200 mt-10 lg:mt-20 relative z-20">
+            <footer id="contact" className="w-full bg-[#f8f9fa] py-8 border-t border-gray-200 mt-6 lg:mt-12 relative z-20">
                 <div className="container mx-auto px-6 lg:px-12 max-w-[1400px]">
                     <div className="flex flex-col lg:flex-row justify-between items-center gap-8">
                         

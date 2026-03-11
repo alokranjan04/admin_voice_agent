@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { sendGAEvent } from '@next/third-parties/google';
-import { Mic, Loader2 } from 'lucide-react';
+import { Mic, Loader2, CalendarCheck } from 'lucide-react';
 import Vapi from '@vapi-ai/web';
 import DemoBookingModal from './DemoBookingModal';
 interface DemoCallButtonProps {
@@ -97,15 +97,16 @@ export default function DemoCallButton({ customClass, text }: DemoCallButtonProp
 
             <button
                 onClick={handleOpenModal}
-                className={customClass || "relative z-20 flex items-center justify-center px-6 py-2.5 rounded-full font-bold text-sm transition-all duration-500 shadow-[0_0_20px_rgba(255,255,255,0.1)] cursor-pointer bg-white text-slate-900 hover:scale-105 ring-2 ring-white/50 ring-offset-2 ring-offset-slate-950"}
+                className={customClass || "relative z-20 flex items-center justify-center px-4 md:px-6 py-2 rounded-full font-bold text-sm transition-all duration-500 shadow-lg cursor-pointer bg-[#E31837] text-white hover:bg-[#C2142E] hover:scale-105 ring-2 ring-[#E31837]/30 ring-offset-2 ring-offset-white"}
             >
                 <div className="flex items-center gap-2">
                     {callStatus === 'active' ? (
-                        <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                        <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
                     ) : (
-                        <Mic className={customClass ? "w-5 h-5 text-white" : "w-4 h-4 text-indigo-600"} />
+                        <Mic className={customClass ? "w-5 h-5 text-white" : "w-4 h-4 text-white"} />
                     )}
-                    <span>{text || 'Book a Demo'}</span>
+                    <span className="hidden sm:inline">{text || 'Book a Demo'}</span>
+                    <span className="sm:hidden">{text ? text : <CalendarCheck className="w-4 h-4" />}</span>
                 </div>
             </button>
 
