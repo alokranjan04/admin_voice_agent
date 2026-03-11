@@ -334,57 +334,57 @@ export default function SutherlandLeadForm() {
             key="form"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-[#1D1D3A]/80 backdrop-blur-2xl border border-white/10 p-5 lg:p-6 rounded-2xl shadow-2xl relative z-20"
+            className="bg-[#1D1D3A]/80 backdrop-blur-2xl border border-white/10 p-4 lg:p-5 rounded-2xl shadow-2xl relative z-20"
         >
-            <div className="mb-4 text-center sm:text-left">
-                <h3 className="text-xl font-bold text-white mb-1">Generate Your AI Agent</h3>
-                <p className="text-gray-300 text-xs">Experience Sutherland's enterprise voice AI solutions directly on your phone.</p>
-
+            <div className="mb-3 text-center sm:text-left">
+                <h3 className="text-lg font-bold text-white mb-0.5">Generate Your AI Agent</h3>
+                <p className="text-gray-300 text-[10px] leading-tight">Experience Sutherland's enterprise voice AI solutions directly on your phone.</p>
+                
                 {/* Progress Indicator */}
-                <div className="flex items-center gap-2 mt-4">
+                <div className="flex items-center gap-2 mt-3">
                     <div className="h-1 flex-1 rounded-full bg-[#E31837]" />
                 </div>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-5 pt-2">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+            <form onSubmit={handleSubmit} className="space-y-4 pt-1">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <div>
-                        <label className="block text-[11px] font-semibold text-gray-300 mb-1 uppercase tracking-wider">Full Name</label>
+                        <label className="block text-[10px] font-semibold text-gray-400 mb-0.5 uppercase tracking-wider">Full Name</label>
                         <input
                             required type="text" name="name" value={formData.name} onChange={handleChange}
-                            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-white placeholder-white/30 focus:outline-none focus:border-[#E31837] focus:ring-1 focus:ring-[#E31837] transition-all text-sm"
+                            className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 text-white placeholder-white/20 focus:outline-none focus:border-[#E31837] focus:ring-1 focus:ring-[#E31837] transition-all text-xs"
                             placeholder="John Doe"
                         />
                     </div>
                     <div>
-                        <label className="block text-[11px] font-semibold text-gray-300 mb-1 uppercase tracking-wider">Work Email</label>
+                        <label className="block text-[10px] font-semibold text-gray-400 mb-0.5 uppercase tracking-wider">Work Email</label>
                         <input
                             required type="email" name="email" value={formData.email} onChange={handleChange}
-                            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-white placeholder-white/30 focus:outline-none focus:border-[#E31837] focus:ring-1 focus:ring-[#E31837] transition-all text-sm"
+                            className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 text-white placeholder-white/20 focus:outline-none focus:border-[#E31837] focus:ring-1 focus:ring-[#E31837] transition-all text-xs"
                             placeholder="john@example.com"
                         />
                     </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <div>
-                        <label className="block text-[11px] font-semibold text-gray-300 mb-1 uppercase tracking-wider">Company Name</label>
+                        <label className="block text-[10px] font-semibold text-gray-400 mb-0.5 uppercase tracking-wider">Company Name</label>
                         <input
                             required type="text" name="company" value={formData.company} onChange={handleChange}
-                            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-white placeholder-white/30 focus:outline-none focus:border-[#E31837] focus:ring-1 focus:ring-[#E31837] transition-all text-sm"
+                            className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 text-white placeholder-white/20 focus:outline-none focus:border-[#E31837] focus:ring-1 focus:ring-[#E31837] transition-all text-xs"
                             placeholder="Sutherland Global"
                         />
                     </div>
                     <div>
-                        <label className="block text-[11px] font-semibold text-gray-300 mb-1 uppercase tracking-wider">Industry</label>
+                        <label className="block text-[10px] font-semibold text-gray-400 mb-0.5 uppercase tracking-wider">Industry</label>
                         <select
                             required
                             name="industry"
                             value={formData.industry}
                             onChange={(e) => setFormData(prev => ({ ...prev, industry: e.target.value }))}
-                            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-white placeholder-white/30 focus:outline-none focus:border-[#E31837] focus:ring-1 focus:ring-[#E31837] transition-all text-sm appearance-none cursor-pointer"
+                            className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 text-white placeholder-white/20 focus:outline-none focus:border-[#E31837] focus:ring-1 focus:ring-[#E31837] transition-all text-xs appearance-none cursor-pointer"
                         >
-                            <option value="" disabled className="bg-slate-900 text-slate-400">Select Industry...</option>
+                            <option value="" disabled className="bg-slate-900 text-slate-500">Select Industry...</option>
                             {SUPPORTED_INDUSTRIES.map(ind => (
                                 <option key={ind} value={ind} className="bg-slate-900 text-white">{ind}</option>
                             ))}
@@ -393,29 +393,29 @@ export default function SutherlandLeadForm() {
                 </div>
                 
                 <div>
-                    <label className="block text-[11px] font-semibold text-gray-300 mb-1 uppercase tracking-wider">Phone Number</label>
+                    <label className="block text-[10px] font-semibold text-gray-400 mb-0.5 uppercase tracking-wider">Phone Number</label>
                     <input
                         required type="tel" name="phone" value={formData.phone} onChange={handleChange}
-                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-white placeholder-white/30 focus:outline-none focus:border-[#E31837] focus:ring-1 focus:ring-[#E31837] transition-all text-sm"
+                        className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 text-white placeholder-white/20 focus:outline-none focus:border-[#E31837] focus:ring-1 focus:ring-[#E31837] transition-all text-xs"
                         placeholder="+1 (555) 000-0000"
                     />
                 </div>
 
                 {/* Row 4: Agent Language */}
                 <div>
-                    <label className="block text-[11px] font-semibold text-gray-300 mb-1.5 uppercase tracking-wider">Agent Language</label>
-                    <div className="flex flex-wrap gap-2">
+                    <label className="block text-[10px] font-semibold text-gray-400 mb-1 uppercase tracking-wider">Agent Language</label>
+                    <div className="flex flex-wrap gap-1.5">
                         {LANGUAGES.map(lang => (
                             <button
                                 key={lang.code}
                                 type="button"
                                 onClick={() => setLanguage(lang.code)}
-                                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border font-semibold text-xs transition-all ${language === lang.code
-                                    ? 'border-[#E31837] bg-[#E31837] text-white shadow-lg shadow-[#E31837]/20 scale-[1.02]'
-                                    : 'border-white/10 bg-white/5 text-gray-400 hover:border-white/30 hover:text-white'
+                                className={`flex items-center gap-1 px-2 py-1 rounded-md border font-semibold text-[10px] transition-all ${language === lang.code
+                                    ? 'border-[#E31837] bg-[#E31837] text-white shadow-md shadow-[#E31837]/20'
+                                    : 'border-white/10 bg-white/5 text-gray-400 hover:border-white/20 hover:text-white'
                                     }`}
                             >
-                                <span className="text-sm">{lang.flag}</span>
+                                <span className="text-xs">{lang.flag}</span>
                                 {lang.label}
                             </button>
                         ))}
@@ -423,28 +423,28 @@ export default function SutherlandLeadForm() {
                 </div>
 
                 <div>
-                    <label className="block text-[11px] font-semibold text-gray-300 mb-1.5 uppercase tracking-wider">Delivery Method</label>
-                    <div className="grid grid-cols-2 gap-3">
+                    <label className="block text-[10px] font-semibold text-gray-400 mb-1 uppercase tracking-wider">Delivery Method</label>
+                    <div className="grid grid-cols-2 gap-2.5">
                         <button
                             type="button"
                             onClick={() => setDeliveryOption('email')}
-                            className={`flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl border font-semibold text-xs transition-all ${deliveryOption === 'email'
+                            className={`flex items-center justify-center gap-1.5 px-2 py-2 rounded-lg border font-semibold text-[10px] transition-all ${deliveryOption === 'email'
                                 ? 'border-[#E31837] bg-[#E31837]/10 text-[#E31837]'
-                                : 'border-white/10 bg-white/5 text-gray-400 hover:border-white/30 hover:text-white'
+                                : 'border-white/10 bg-white/5 text-gray-400 hover:border-white/20 hover:text-white'
                                 }`}
                         >
-                            <Mail className="w-3.5 h-3.5" />
+                            <Mail className="w-3 h-3" />
                             Email Me
                         </button>
                         <button
                             type="button"
                             onClick={() => setDeliveryOption('call')}
-                            className={`flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl border font-semibold text-xs transition-all ${deliveryOption === 'call'
+                            className={`flex items-center justify-center gap-1.5 px-2 py-2 rounded-lg border font-semibold text-[10px] transition-all ${deliveryOption === 'call'
                                 ? 'border-[#E31837] bg-[#E31837]/10 text-[#E31837]'
-                                : 'border-white/10 bg-white/5 text-gray-400 hover:border-white/30 hover:text-white'
+                                : 'border-white/10 bg-white/5 text-gray-400 hover:border-white/20 hover:text-white'
                                 }`}
                         >
-                            <Phone className="w-3.5 h-3.5" />
+                            <Phone className="w-3 h-3" />
                             Call Me Now
                         </button>
                     </div>
@@ -456,20 +456,20 @@ export default function SutherlandLeadForm() {
                     </motion.p>
                 )}
 
-                <div className="pt-0.5">
+                <div className="pt-0">
                     <button
                         type="submit"
                         disabled={status === 'loading'}
-                        className="w-full bg-[#E31837] hover:bg-[#C2142E] text-white font-bold py-3 px-6 rounded-xl shadow-lg shadow-[#E31837]/20 flex items-center justify-center transition-all disabled:opacity-70 disabled:cursor-not-allowed text-sm tracking-wide"
+                        className="w-full bg-[#E31837] hover:bg-[#C2142E] text-white font-bold py-2.5 px-6 rounded-lg shadow-lg shadow-[#E31837]/20 flex items-center justify-center transition-all disabled:opacity-70 disabled:cursor-not-allowed text-xs tracking-wide"
                     >
                         {status === 'loading' ? (
                             <>
-                                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                <Loader2 className="w-3.5 h-3.5 mr-2 animate-spin" />
                                 {deliveryOption === 'call' ? 'Calling...' : 'Building...'}
                             </>
                         ) : (
                             <>
-                                {deliveryOption === 'call' ? <Phone className="w-4 h-4 mr-2" /> : <Sparkles className="w-4 h-4 mr-2" />}
+                                {deliveryOption === 'call' ? <Phone className="w-3.5 h-3.5 mr-2" /> : <Sparkles className="w-3.5 h-3.5 mr-2" />}
                                 {deliveryOption === 'call' ? 'Deploy & Call Now' : 'Generate Agent'}
                             </>
                         )}
