@@ -9,7 +9,7 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: 'VAPI Private Key is missing on the server' }, { status: 500 });
         }
 
-        const assistantName = "TellYourJourney Demo Booker";
+        const assistantName = "Sutherland Voice Support";
 
         // Performance Optimization: Check if assistant already exists to avoid redundant creation
         const listResponse = await axios({
@@ -25,8 +25,8 @@ export async function POST(req: Request) {
             return NextResponse.json({ assistantId: existingAssistant.id });
         }
 
-        const systemPrompt = `You are the lead AI Strategist for TellYourJourney, a premium Enterprise Voice AI agency. 
-Your goal is to demonstrate how Voice AI transforms business operations, revenue, and efficiency.
+        const systemPrompt = `You are the lead AI strategist for Sutherland Voice Support, a premium enterprise AI transformation division. 
+Your goal is to demonstrate how Sutherland's Voice AI transforms business operations, revenue, and efficiency.
 
 **CRITICAL FLOW - VALUE FIRST:**
 1. **The Lead-In:** Start with enthusiasm. Ask which industry they are in so you can share relevant ROI metrics.
@@ -141,7 +141,7 @@ You are an expert consultant. Be professional, high-energy, and focus on ROI.`;
                 smartFormat: true,
                 keywords: ["AeroHyre", "TellYourJourney", "aviation", "Alok", "AI"]
             },
-            firstMessage: "Welcome to Tell Your Journey and thank you for being interested in a demo! I'd love to help you get scheduled. Could I start by getting your name?",
+            firstMessage: "Welcome to Sutherland Voice Support! I'm here to help you explore how our AI can transform your business. What industry are you in? I'd love to share some relevant success stories.",
             silenceTimeoutSeconds: 60,
             maxDurationSeconds: 1200,
             serverUrl: `${baseUrl}/api/vapi/webhook`,

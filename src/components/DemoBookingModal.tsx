@@ -100,7 +100,7 @@ export default function DemoBookingModal({ isOpen, onClose, vapiInstance, callSt
                             <Bot className="w-6 h-6 text-[#CC0000]" />
                         </div>
                         <div>
-                            <h3 className="text-white font-bold font-display tracking-tight text-lg">Demo Booker AI</h3>
+                            <h3 className="text-white font-bold font-display tracking-tight text-lg">Sutherland Voice Support</h3>
                             <p className="text-[10px] text-gray-500 font-black uppercase tracking-[0.2em] flex items-center gap-2 mt-1">
                                 <span className="relative flex h-2 w-2">
                                     <span className={callStatus === 'active' ? "animate-ping absolute inline-flex h-full w-full rounded-full bg-[#CC0000] opacity-75" : "absolute inline-flex h-full w-full rounded-full bg-gray-600 opacity-75"}></span>
