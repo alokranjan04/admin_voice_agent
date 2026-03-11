@@ -1,22 +1,64 @@
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
 import ThreeDElement from '@/components/ThreeDElement';
 import SutherlandLeadForm from '@/components/SutherlandLeadForm';
 import { Bot, PhoneCall, CalendarCheck, Sparkles, Linkedin, Mail, Menu, X, Globe, Search } from 'lucide-react';
 import { sendGAEvent } from '@next/third-parties/google';
 import DemoCallButton from '@/components/DemoCallButton';
 
-export default function SutherlandLandingPage() {
-    const [isMounted, setIsMounted] = React.useState(false);
-    const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
+const SUTHERLAND_QUOTES = [
+    {
+        title: "Outlook 2026: The Road to the Agentic Enterprise",
+        description: "A step-by-step path to building AI-native, self-optimizing enterprises.",
+        cta: "Unlock the Agentic Future"
+    },
+    {
+        title: "The Agentic Enterprise: Beyond Automation",
+        description: "It's about self-optimizing ecosystems that learn and evolve in real-time.",
+        cta: "Explore Our Vision"
+    },
+    {
+        title: "Human-Centered Design with AI Precision",
+        description: "Redefining the boundaries of customer experience through synergy.",
+        cta: "See the Synergy"
+    },
+    {
+        title: "Anticipating Business Needs in Real-Time",
+        description: "Where AI agents don't just process tasks—they think ahead.",
+        cta: "Download Outlook 2026"
+    }
+];
 
-    React.useEffect(() => {
+export default function SutherlandLandingPage() {
+    const [isMounted, setIsMounted] = useState(false);
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const [activeSlide, setActiveSlide] = useState(0);
+    const [direction, setDirection] = useState(0);
+
+    const nextSlide = () => {
+        setDirection(1);
+        setActiveSlide((prev) => (prev + 1) % SUTHERLAND_QUOTES.length);
+    };
+
+    const prevSlide = () => {
+        setDirection(-1);
+        setActiveSlide((prev) => (prev - 1 + SUTHERLAND_QUOTES.length) % SUTHERLAND_QUOTES.length);
+    };
+
+    useEffect(() => {
         setIsMounted(true);
     }, []);
 
+    // Auto-advance carousel
+    useEffect(() => {
+        const timer = setInterval(nextSlide, 8000);
+        return () => clearInterval(timer);
+    }, []);
+
     // Prevent scrolling when mobile menu is open
-    React.useEffect(() => {
+    useEffect(() => {
         if (isMobileMenuOpen) {
             document.body.style.overflow = 'hidden';
         } else {
@@ -89,31 +131,60 @@ export default function SutherlandLandingPage() {
                             {/* Left Column: Exact Text/Layout from Screenshot */}
                             <div className="xl:col-span-6 flex flex-col justify-center order-2 xl:order-1 text-center xl:text-left pr-0 xl:pr-10">
                                 
-                                <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-[3.5rem] font-extrabold text-white leading-[1.1] mb-4 tracking-tight">
-                                    Outlook 2026: The Road to the <br className="hidden lg:block"/>Agentic Enterprise
-                                </h1>
+                                <div className="h-[280px] sm:h-[320px] lg:h-[380px] relative">
+                                    <AnimatePresence mode="wait" initial={false} custom={direction}>
+                                        <motion.div
+                                            key={activeSlide}
+                                            custom={direction}
+                                            initial={{ opacity: 0, x: direction > 0 ? 50 : -50 }}
+                                            animate={{ opacity: 1, x: 0 }}
+                                            exit={{ opacity: 0, x: direction > 0 ? -50 : 50 }}
+                                            transition={{ duration: 0.5, ease: "easeInOut" }}
+                                            className="absolute inset-0 flex flex-col justify-center xl:justify-start"
+                                        >
+                                            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-[3.5rem] font-extrabold text-white leading-[1.1] mb-4 tracking-tight">
+                                                {SUTHERLAND_QUOTES[activeSlide].title.split(': ').map((part, i) => (
+                                                    <React.Fragment key={i}>
+                                                        {part}
+                                                        {i === 0 && part.includes('Outlook') && <><br className="hidden lg:block"/> {SUTHERLAND_QUOTES[activeSlide].title.split(': ')[1]}</>}
+                                                        {i === 0 && !part.includes('Outlook') && <br className="hidden lg:block"/>}
+                                                    </React.Fragment>
+                                                ))[0]}
+                                            </h1>
 
-                                <p className="text-base md:text-lg lg:text-[20px] font-medium text-gray-300 leading-relaxed mb-8 max-w-2xl mx-auto xl:mx-0">
-                                    A step-by-step path to building AI-native, self-optimizing enterprises.
-                                </p>
+                                            <p className="text-base md:text-lg lg:text-[20px] font-medium text-gray-300 leading-relaxed mb-8 max-w-2xl mx-auto xl:mx-0">
+                                                {SUTHERLAND_QUOTES[activeSlide].description}
+                                            </p>
 
-                                <div className="flex flex-col sm:flex-row gap-4 justify-center xl:justify-start">
-                                    <button className="bg-[#E31837] hover:bg-[#C2142E] text-white px-8 py-4 rounded-md text-base font-bold transition-all shadow-[0_0_20px_rgba(227,24,55,0.3)] hover:shadow-[0_0_30px_rgba(227,24,55,0.5)] w-full sm:w-auto tracking-wide scale-100 hover:scale-[1.02]">
-                                        Unlock the Agentic Future
-                                    </button>
+                                            <div className="flex flex-col sm:flex-row gap-4 justify-center xl:justify-start">
+                                                <button className="bg-[#E31837] hover:bg-[#C2142E] text-white px-8 py-4 rounded-md text-base font-bold transition-all shadow-[0_0_20px_rgba(227,24,55,0.3)] hover:shadow-[0_0_30px_rgba(227,24,55,0.5)] w-full sm:w-auto tracking-wide scale-100 hover:scale-[1.02]">
+                                                    {SUTHERLAND_QUOTES[activeSlide].cta}
+                                                </button>
+                                            </div>
+                                        </motion.div>
+                                    </AnimatePresence>
                                 </div>
                                 
                                 {/* Bottom Slide Indicators matching screenshot */}
                                 <div className="flex items-center justify-center xl:justify-start mt-10 space-x-2">
-                                    <button className="w-8 h-8 rounded border border-white/30 flex items-center justify-center text-white hover:bg-white/10 transition-colors">
+                                    <button 
+                                        onClick={prevSlide}
+                                        className="w-8 h-8 rounded border border-white/30 flex items-center justify-center text-white hover:bg-white/10 transition-colors"
+                                    >
                                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
                                     </button>
                                     <div className="flex space-x-2 px-2">
-                                        <div className="w-2 h-2 rounded-full bg-white opacity-50"></div>
-                                        <div className="w-2 h-2 rounded-full bg-[#E31837]"></div>
-                                        <div className="w-2 h-2 rounded-full bg-white opacity-50"></div>
+                                        {SUTHERLAND_QUOTES.map((_, idx) => (
+                                            <div 
+                                                key={idx} 
+                                                className={`w-2 h-2 rounded-full transition-all duration-300 ${activeSlide === idx ? 'bg-[#E31837] w-4' : 'bg-white opacity-50'}`} 
+                                            />
+                                        ))}
                                     </div>
-                                    <button className="w-8 h-8 rounded border border-white/30 flex items-center justify-center text-white hover:bg-white/10 transition-colors">
+                                    <button 
+                                        onClick={nextSlide}
+                                        className="w-8 h-8 rounded border border-white/30 flex items-center justify-center text-white hover:bg-white/10 transition-colors"
+                                    >
                                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
                                     </button>
                                 </div>
