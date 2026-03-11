@@ -128,8 +128,8 @@ export default function SutherlandLandingPage() {
                     <div className="container mx-auto px-6 lg:px-12 max-w-[1400px] relative z-20">
                         <div className="grid grid-cols-1 xl:grid-cols-12 gap-12 lg:gap-16 items-center">
                             
-                            {/* Left Column: Exact Text/Layout from Screenshot */}
-                            <div className="xl:col-span-6 flex flex-col justify-center order-2 xl:order-1 text-center xl:text-left pr-0 xl:pr-10">
+                            {/* Left Column: Carousel (Desktop: Order 1, Mobile: Order 2) */}
+                            <div className="xl:col-span-6 flex flex-col justify-center order-2 xl:order-1 text-center xl:text-left pr-0 xl:pr-6">
                                 
                                 <div className="h-[280px] sm:h-[320px] lg:h-[380px] relative">
                                     <AnimatePresence mode="wait" initial={false} custom={direction}>
@@ -191,8 +191,8 @@ export default function SutherlandLandingPage() {
                                 </div>
                             </div>
 
-                            {/* Right Column: Lead Capture Form (Dark Glassmorphism) */}
-                            <div className="xl:col-span-6 w-full max-w-[600px] mx-auto xl:mr-0 relative z-20 order-1 xl:order-2">
+                            {/* Right Column: Lead Capture Form (Desktop: Order 2, Mobile: Order 1) */}
+                            <div className="xl:col-span-6 w-full max-w-[540px] mx-auto xl:mr-0 xl:ml-auto relative z-20 order-1 xl:order-2">
                                 <SutherlandLeadForm />
                             </div>
 
