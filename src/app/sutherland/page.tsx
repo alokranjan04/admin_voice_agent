@@ -56,11 +56,13 @@ export default function SutherlandLandingPage() {
                 <nav className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
                     <div className="flex items-center gap-12">
                         <Image 
-                            src="https://www.sutherlandglobal.com/wp-content/uploads/2021/10/Sutherland-Logo.svg"
+                            src="/images/sutherland-logo.png"
                             alt="Sutherland Logo"
                             width={160}
                             height={40}
-                            className="brightness-0 invert"
+                            className="brightness-0 invert priority"
+                            priority
+                            unoptimized
                         />
                         <div className="hidden lg:flex items-center gap-8 text-[10px] font-black uppercase tracking-[0.25em] text-gray-500">
                             <a href="#" className="hover:text-white transition-colors">Services</a>
@@ -221,11 +223,12 @@ export default function SutherlandLandingPage() {
                 <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
                     <div className="space-y-8 col-span-1 lg:col-span-1">
                         <Image 
-                            src="https://www.sutherlandglobal.com/wp-content/uploads/2021/10/Sutherland-Logo.svg"
+                            src="/images/sutherland-logo.png"
                             alt="Sutherland Logo"
                             width={160}
                             height={40}
-                            className="brightness-0 invert opacity-60"
+                            className="brightness-0 invert opacity-60 unoptimized"
+                            unoptimized
                         />
                         <p className="text-gray-500 text-xs font-bold leading-relaxed uppercase tracking-widest">
                             Global Experience <br />
