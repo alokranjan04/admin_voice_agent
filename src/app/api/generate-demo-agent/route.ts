@@ -9,6 +9,22 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: 'VAPI Private Key is missing on the server' }, { status: 500 });
         }
 
+        const assistantName = "TellYourJourney Demo Booker";
+
+        // Performance Optimization: Check if assistant already exists to avoid redundant creation
+        const listResponse = await axios({
+            method: 'GET',
+            url: 'https://api.vapi.ai/assistant',
+            headers: { 'Authorization': `Bearer ${apiKey}` }
+        });
+
+        const existingAssistant = listResponse.data.find((a: any) => a.name === assistantName);
+
+        if (existingAssistant) {
+            console.log("[Demo Agent] Reusing existing assistant:", existingAssistant.id);
+            return NextResponse.json({ assistantId: existingAssistant.id });
+        }
+
         const systemPrompt = `Welcome to TellYourJourney and Thanks for being interested in a demo. I am the AI assistant for TellYourJourney. 
 My job is to collect information, help you understand how our Voice AI can grow your business, and book a demo. 
 
@@ -36,7 +52,7 @@ CRITICAL - AVOID SILENCE: Before calling ANY tool (checkAvailability, findAvaila
         baseUrl = baseUrl.replace(/\/$/, "");
 
         const payload: any = {
-            name: "TellYourJourney Demo Booker",
+            name: assistantName,
             model: {
                 provider: "openai",
                 model: "gpt-4o-mini",
@@ -124,27 +140,17 @@ CRITICAL - AVOID SILENCE: Before calling ANY tool (checkAvailability, findAvaila
                 keywords: ["AeroHyre", "TellYourJourney", "aviation", "Alok", "AI"]
             },
             firstMessage: "Welcome to Tell Your Journey and thank you for being interested in a demo! I'd love to help you get scheduled. Could I start by getting your name?",
-            // Prevent Vapi from ejecting the session during calendar API calls (default is 30s)
             silenceTimeoutSeconds: 60,
-            maxDurationSeconds: 1200, // 20 min max session
+            maxDurationSeconds: 1200,
             serverUrl: `${baseUrl}/api/vapi/webhook`,
             analysisPlan: {
                 structuredDataPlan: {
                     schema: {
                         type: "object",
                         properties: {
-                            customerEmail: {
-                                type: "string",
-                                description: "The email address the user provided during the call."
-                            },
-                            customerName: {
-                                type: "string",
-                                description: "The name of the user."
-                            },
-                            companyName: {
-                                type: "string",
-                                description: "The name of the user's company."
-                            }
+                            customerEmail: { type: "string", description: "The email address provided during the call." },
+                            customerName: { type: "string", description: "The name of the user." },
+                            companyName: { type: "string", description: "The name of the company." }
                         }
                     }
                 }

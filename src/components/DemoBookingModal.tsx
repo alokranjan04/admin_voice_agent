@@ -90,34 +90,34 @@ export default function DemoBookingModal({ isOpen, onClose, vapiInstance, callSt
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-            <div className="relative w-full max-w-lg bg-slate-900 border border-white/10 rounded-2xl shadow-2xl shadow-indigo-500/10 overflow-hidden flex flex-col max-h-[90vh]">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#0a1628]/90 backdrop-blur-md p-4 animate-in fade-in duration-300">
+            <div className="relative w-full max-w-lg bg-[#0a1628] border border-white/10 rounded-[2rem] shadow-2xl shadow-red-500/5 overflow-hidden flex flex-col max-h-[90vh]">
 
                 {/* Header */}
-                <div className="p-4 border-b border-white/10 flex items-center justify-between bg-black/20 relative z-20">
-                    <div className="flex items-center space-x-3">
-                        <div className="w-10 h-10 rounded-full bg-indigo-500/20 flex items-center justify-center">
-                            <Bot className="w-5 h-5 text-indigo-400" />
+                <div className="p-6 border-b border-white/5 flex items-center justify-between bg-white/[0.02] relative z-20">
+                    <div className="flex items-center space-x-4">
+                        <div className="w-12 h-12 rounded-2xl bg-[#CC0000]/10 flex items-center justify-center border border-[#CC0000]/20">
+                            <Bot className="w-6 h-6 text-[#CC0000]" />
                         </div>
                         <div>
-                            <h3 className="text-white font-medium">Demo Booker AI</h3>
-                            <p className="text-xs text-indigo-400 flex items-center gap-1">
+                            <h3 className="text-white font-bold font-display tracking-tight text-lg">Demo Booker AI</h3>
+                            <p className="text-[10px] text-gray-500 font-black uppercase tracking-[0.2em] flex items-center gap-2 mt-1">
                                 <span className="relative flex h-2 w-2">
-                                    <span className={callStatus === 'active' ? "animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" : "absolute inline-flex h-full w-full rounded-full bg-slate-500 opacity-75"}></span>
-                                    <span className={callStatus === 'active' ? "relative inline-flex rounded-full h-2 w-2 bg-green-500" : "relative inline-flex rounded-full h-2 w-2 bg-slate-500"}></span>
+                                    <span className={callStatus === 'active' ? "animate-ping absolute inline-flex h-full w-full rounded-full bg-[#CC0000] opacity-75" : "absolute inline-flex h-full w-full rounded-full bg-gray-600 opacity-75"}></span>
+                                    <span className={callStatus === 'active' ? "relative inline-flex rounded-full h-2 w-2 bg-[#CC0000]" : "relative inline-flex rounded-full h-2 w-2 bg-gray-600"}></span>
                                 </span>
-                                {callStatus === 'active' ? 'Live Call' : callStatus === 'loading' ? 'Connecting...' : 'Ready'}
+                                {callStatus === 'active' ? 'Live Session' : callStatus === 'loading' ? 'Initializing...' : 'Systems Ready'}
                             </p>
                         </div>
                     </div>
 
-                    <div className="flex items-center space-x-2">
+                    <div className="flex items-center space-x-3">
                         <button
                             onClick={callStatus === 'active' ? endCall : startCall}
                             disabled={callStatus === 'loading'}
-                            className={`flex items-center justify-center px-4 py-2 rounded-lg font-bold text-sm transition-all ${callStatus === 'active'
-                                ? 'bg-red-500/10 text-red-500 border border-red-500/20 hover:bg-red-500/20'
-                                : 'bg-indigo-600 text-white hover:bg-indigo-500'
+                            className={`flex items-center justify-center px-5 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all ${callStatus === 'active'
+                                ? 'bg-white/5 text-red-500 border border-red-500/20 hover:bg-red-500/10'
+                                : 'bg-[#CC0000] text-white hover:bg-[#AA0000] shadow-xl shadow-red-900/20'
                                 }`}
                         >
                             {callStatus === 'loading' ? (
@@ -125,12 +125,12 @@ export default function DemoBookingModal({ isOpen, onClose, vapiInstance, callSt
                             ) : callStatus === 'active' ? (
                                 <div className="flex items-center gap-2">
                                     <X className="w-4 h-4" />
-                                    <span>End Call</span>
+                                    <span>Disconnect</span>
                                 </div>
                             ) : (
                                 <div className="flex items-center gap-2">
                                     <Mic className="w-4 h-4" />
-                                    <span>Start Call</span>
+                                    <span>Connect</span>
                                 </div>
                             )}
                         </button>
@@ -139,7 +139,7 @@ export default function DemoBookingModal({ isOpen, onClose, vapiInstance, callSt
                                 if (callStatus === 'active') endCall();
                                 onClose();
                             }}
-                            className="p-2 ml-2 bg-white/5 hover:bg-white/10 rounded-lg text-slate-400 hover:text-white transition-colors"
+                            className="p-2.5 bg-white/5 hover:bg-white/10 rounded-xl text-gray-500 hover:text-white transition-all border border-white/5"
                         >
                             <X className="w-5 h-5" />
                         </button>
@@ -148,26 +148,31 @@ export default function DemoBookingModal({ isOpen, onClose, vapiInstance, callSt
 
                 {/* Pre-Call State */}
                 {callStatus !== 'active' && transcript.length === 0 && (
-                    <div className="p-10 flex flex-col items-center justify-center text-center">
-                        <div className="w-20 h-20 bg-indigo-500/10 rounded-full flex items-center justify-center mb-6 ring-4 ring-indigo-500/20 animate-pulse">
-                            <Mic className="w-10 h-10 text-indigo-400" />
+                    <div className="p-12 flex flex-col items-center justify-center text-center space-y-8">
+                        <div className="relative">
+                            <div className="absolute -inset-4 bg-[#CC0000]/20 blur-2xl rounded-full animate-pulse" />
+                            <div className="relative w-24 h-24 bg-[#CC0000]/10 rounded-[2rem] flex items-center justify-center border border-[#CC0000]/20">
+                                <Mic className="w-12 h-12 text-[#CC0000]" />
+                            </div>
                         </div>
-                        <h3 className="text-2xl font-bold text-white mb-3">Ready to Book Your Demo?</h3>
-                        <p className="text-slate-400 text-sm mb-8 max-w-sm">
-                            Simply talk to our AI assistant. It will handle gathering your details and finding a time on our calendar.
-                        </p>
+                        <div className="space-y-3">
+                            <h3 className="text-3xl font-bold text-white font-display tracking-tight">Ready?</h3>
+                            <p className="text-gray-400 text-sm max-w-[280px] mx-auto font-medium leading-relaxed">
+                                Experience autonomous voice intelligence. Book your session in seconds.
+                            </p>
+                        </div>
                         <button
                             onClick={startCall}
                             disabled={callStatus === 'loading'}
-                            className="flex items-center justify-center px-8 py-4 rounded-full font-bold text-lg transition-all bg-indigo-600 text-white hover:bg-indigo-500 hover:scale-105 shadow-[0_0_20px_rgba(79,70,229,0.4)] disabled:opacity-50 disabled:hover:scale-100"
+                            className="group relative flex items-center justify-center px-10 py-5 rounded-2xl font-black text-xs uppercase tracking-[0.3em] transition-all bg-[#CC0000] text-white hover:bg-[#AA0000] hover:scale-105 shadow-2xl shadow-red-900/40 disabled:opacity-50"
                         >
                             {callStatus === 'loading' ? (
                                 <Loader2 className="w-6 h-6 animate-spin" />
                             ) : (
-                                <div className="flex items-center gap-2">
-                                    <Mic className="w-5 h-5" />
-                                    <span>Start Conversation</span>
-                                </div>
+                                <>
+                                    <span>Initiate Agent</span>
+                                    <div className="absolute inset-0 rounded-2xl border border-white/20 group-hover:scale-110 opacity-0 group-hover:opacity-100 transition-all" />
+                                </>
                             )}
                         </button>
                     </div>
@@ -179,29 +184,29 @@ export default function DemoBookingModal({ isOpen, onClose, vapiInstance, callSt
 
                         {/* Call Controls Bar */}
                         {callStatus === 'active' && (
-                            <div className="flex flex-col items-center justify-center space-y-2 py-4 bg-slate-900/80 border-b border-white/5">
+                            <div className="flex flex-col items-center justify-center space-y-3 py-6 bg-white/[0.02] border-b border-white/5">
                                 <button
                                     onMouseDown={(e) => setHoldState(true, e)}
                                     onMouseUp={(e) => setHoldState(false, e)}
                                     onMouseLeave={(e) => setHoldState(false, e)}
                                     onTouchStart={(e) => setHoldState(true, e)}
                                     onTouchEnd={(e) => setHoldState(false, e)}
-                                    className={`flex items-center justify-center space-x-2 px-6 py-3 rounded-full font-semibold transition-all select-none ${isOnHold ? 'bg-amber-500 text-slate-900 scale-95 shadow-inner' : 'bg-slate-800 text-white hover:bg-slate-700 hover:scale-105 shadow-md shadow-black/50'}`}
+                                    className={`flex items-center justify-center space-x-3 px-8 py-3.5 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all select-none border ${isOnHold ? 'bg-[#CC0000] border-[#CC0000] text-white scale-95 shadow-lg' : 'bg-white/5 border-white/10 text-gray-400 hover:text-white hover:bg-white/10 hover:-translate-y-0.5'}`}
                                 >
-                                    {isOnHold ? <Pause className="w-5 h-5 fill-current" /> : <Mic className="w-5 h-5" />}
-                                    <span>{isOnHold ? 'Call Paused...' : 'Hold to Pause'}</span>
+                                    {isOnHold ? <Pause className="w-4 h-4 fill-current" /> : <Mic className="w-4 h-4" />}
+                                    <span>{isOnHold ? 'Session Paused' : 'Hold to Mute'}</span>
                                 </button>
-                                <p className="text-[10px] text-slate-500">Press and hold to mute yourself and the AI.</p>
+                                <p className="text-[9px] text-gray-600 font-black uppercase tracking-widest">Global Experience Intelligence active</p>
                             </div>
                         )}
 
                         {/* Transcript Area */}
-                        <div className="flex-grow p-4 overflow-y-auto space-y-4 max-h-[300px]">
+                        <div className="flex-grow p-6 overflow-y-auto space-y-4 max-h-[300px] scrollbar-hide">
                             {transcript.map((msg, i) => (
                                 <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                                    <div className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-relaxed ${msg.role === 'user'
-                                        ? 'bg-indigo-600 text-white rounded-tr-sm'
-                                        : 'bg-white/10 text-slate-200 rounded-tl-sm'
+                                    <div className={`max-w-[85%] rounded-[1.25rem] px-5 py-3.5 text-[11px] font-medium leading-relaxed ${msg.role === 'user'
+                                        ? 'bg-[#CC0000] text-white rounded-tr-none'
+                                        : 'bg-white/5 text-gray-300 border border-white/5 rounded-tl-none'
                                         }`}>
                                         {msg.text}
                                     </div>
@@ -212,24 +217,24 @@ export default function DemoBookingModal({ isOpen, onClose, vapiInstance, callSt
 
                         {/* Standard Chat Input Field */}
                         {callStatus === 'active' && (
-                            <div className="p-4 border-t border-white/10 bg-slate-900/50">
-                                <form onSubmit={sendChatMessage} className="flex gap-2 relative">
+                            <div className="p-6 border-t border-white/5 bg-white/[0.01]">
+                                <form onSubmit={sendChatMessage} className="flex gap-3 relative">
                                     <input
                                         type="text"
-                                        placeholder="Type a message..."
+                                        placeholder="Type naturally..."
                                         value={chatInput}
                                         onChange={(e) => setChatInput(e.target.value)}
-                                        className="w-full bg-black/50 border border-white/10 rounded-xl py-3 pl-4 pr-12 text-sm text-white focus:outline-none focus:border-indigo-500 transition-colors"
+                                        className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-5 pr-14 text-xs text-white focus:outline-none focus:border-[#CC0000] transition-all placeholder:text-gray-600 font-medium"
                                     />
                                     <button
                                         type="submit"
                                         disabled={!chatInput.trim()}
-                                        className="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-indigo-500 rounded-lg text-white disabled:opacity-50 disabled:bg-slate-700 transition-all hover:bg-indigo-400"
+                                        className="absolute right-2 top-1/2 -translate-y-1/2 p-2.5 bg-[#CC0000] rounded-xl text-white disabled:opacity-20 transition-all hover:bg-[#AA0000] shadow-lg shadow-red-900/20"
                                     >
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+                                        <Send className="w-4 h-4" />
                                     </button>
                                 </form>
-                                <p className="text-[10px] text-slate-500 mt-2 text-center">You can speak naturally or type your responses.</p>
+                                <p className="text-[9px] text-gray-600 font-black uppercase tracking-[0.2em] mt-4 text-center">Multi-modal interaction ready</p>
                             </div>
                         )}
                     </div>
