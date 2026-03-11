@@ -16,7 +16,12 @@ import {
     Target,
     Monitor,
     Calendar,
-    PhoneCall
+    PhoneCall,
+    Headphones,
+    TrendingUp,
+    Settings,
+    Workflow,
+    Briefcase
 } from 'lucide-react';
 import { sendGAEvent } from '@next/third-parties/google';
 
@@ -36,9 +41,9 @@ const INDUSTRIES = [
 ];
 
 const INTERESTS = [
-    { id: "Customer Support", label: "Customer Support", desc: "Digital CX & Support" },
-    { id: "Sales/Lead Gen", label: "Sales & Lead Gen", desc: "Outbound & Growth" },
-    { id: "Operations", label: "Operations", desc: "Internal Process Ops" }
+    { id: "Customer Support", label: "Support", fullLabel: "Customer Support", icon: Headphones, desc: "Digital CX" },
+    { id: "Sales/Lead Gen", label: "Sales", fullLabel: "Sales & Growth", icon: TrendingUp, desc: "Lead Gen" },
+    { id: "Operations", label: "Ops", fullLabel: "Operations", icon: Workflow, desc: "Process AI" }
 ];
 
 export default function SutherlandLeadForm() {
@@ -238,25 +243,37 @@ export default function SutherlandLeadForm() {
                                     </select>
                                 </div>
                                 <div className="space-y-1">
-                                    <label className="flex items-center gap-1 text-[8px] font-black text-gray-500 uppercase tracking-widest ml-1">
-                                        <Target className="w-2.5 h-2.5" /> Interest
+                                    <label className="flex items-center gap-1 text-[8px] font-black text-gray-400/80 uppercase tracking-widest ml-1">
+                                        <Target className="w-2.5 h-2.5" /> Focal Area
                                     </label>
-                                    <div className="flex gap-1.5 h-[34px]">
-                                        {INTERESTS.map(item => (
-                                        <button
-                                            key={item.id}
-                                            type="button"
-                                            onClick={() => setFormData(p => ({ ...p, interest: item.id }))}
-                                            className={`flex-1 py-1.5 px-2 rounded-xl border text-center transition-all ${
-                                                formData.interest === item.id 
-                                                ? 'bg-[#CC0000]/20 border-[#CC0000] text-white ring-1 ring-[#CC0000]' 
-                                                : 'bg-white/5 border-white/5 text-gray-400 hover:border-white/20'
-                                            }`}
-                                        >
-                                            <div className="font-bold text-[9px] uppercase tracking-tight">{item.label}</div>
-                                            <div className="text-[7px] opacity-50 font-medium tracking-tighter truncate">{item.desc}</div>
-                                        </button>
-                                    ))}
+                                    <div className="grid grid-cols-3 gap-2">
+                                        {INTERESTS.map(item => {
+                                            const Icon = item.icon;
+                                            const isActive = formData.interest === item.id;
+                                            return (
+                                                <button
+                                                    key={item.id}
+                                                    type="button"
+                                                    onClick={() => setFormData(p => ({ ...p, interest: item.id }))}
+                                                    className={`relative flex flex-col items-center justify-center py-2 px-1 rounded-xl border transition-all duration-300 ${
+                                                        isActive 
+                                                        ? 'bg-[#CC0000]/10 border-[#CC0000] text-white shadow-[0_0_15px_rgba(204,0,0,0.1)]' 
+                                                        : 'bg-white/5 border-white/5 text-gray-500 hover:border-white/20 hover:bg-white/[0.07]'
+                                                    }`}
+                                                >
+                                                    <Icon className={`w-3.5 h-3.5 mb-1 transition-colors ${isActive ? 'text-[#CC0000]' : 'text-gray-500'}`} />
+                                                    <div className="font-black text-[8px] uppercase tracking-tight">{item.label}</div>
+                                                    <div className="text-[6px] opacity-40 font-medium tracking-tighter truncate w-full text-center">{item.desc}</div>
+                                                    {isActive && (
+                                                        <motion.div 
+                                                            layoutId="activeGlow"
+                                                            className="absolute inset-0 rounded-xl border border-[#CC0000]/30 pointer-events-none"
+                                                            transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                                                        />
+                                                    )}
+                                                </button>
+                                            );
+                                        })}
                                     </div>
                                 </div>
                             </div>
