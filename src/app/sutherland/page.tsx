@@ -3,7 +3,7 @@
 import React from 'react';
 import ThreeDElement from '@/components/ThreeDElement';
 import SutherlandLeadForm from '@/components/SutherlandLeadForm';
-import { Bot, PhoneCall, CalendarCheck, Sparkles, Linkedin, Mail, Menu, X } from 'lucide-react';
+import { Bot, PhoneCall, CalendarCheck, Sparkles, Linkedin, Mail, Menu, X, Globe, Search } from 'lucide-react';
 import { sendGAEvent } from '@next/third-parties/google';
 import DemoCallButton from '@/components/DemoCallButton';
 
@@ -39,35 +39,44 @@ export default function SutherlandLandingPage() {
     return (
         <div className="min-h-screen bg-slate-950 overflow-x-hidden flex flex-col font-sans">
             {/* Top Navigation Bar / Branding */}
-            <header className="fixed top-0 left-0 right-0 z-50 w-full py-4 px-6 lg:px-12 border-b border-white/5 bg-slate-950/70 backdrop-blur-xl transition-all duration-300 shadow-lg shadow-black/10">
-                <div className="container mx-auto flex items-center justify-between">
-                    <div className="flex items-center space-x-3 z-50 relative">
-                        <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/20">
-                            <Sparkles className="w-4 h-4 text-white" />
+            <header className="fixed top-0 left-0 right-0 z-50 w-full py-4 px-6 lg:px-12 border-b border-gray-200 bg-white shadow-sm transition-all duration-300">
+                <div className="container mx-auto flex items-center justify-between max-w-[1400px]">
+                    <div className="flex items-center space-x-2 z-50 relative">
+                        {/* CSS-based approximated logo */}
+                        <div className="flex gap-[3px] transform rotate-45 mr-1 overflow-hidden h-6 w-5 justify-center">
+                            <div className="w-1.5 h-8 bg-[#E31837] rounded-full translate-y-[-4px]"></div>
+                            <div className="w-1.5 h-8 bg-[#1D1D3A] rounded-full translate-y-2"></div>
+                            <div className="w-1.5 h-8 bg-[#E31837] rounded-full translate-y-[-2px]"></div>
                         </div>
-                        <span className="text-2xl font-black text-white tracking-tighter">
-                            Sutherland <span className="text-cyan-400">Global</span>
+                        <span style={{color: '#1D1D3A'}} className="text-[22px] font-semibold tracking-[0.15em]">
+                            SUTHERLAND<sup className="text-[10px]">&reg;</sup>
                         </span>
                     </div>
 
-                    <nav className="hidden md:flex items-center space-x-8 text-sm font-semibold text-slate-300">
-                        <a href="#services" onClick={(e) => { sendGAEvent('event', 'nav_click', { label: 'Services' }); scrollToSection(e, 'services'); }} className="hover:text-cyan-400 transition-colors relative group">
-                            Services
-                            <span className="absolute -bottom-1.5 left-0 w-0 h-0.5 bg-cyan-500 transition-all group-hover:w-full rounded-full"></span>
-                        </a>
-                        <a href="#technology" onClick={(e) => { sendGAEvent('event', 'nav_click', { label: 'Technology' }); scrollToSection(e, 'technology'); }} className="hover:text-cyan-400 transition-colors relative group">
-                            Technology
-                            <span className="absolute -bottom-1.5 left-0 w-0 h-0.5 bg-cyan-500 transition-all group-hover:w-full rounded-full"></span>
-                        </a>
-                        <a href="#contact" onClick={(e) => { sendGAEvent('event', 'nav_click', { label: 'Contact' }); scrollToSection(e, 'contact'); }} className="hover:text-cyan-400 transition-colors relative group">
-                            Contact
-                            <span className="absolute -bottom-1.5 left-0 w-0 h-0.5 bg-cyan-500 transition-all group-hover:w-full rounded-full"></span>
-                        </a>
+                    <nav className="hidden lg:flex items-center space-x-6 text-[14.5px] font-medium text-[#4C535F]">
+                        <a href="#services" className="hover:text-[#E31837] transition-colors">Services</a>
+                        <a href="#industries" className="hover:text-[#E31837] transition-colors">Industries</a>
+                        <a href="#products" className="hover:text-[#E31837] transition-colors">Products and Platforms</a>
+                        <a href="#insights" className="hover:text-[#E31837] transition-colors">Insights</a>
+                        <a href="#about" className="hover:text-[#E31837] transition-colors">About Us</a>
+                        <a href="#careers" className="hover:text-[#E31837] transition-colors">Careers</a>
                     </nav>
 
-                    <div className="flex items-center">
+                    <div className="hidden lg:flex items-center space-x-6">
+                        <button className="text-[#4C535F] hover:text-[#E31837] transition-colors">
+                            <Globe className="w-5 h-5 flex-shrink-0" />
+                        </button>
+                        <button className="text-[#4C535F] hover:text-[#E31837] transition-colors">
+                            <Search className="w-5 h-5 flex-shrink-0" />
+                        </button>
+                        <a href="#contact" className="bg-[#E31837] hover:bg-[#C2142E] text-white px-7 py-2.5 rounded text-sm font-semibold transition-colors shadow-none text-center inline-block">
+                            Contact Us
+                        </a>
+                    </div>
+
+                    <div className="flex lg:hidden items-center">
                         <button
-                            className="md:hidden p-2 -mr-2 text-slate-300 hover:text-white transition-colors relative z-50"
+                            className="p-2 text-[#1D1D3A] hover:text-[#E31837] transition-colors relative z-50"
                             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                             aria-label="Toggle Menu"
                         >
@@ -77,11 +86,15 @@ export default function SutherlandLandingPage() {
                 </div>
 
                 {/* Mobile Menu Overlay */}
-                <div className={`fixed inset-0 bg-slate-950/95 backdrop-blur-2xl transition-all duration-300 ease-in-out z-40 md:hidden flex flex-col justify-center items-center ${isMobileMenuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>
-                    <nav className="flex flex-col items-center space-y-8 text-xl font-bold text-slate-200">
-                        <a href="#services" onClick={(e) => { sendGAEvent('event', 'nav_click', { label: 'Services' }); scrollToSection(e, 'services'); }} className="hover:text-cyan-400 transition-colors">Services</a>
-                        <a href="#technology" onClick={(e) => { sendGAEvent('event', 'nav_click', { label: 'Technology' }); scrollToSection(e, 'technology'); }} className="hover:text-cyan-400 transition-colors">Technology</a>
-                        <a href="#contact" onClick={(e) => { sendGAEvent('event', 'nav_click', { label: 'Contact' }); scrollToSection(e, 'contact'); }} className="hover:text-cyan-400 transition-colors">Contact</a>
+                <div className={`fixed inset-0 bg-white transition-all duration-300 ease-in-out z-40 lg:hidden flex flex-col pt-24 px-6 overflow-y-auto ${isMobileMenuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>
+                    <nav className="flex flex-col space-y-6 text-xl font-semibold text-[#1D1D3A]">
+                        <a href="#services" onClick={(e) => { scrollToSection(e, 'services'); }} className="hover:text-[#E31837] transition-colors border-b border-gray-100 pb-2">Services</a>
+                        <a href="#industries" onClick={(e) => { scrollToSection(e, 'industries'); }} className="hover:text-[#E31837] transition-colors border-b border-gray-100 pb-2">Industries</a>
+                        <a href="#products" onClick={(e) => { scrollToSection(e, 'products'); }} className="hover:text-[#E31837] transition-colors border-b border-gray-100 pb-2">Products and Platforms</a>
+                        <a href="#insights" onClick={(e) => { scrollToSection(e, 'insights'); }} className="hover:text-[#E31837] transition-colors border-b border-gray-100 pb-2">Insights</a>
+                        <a href="#about" onClick={(e) => { scrollToSection(e, 'about'); }} className="hover:text-[#E31837] transition-colors border-b border-gray-100 pb-2">About Us</a>
+                        <a href="#careers" onClick={(e) => { scrollToSection(e, 'careers'); }} className="hover:text-[#E31837] transition-colors">Careers</a>
+                        <a href="#contact" onClick={(e) => { scrollToSection(e, 'contact'); }} className="bg-[#E31837] text-white text-center py-3 rounded mt-4">Contact Us</a>
                     </nav>
                 </div>
             </header>
@@ -169,95 +182,45 @@ export default function SutherlandLandingPage() {
             </main>
 
             {/* Professional Custom Footer */}
-            <footer id="contact" className="w-full relative z-20 mt-10 lg:mt-20 border-t border-white/10 bg-slate-950 pt-16 pb-8">
-                <div className="absolute inset-0 overflow-hidden pointer-events-none">
-                    <div className="absolute bottom-0 left-[20%] w-[40%] h-[300px] rounded-full opacity-10 blur-[100px] bg-blue-500" />
-                </div>
-
-                <div className="container mx-auto px-6 lg:px-12 relative z-10">
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-12 lg:gap-8 mb-12">
-                        <div className="lg:col-span-4 lg:pr-8">
-                            <div className="flex items-center space-x-3 mb-6">
-                                <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-lg flex items-center justify-center shadow-lg shadow-blue-500/20">
-                                    <Sparkles className="w-4 h-4 text-white" />
+            <footer id="contact" className="w-full bg-[#f8f9fa] py-8 border-t border-gray-200 mt-10 lg:mt-20 relative z-20">
+                <div className="container mx-auto px-6 lg:px-12 max-w-[1400px]">
+                    <div className="flex flex-col lg:flex-row justify-between items-center gap-8">
+                        
+                        {/* Left side: Logo + Links */}
+                        <div className="flex flex-col lg:flex-row items-center gap-8 lg:gap-16 w-full lg:w-auto">
+                            <div className="flex items-center space-x-2">
+                                <div className="flex gap-[2px] transform rotate-45 scale-75 overflow-hidden h-6 w-5 justify-center">
+                                    <div className="w-1 bg-[#E31837] rounded-full h-8 translate-y-[-4px]"></div>
+                                    <div className="w-1 bg-[#1D1D3A] rounded-full h-8 translate-y-2"></div>
+                                    <div className="w-1 bg-[#E31837] rounded-full h-8 translate-y-[-2px]"></div>
                                 </div>
-                                <span className="text-xl font-black text-white tracking-tighter">
-                                    Sutherland <span className="text-cyan-400">Global</span>
-                                </span>
                             </div>
-                            <p className="text-slate-400 leading-relaxed max-w-sm mb-8">
-                                Engineering autonomous voice intelligence that perfectly represents your enterprise brand, handles limitless concurrency, and drives measurable CSAT 24/7.
-                            </p>
+
+                            <nav className="flex flex-wrap justify-center lg:justify-start gap-x-8 gap-y-4 text-[13px] font-bold text-[#1D1D3A]">
+                                <a href="#services" className="hover:text-[#E31837] transition-colors">Services</a>
+                                <a href="#industries" className="hover:text-[#E31837] transition-colors">Industries</a>
+                                <a href="#about" className="hover:text-[#E31837] transition-colors">About Us</a>
+                                <a href="#contact" className="hover:text-[#E31837] transition-colors">Contact Us</a>
+                                <a href="#careers" className="hover:text-[#E31837] transition-colors">Careers</a>
+                                <a href="#locations" className="hover:text-[#E31837] transition-colors">Locations</a>
+                            </nav>
                         </div>
 
-                        <div className="lg:col-span-2">
-                            <h4 className="text-white font-semibold mb-6 tracking-wide uppercase text-xs">Quick Links</h4>
-                            <ul className="space-y-4 text-sm text-slate-400">
-                                <li><a href="#services" className="hover:text-cyan-400 transition-colors">Tier-1 Support</a></li>
-                                <li><a href="#services" className="hover:text-cyan-400 transition-colors">Call Deflection</a></li>
-                                <li><a href="#technology" className="hover:text-cyan-400 transition-colors">Architecture</a></li>
-                                <li><a href="#contact" className="hover:text-cyan-400 transition-colors">Corporate Contact</a></li>
-                            </ul>
-                        </div>
-
-                        <div className="lg:col-span-3">
-                            <h4 className="text-white font-semibold mb-6 tracking-wide uppercase text-xs">Contact Us</h4>
-                            <ul className="space-y-4 text-sm text-slate-400">
-                                <li className="flex items-center space-x-4">
-                                    <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-blue-500/30 flex-shrink-0">
-                                        <img src="/images/alok.jpg" alt="Alok Ranjan - Director" className="w-full h-full object-cover" />
-                                    </div>
-                                    <div className="flex flex-col">
-                                        <span className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-0.5">Director</span>
-                                        <span className="text-slate-200 font-semibold tracking-tight">Alok Ranjan</span>
-                                    </div>
-                                </li>
-                                <li className="flex flex-col">
-                                    <span className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Direct Line</span>
-                                    <a href="tel:+917042915552" className="text-cyan-400 hover:text-cyan-300 transition-colors font-medium tracking-wide">+91 7042915552</a>
-                                </li>
-                                <li className="flex flex-col">
-                                    <span className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Social</span>
-                                    <div className="flex flex-col space-y-2">
-                                        <a
-                                            href="https://www.linkedin.com/in/alokranjan04/"
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="flex items-center text-cyan-400 hover:text-cyan-300 transition-colors font-medium group text-[13px]"
-                                        >
-                                            <Linkedin className="w-3.5 h-3.5 mr-2" />
-                                            Connect on LinkedIn
-                                        </a>
-                                        <a
-                                            href="mailto:alokranjan04@gmail.com"
-                                            className="flex items-center text-cyan-400 hover:text-cyan-300 transition-colors font-medium group text-[13px]"
-                                        >
-                                            <Mail className="w-3.5 h-3.5 mr-2" />
-                                            alokranjan04@gmail.com
-                                        </a>
-                                    </div>
-                                </li>
-                            </ul>
-                        </div>
-
-                        <div className="lg:col-span-3">
-                            <h4 className="text-white font-semibold mb-6 tracking-wide uppercase text-xs">Headquarters</h4>
-                            <div className="text-sm text-slate-400 leading-relaxed p-6 bg-white/5 border border-white/10 rounded-2xl inline-block shadow-xl">
-                                <p className="font-medium text-slate-200 mb-2">TellYourJourney AI Agency</p>
-                                E 311, Ace City Noida Ext<br />
-                                Greater Noida West<br />
-                                Gautam Buddha Nagar, 201306<br />
-                                Uttar Pradesh, India
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-center text-sm text-slate-500">
-                        <p>&copy; {new Date().getFullYear()} TellYourJourney & Sutherland Global. All rights reserved.</p>
-                        <div className="flex space-x-6 mt-4 md:mt-0">
-                            <a href="#" className="hover:text-cyan-400 transition-colors">Privacy Policy</a>
-                            <a href="#" className="hover:text-cyan-400 transition-colors">Terms of Service</a>
-                            <a href="#" className="hover:text-cyan-400 transition-colors">Data Security</a>
+                        {/* Right side: Social Icons */}
+                        <div className="flex items-center gap-6 text-[#1D1D3A] opacity-80">
+                            <a href="#" aria-label="LinkedIn" className="hover:text-[#E31837] transition-colors"><Linkedin className="w-4 h-4 fill-current" /></a>
+                            <a href="#" aria-label="X (Twitter)" className="hover:text-[#E31837] transition-colors">
+                                <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"></path></svg>
+                            </a>
+                            <a href="#" aria-label="Facebook" className="hover:text-[#E31837] transition-colors">
+                                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path fillRule="evenodd" d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z" clipRule="evenodd"></path></svg>
+                            </a>
+                            <a href="#" aria-label="YouTube" className="hover:text-[#E31837] transition-colors">
+                                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path fillRule="evenodd" d="M19.812 5.418c.861.23 1.538.907 1.768 1.768C21.998 8.746 22 12 22 12s0 3.255-.418 4.814a2.504 2.504 0 0 1-1.768 1.768c-1.56.419-7.814.419-7.814.419s-6.255 0-7.814-.419a2.505 2.505 0 0 1-1.768-1.768C2 15.255 2 12 2 12s0-3.255.417-4.814a2.507 2.507 0 0 1 1.768-1.768C5.744 5 11.998 5 11.998 5s6.255 0 7.814.418ZM15.194 12 10 15V9l5.194 3Z" clipRule="evenodd"></path></svg>
+                            </a>
+                            <a href="#" aria-label="Vimeo" className="hover:text-[#E31837] transition-colors">
+                                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M22.396 7.164c-.093 2.026-1.507 4.8-4.245 8.32C15.322 19.161 12.93 21 10.97 21c-1.214 0-2.24-1.12-3.08-3.36-.56-2.052-1.119-4.1-1.68-6.15-.653-2.332-1.306-3.499-1.959-3.499-.187 0-.933.466-2.24 1.399l-1.399-1.68c1.4-1.213 2.893-2.52 4.479-3.919 1.866-1.586 3.173-2.426 3.919-2.52 1.866-.186 2.893 1.027 3.08 3.639.186 2.333.373 3.919.56 4.759.56 2.52 1.213 3.733 1.959 3.733.56 0 1.4-1.026 2.52-3.08 1.12-2.052 1.68-3.639 1.68-4.759 0-1.586-1.12-2.333-3.36-2.24h-.56C16.92 1.77 18.226 1.023 19.533 1.023c2.053 0 3.08 2.053 2.863 6.141z"></path></svg>
+                            </a>
                         </div>
                     </div>
                 </div>
