@@ -36,9 +36,9 @@ const INDUSTRIES = [
 ];
 
 const INTERESTS = [
-    { id: "Customer Support", label: "Support" },
-    { id: "Sales/Lead Gen", label: "Sales" },
-    { id: "Operations", label: "Ops" }
+    { id: "Customer Support", label: "Customer Support", desc: "Digital CX & Support" },
+    { id: "Sales/Lead Gen", label: "Sales & Lead Gen", desc: "Outbound & Growth" },
+    { id: "Operations", label: "Operations", desc: "Internal Process Ops" }
 ];
 
 export default function SutherlandLeadForm() {
@@ -243,19 +243,20 @@ export default function SutherlandLeadForm() {
                                     </label>
                                     <div className="flex gap-1.5 h-[34px]">
                                         {INTERESTS.map(item => (
-                                            <button
-                                                key={item.id}
-                                                type="button"
-                                                onClick={() => setFormData(p => ({ ...p, interest: item.id }))}
-                                                className={`flex-1 rounded-lg border text-[9px] font-bold transition-all ${
-                                                    formData.interest === item.id 
-                                                    ? 'bg-[#CC0000]/20 border-[#CC0000] text-white' 
-                                                    : 'bg-white/5 border-white/5 text-gray-400'
-                                                }`}
-                                            >
-                                                {item.label}
-                                            </button>
-                                        ))}
+                                        <button
+                                            key={item.id}
+                                            type="button"
+                                            onClick={() => setFormData(p => ({ ...p, interest: item.id }))}
+                                            className={`flex-1 py-1.5 px-2 rounded-xl border text-center transition-all ${
+                                                formData.interest === item.id 
+                                                ? 'bg-[#CC0000]/20 border-[#CC0000] text-white ring-1 ring-[#CC0000]' 
+                                                : 'bg-white/5 border-white/5 text-gray-400 hover:border-white/20'
+                                            }`}
+                                        >
+                                            <div className="font-bold text-[9px] uppercase tracking-tight">{item.label}</div>
+                                            <div className="text-[7px] opacity-50 font-medium tracking-tighter truncate">{item.desc}</div>
+                                        </button>
+                                    ))}
                                     </div>
                                 </div>
                             </div>

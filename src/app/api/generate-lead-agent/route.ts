@@ -7,7 +7,7 @@ import { adminDb } from '@/lib/firebase-admin';
 export async function POST(req: Request) {
     try {
         const body = await req.json();
-        const { name, company, email, phone, website, deliveryOption, language = 'English', companyDetails = '', industry = '' } = body;
+        const { name, company, email, phone, website, deliveryOption, language = 'English', companyDetails = '', industry = '', interest = '' } = body;
 
         if (!name || !company || !email || !phone) {
             return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
@@ -103,14 +103,31 @@ export async function POST(req: Request) {
         };
         const langCode = languageCodeMap[language] || 'en';
 
-        // Language-aware first message - DISCOVERY ORIENTED
+        // Language-aware first message - PERSONALIZED & VALUE-LED
         const firstMessageMap: Record<string, string> = {
-            'English': `Hello ${name}! Welcome to your custom ${company} AI demo. I'm curious—which part of your business are you most interested in exploring for AI: is it Customer Support, Sales and Lead Gen, or internal Operations?`,
-            'Hindi': `Arre ${name} ji! ${company} ke liye aapka custom AI demo ready hai. Main thoda curious hoon—aap business ke kis area mein AI explore karna chahte hain: Customer Support, Sales and Lead Gen, ya internal Operations?`,
-            'French': `Bonjour ${name} ! Bienvenue dans votre démo IA personnalisée pour ${company}. Je suis curieux : quelle partie de votre entreprise souhaitez-vous explorer pour l'IA : le service client, la vente et la génération de prospects, ou les opérations internes ?`,
-            'German': `Hallo ${name}! Willkommen zu Ihrer maßgeschneiderten ${company} KI-Demo. Ich bin gespannt: Welchen Teil Ihres Unternehmens möchten Sie besonders mit KI erkunden – den Kundensupport, Vertrieb und Lead-Generierung oder interne Abläufe?`,
-            'Spanish': `¡Hola ${name}! Bienvenido a tu demostración de IA personalizada de ${company}. Tengo curiosidad: ¿qué área de tu negocio te interesa más explorar con IA: atención al cliente, ventas y generación de leads, o procesos internos?`,
-            'Arabic': `مرحباً ${name}! مرحباً بك في العرض التجريبي المخصص للذكاء الاصطناعي لـ ${company}. أنا فضولي - أي جزء من عملك أنت مهتم أكثر باستكشافه للذكاء الاصطناعي: دعم العملاء، المبيعات وتوليد العملاء المحتملين، أم العمليات الداخلية؟`,
+            'English': interest 
+                ? `Hello ${name}! Welcome to your custom ${company} AI demo. I see you're interested in ${interest}, so let's jump right in. How can I show you how we revolutionize that area for ${company}?`
+                : `Hello ${name}! Welcome to your custom ${company} AI demo. I'm curious—which part of your business are you most interested in exploring for AI: is it Customer Support, Sales and Lead Gen, or internal Operations?`,
+            
+            'Hindi': interest
+                ? `Arre ${name} ji! ${company} ke liye aapka custom AI demo ready hai. Maine dekha aap ${interest} mein interested hain—to chaliye seedhe point par aate hain. Main aapko kaise dikha sakta hoon ki hum ${company} ke liye is area ko kaise behtar bana sakte hain?`
+                : `Arre ${name} ji! ${company} ke liye aapka custom AI demo ready hai. Main thoda curious hoon—aap business ke kis area mein AI explore karna chahte hain: Customer Support, Sales and Lead Gen, ya internal Operations?`,
+            
+            'French': interest
+                ? `Bonjour ${name} ! Bienvenue dans votre démo IA personnalisée pour ${company}. Je vois que vous êtes intéressé par ${interest}, alors entrons directement dans le vif du sujet. Comment puis-je vous montrer comment nous révolutionnons ce domaine pour ${company} ?`
+                : `Bonjour ${name} ! Bienvenue dans votre démo IA personnalisée pour ${company}. Je suis curieux : quelle partie de votre entreprise souhaitez-vous explorer pour l'IA : le service client, la vente et la génération de prospects, ou les opérations internes ?`,
+            
+            'German': interest
+                ? `Hallo ${name}! Willkommen zu Ihrer maßgeschneiderten ${company} KI-Demo. Ich sehe, Sie interessieren sich für ${interest}, also lassen Sie uns direkt zum Punkt kommen. Wie kann ich Ihnen zeigen, wie wir diesen Bereich für ${company} revolutionieren?`
+                : `Hallo ${name}! Willkommen zu Ihrer maßgeschneiderten ${company} KI-Demo. Ich bin gespannt: Welchen Teil Ihres Unternehmens möchten Sie besonders mit KI erkunden – den Kundensupport, Vertrieb und Lead-Generierung oder interne Abläufe?`,
+            
+            'Spanish': interest
+                ? `¡Hola ${name}! Bienvenido a tu demostración de IA personalizada de ${company}. Veo que te interesa ${interest}, así que entremos en materia. ¿Cómo puedo mostrarte cómo revolucionamos esa área para ${company}?`
+                : `¡Hola ${name}! Bienvenido a tu demostración de IA personalizada de ${company}. Tengo curiosidad: ¿qué área de tu negocio te interesa más explorar con IA: atención al cliente, ventas y generación de leads, o procesos internos?`,
+            
+            'Arabic': interest
+                ? `مرحباً ${name}! مرحباً بك في العرض التجريبي المخصص للذكاء الاصطناعي لـ ${company}. أرى أنك مهتم بـ ${interest}، لذا دعنا ننتقل مباشرة إلى الموضوع. كيف يمكنني أن أريك كيف نحدث ثورة في هذا المجال من أجل ${company}؟`
+                : `مرحباً ${name}! مرحباً بك في العرض التجريبي المخصص للذكاء الاصطناعي لـ ${company}. أنا فضولي - أي جزء من عملك أنت مهتم أكثر باستكشافه للذكاء الاصطناعي: دعم العملاء، المبيعات وتوليد العملاء المحتملين، أم العمليات الداخلية؟`,
         };
         const firstMessage = firstMessageMap[language] || firstMessageMap['English'];
 
@@ -150,12 +167,13 @@ Today is ${nowIST} (IST). ALWAYS use this as the real current date when referrin
 - Prospect Phone: ${phone}
 - Prospect Company: ${company}
 - Prospect Industry: ${industry || 'their industry'}
+- Prospect Primary Interest: ${interest || 'not specified yet'}
 
 ${businessContext}
 
 == CONVERSATIONAL STRATEGY (CRITICAL) ==
-1. **PHASE 1: INTEREST DISCOVERY**: Your very first goal (already started in the First Message) is to find out WHICH area ${name} cares about: Customer Support, Sales/Lead Gen, or internal Operations.
-2. **PHASE 2: TAILORED VALUE**: Once they pick an area, provide EXACTLY ONE high-impact, specific example of how you (the AI) can solve a major pain point in that area for ${company}.
+${interest ? `**PHASE 1 (SKIPPED): INTEREST DISCOVERY** - User has already selected **${interest}**. Move immediately to Phase 2.` : `1. **PHASE 1: INTEREST DISCOVERY**: Your very first goal (already started in the First Message) is to find out WHICH area ${name} cares about: Customer Support, Sales/Lead Gen, or internal Operations.`}
+2. **PHASE 2: TAILORED VALUE**: Focus on **${interest || 'the selected area'}**. Provide EXACTLY ONE high-impact, specific example of how you (the AI) can solve a major pain point in that area for ${company}.
    - If Customer Support: Focus on 24/7 instant resolution, handling complex queries with human-level nuance, and seamless CRM integration.
    - If Sales/Lead Gen: Focus on qualifying leads instantly, handling objections, and booking high-quality meetings while interest is peak.
    - If internal Operations: Focus on automating repetitive tasks, real-time data entry, and providing instant status updates for complex workflows.
