@@ -20,11 +20,6 @@ export async function POST(req: Request) {
 
         const existingAssistant = listResponse.data.find((a: any) => a.name === assistantName);
 
-        if (existingAssistant) {
-            console.log("[Demo Agent] Reusing existing assistant:", existingAssistant.id);
-            return NextResponse.json({ assistantId: existingAssistant.id });
-        }
-
         const systemPrompt = `You are the Lead AI Strategist for Sutherland Voice Support, an elite enterprise AI transformation division. 
 
 **CORE INTERACTION FLOW:**
@@ -136,7 +131,7 @@ You are a sharp, high-level enterprise consultant focused on identifying growth 
                 smartFormat: true,
                 keywords: ["AeroHyre", "TellYourJourney", "aviation", "Alok", "AI"]
             },
-            firstMessage: "Welcome to Sutherland Voice Support! I'm here to help you explore how our AI can transform your business. What industry are you in? I'd love to share some relevant success stories.",
+            firstMessage: "Welcome to Sutherland Voice Support! I'm here to build your autonomous growth roadmap. To give you the most relevant data, could I start with your name?",
             silenceTimeoutSeconds: 60,
             maxDurationSeconds: 1200,
             serverUrl: `${baseUrl}/api/vapi/webhook`,
@@ -153,6 +148,20 @@ You are a sharp, high-level enterprise consultant focused on identifying growth 
                 }
             }
         };
+
+        if (existingAssistant) {
+            console.log("[Demo Agent] Updating existing assistant:", existingAssistant.id);
+            await axios({
+                method: 'PATCH',
+                url: `https://api.vapi.ai/assistant/${existingAssistant.id}`,
+                data: payload,
+                headers: {
+                    'Authorization': `Bearer ${apiKey}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+            return NextResponse.json({ assistantId: existingAssistant.id });
+        }
 
         const response = await axios({
             method: 'POST',
