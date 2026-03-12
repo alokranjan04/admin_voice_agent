@@ -436,93 +436,54 @@ const AdminSettings: React.FC<AdminSettingsProps> = ({
                         </div>
                     </div>
 
-                    {/* DIALOGFLOW CX CONFIGURATION */}
+                    {/* TEXT CHATBOT (VAPI) CONFIGURATION */}
                     <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
-                        <div className="flex items-center gap-4 mb-5">
-                            <div className="w-12 h-12 bg-emerald-50 rounded-xl flex items-center justify-center text-emerald-600 ring-1 ring-emerald-100">
-                                <MessageSquare className="w-6 h-6" />
-                            </div>
-                            <div>
-                                <h4 className="font-bold text-slate-800">Dialogflow CX (Text Bot)</h4>
-                                <p className="text-xs text-slate-500">Enable Google Enterprise natural language routing</p>
-                            </div>
-                        </div>
-
-                        <div className="flex flex-col gap-4 p-4 bg-slate-50 rounded-xl border border-slate-100 shadow-inner">
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                <div>
-                                    <label className="block text-[11px] font-bold text-slate-700 mb-1.5 uppercase">Project ID</label>
-                                    <input
-                                        type="text"
-                                        placeholder="e.g. sutherland-voice-xxxxx"
-                                        className="w-full bg-white border border-slate-200 text-xs text-slate-700 rounded-lg px-3 py-2 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all placeholder:text-slate-300"
-                                        value={config.integrations?.dialogflow?.projectId || ""}
-                                        onChange={(e) => {
-                                            const newConfig = {
-                                                ...config,
-                                                integrations: {
-                                                    ...(config.integrations || {}),
-                                                    dialogflow: { ...(config.integrations?.dialogflow || {}), projectId: e.target.value }
-                                                }
-                                            };
-                                            setConfig(newConfig);
-                                            handleAutoSave(newConfig);
-                                        }}
-                                    />
+                        <div className="flex items-center justify-between mb-2">
+                            <div className="flex items-center gap-4">
+                                <div className="w-12 h-12 bg-indigo-50 rounded-xl flex items-center justify-center text-indigo-600 ring-1 ring-indigo-100">
+                                    <MessageSquare className="w-6 h-6" />
                                 </div>
                                 <div>
-                                    <label className="block text-[11px] font-bold text-slate-700 mb-1.5 uppercase">Location</label>
-                                    <input
-                                        type="text"
-                                        placeholder="e.g. global, us-central1"
-                                        className="w-full bg-white border border-slate-200 text-xs text-slate-700 rounded-lg px-3 py-2 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all placeholder:text-slate-300"
-                                        value={config.integrations?.dialogflow?.location || ""}
-                                        onChange={(e) => {
-                                            const newConfig = {
-                                                ...config,
-                                                integrations: {
-                                                    ...(config.integrations || {}),
-                                                    dialogflow: { ...(config.integrations?.dialogflow || {}), location: e.target.value }
-                                                }
-                                            };
-                                            setConfig(newConfig);
-                                            handleAutoSave(newConfig);
-                                        }}
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-[11px] font-bold text-slate-700 mb-1.5 uppercase">Agent ID</label>
-                                    <input
-                                        type="text"
-                                        placeholder="e.g. 1234abcd-56ef-78gh-90ij"
-                                        className="w-full bg-white border border-slate-200 text-xs text-slate-700 rounded-lg px-3 py-2 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all placeholder:text-slate-300"
-                                        value={config.integrations?.dialogflow?.agentId || ""}
-                                        onChange={(e) => {
-                                            const newConfig = {
-                                                ...config,
-                                                integrations: {
-                                                    ...(config.integrations || {}),
-                                                    dialogflow: { ...(config.integrations?.dialogflow || {}), agentId: e.target.value }
-                                                }
-                                            };
-                                            setConfig(newConfig);
-                                            handleAutoSave(newConfig);
-                                        }}
-                                    />
+                                    <h4 className="font-bold text-slate-800">Floating Text Chatbot</h4>
+                                    <p className="text-xs text-slate-500">Enable a persistent text-based chat widget</p>
                                 </div>
                             </div>
+                            <label className="relative inline-flex items-center cursor-pointer">
+                                <input
+                                    type="checkbox"
+                                    className="sr-only peer"
+                                    checked={config.vapi?.showTextChatbot !== false}
+                                    onChange={(e) => {
+                                        const newConfig = {
+                                            ...config,
+                                            vapi: {
+                                                ...(config.vapi || {}),
+                                                showTextChatbot: e.target.checked
+                                            }
+                                        };
+                                        setConfig(newConfig);
+                                        handleAutoSave(newConfig);
+                                        if (e.target.checked) {
+                                            localStorage.removeItem('show_text_chatbot');
+                                        } else {
+                                            localStorage.setItem('show_text_chatbot', 'false');
+                                        }
+                                    }}
+                                />
+                                <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600 shadow-inner md:hover:scale-105 active:scale-95 transition-transform"></div>
+                            </label>
                         </div>
                     </div>
 
-                    {/* EMBED DIALOGFLOW CX */}
+                    {/* EMBED TEXT CHATBOT (VAPI) */}
                     <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
                         <div className="flex items-center gap-4 mb-5">
-                            <div className="w-12 h-12 bg-emerald-50 rounded-xl flex items-center justify-center text-emerald-600 ring-1 ring-emerald-100">
+                            <div className="w-12 h-12 bg-indigo-50 rounded-xl flex items-center justify-center text-indigo-600 ring-1 ring-indigo-100">
                                 <Copy className="w-6 h-6" />
                             </div>
                             <div>
-                                <h4 className="font-bold text-slate-800">Embed Dialogflow CX</h4>
-                                <p className="text-xs text-slate-500">Inject Google's official text chatbot widget</p>
+                                <h4 className="font-bold text-slate-800">Embed Text Chatbot</h4>
+                                <p className="text-xs text-slate-500">Add the interactive text chatbot to your site</p>
                             </div>
                         </div>
 
@@ -531,36 +492,52 @@ const AdminSettings: React.FC<AdminSettingsProps> = ({
                                 <textarea
                                     readOnly
                                     className="w-full bg-slate-900 text-slate-300 font-mono text-[9px] p-4 rounded-xl h-40 border border-slate-800 resize-none shadow-inner group-hover:border-slate-700 transition-colors"
-                                    value={`<!-- Google Dialogflow CX Web Integration -->
-<script src="https://www.gstatic.com/dialogflow-console/fast/df-messenger/prod/v1/df-messenger.js"></script>
-<df-messenger
-  location="${config.integrations?.dialogflow?.location || 'global'}"
-  project-id="${config.integrations?.dialogflow?.projectId || 'your-project-id'}"
-  agent-id="${config.integrations?.dialogflow?.agentId || 'your-agent-id'}"
-  language-code="en"
-  max-query-length="-1">
-  <df-messenger-chat-bubble chat-title="${config.metadata?.businessName || 'Chat'}"></df-messenger-chat-bubble>
-</df-messenger>
-<style>
-  df-messenger {
-    z-index: 999;
-    position: fixed;
-    bottom: 16px;
-    right: 16px;
-  }
-</style>`}
+                                    value={`<!-- Text Chatbot Integration Script -->
+<script>
+  (function() {
+    const iframe = document.createElement('iframe');
+    iframe.id = 'text-chatbot-widget';
+
+    const widgetParams = new URLSearchParams();
+    widgetParams.set('mode', 'widget');
+    widgetParams.set('widgetType', 'chat');
+    widgetParams.set('orgId', '${orgId}');
+    widgetParams.set('agentId', '${agentId}');
+
+    iframe.src = "${origin}/agentUI?" + widgetParams.toString();
+    iframe.width = "400px";
+    iframe.height = "100px";
+    iframe.frameBorder = "0";
+    iframe.allow = "microphone";
+    iframe.style.cssText = "position:fixed; bottom:20px; right:20px; z-index:9998; border:none; background:transparent; transition:height 0.3s ease;";
+    
+    window.addEventListener('message', (e) => {
+      if (e.data.type === 'CHAT_WIDGET_RESIZE') {
+        iframe.height = e.data.isExpanded ? "620px" : "100px";
+      }
+    });
+    
+    document.body.appendChild(iframe);
+  })();
+</script>`}
                                 />
                                 <button
                                     onClick={() => {
-                                        const code = `<!-- Google Dialogflow CX Web Integration -->\n<script src="https://www.gstatic.com/dialogflow-console/fast/df-messenger/prod/v1/df-messenger.js"></script>\n<df-messenger\n  location="${config.integrations?.dialogflow?.location || 'global'}"\n  project-id="${config.integrations?.dialogflow?.projectId || 'your-project-id'}"\n  agent-id="${config.integrations?.dialogflow?.agentId || 'your-agent-id'}"\n  language-code="en"\n  max-query-length="-1">\n  <df-messenger-chat-bubble chat-title="${config.metadata?.businessName || 'Chat'}"></df-messenger-chat-bubble>\n</df-messenger>\n<style>\n  df-messenger {\n    z-index: 999;\n    position: fixed;\n    bottom: 16px;\n    right: 16px;\n  }\n</style>`;
+                                        const code = `<!-- Text Chatbot Integration Script -->\n<script>\n  (function() {\n    const iframe = document.createElement('iframe');\n    iframe.id = 'text-chatbot-widget';\n\n    const widgetParams = new URLSearchParams();\n    widgetParams.set('mode', 'widget');\n    widgetParams.set('widgetType', 'chat');\n    widgetParams.set('orgId', '${orgId}');\n    widgetParams.set('agentId', '${agentId}');\n\n    iframe.src = "${origin}/agentUI?" + widgetParams.toString();\n    iframe.width = "400px";\n    iframe.height = "100px";\n    iframe.frameBorder = "0";\n    iframe.allow = "microphone";\n    iframe.style.cssText = "position:fixed; bottom:20px; right:20px; z-index:9998; border:none; background:transparent; transition:height 0.3s ease;";\n    \n    window.addEventListener('message', (e) => {\n      if (e.data.type === 'CHAT_WIDGET_RESIZE') {\n        iframe.height = e.data.isExpanded ? "620px" : "100px";\n      }\n    });\n    \n    document.body.appendChild(iframe);\n  })();\n<` + `/script>`;
                                         navigator.clipboard.writeText(code);
-                                        alert("Dialogflow CX snippet copied!");
+                                        alert("Text Chatbot script copied!");
                                     }}
                                     className="absolute top-2 right-2 p-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg transition-all opacity-0 group-hover:opacity-100 active:scale-90"
-                                    title="Copy Dialogflow Script"
+                                    title="Copy Text Chatbot Script"
                                 >
                                     <Copy className="w-4 h-4" />
                                 </button>
+                            </div>
+                            <div className="bg-indigo-50/50 p-4 rounded-xl border border-indigo-100 text-[10px] text-indigo-700/80 leading-relaxed italic shadow-sm">
+                                <p className="flex items-start gap-2">
+                                    <Shield className="w-3.5 h-3.5 mt-0.5 shrink-0" />
+                                    <span><strong>Pro Tip:</strong> By default, this uses the same Assistant configuration as your voice bot but processes interactions via text.</span>
+                                </p>
                             </div>
                         </div>
                     </div>

@@ -12,14 +12,17 @@ interface ChatWidgetProps {
     volume: number;
     logs: LogEntry[];
     onToggleCall: () => void;
+    overrideWidgetType?: 'chat' | 'voice';
 }
 
-const ChatWidget: React.FC<ChatWidgetProps> = ({ config, status, volume, logs, onToggleCall }) => {
+const ChatWidget: React.FC<ChatWidgetProps> = ({ config, status, volume, logs, onToggleCall, overrideWidgetType }) => {
     const [isExpanded, setIsExpanded] = useState(false);
     const [showWelcomeForm, setShowWelcomeForm] = useState(true);
     const [userDetails, setUserDetails] = useState<{ name: string; phone: string; email?: string } | null>(null);
     const [textInput, setTextInput] = useState('');
     const logsEndRef = useRef<HTMLDivElement>(null);
+
+    const isChatOnly = overrideWidgetType === 'chat';
 
     // Handle welcome form submission
     const handleWelcomeFormSubmit = async (data: { name: string; phone: string; email?: string }) => {
@@ -78,7 +81,7 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ config, status, volume, logs, o
     };
 
     return (
-        <div className="fixed bottom-0 right-0 sm:bottom-6 sm:right-6 z-[9999] flex flex-col items-end pointer-events-auto">
+        <div className={`fixed bottom-0 ${isChatOnly ? 'right-[4.5rem] sm:right-28' : 'right-0 sm:right-6'} sm:bottom-6 z-[9999] flex flex-col items-end pointer-events-auto transition-all`}>
             {/* Expanded Chat Window */}
             {isExpanded && (
                 <div className="mb-0 sm:mb-4 w-screen h-screen sm:w-[360px] md:w-[400px] sm:h-[520px] md:h-[600px] sm:max-h-[80vh] bg-white sm:rounded-2xl shadow-2xl border-t sm:border border-slate-200 flex flex-col overflow-hidden animate-in slide-in-from-bottom-4 duration-300">
@@ -124,9 +127,9 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ config, status, volume, logs, o
                                     <div className="flex-1 min-w-0">
                                         <h3 className="font-bold text-sm leading-tight truncate">{config.metadata.businessName} Assistant</h3>
                                         <div className="flex items-center gap-1.5">
-                                            <span className={`w-1.5 h-1.5 rounded-full ${status === 'connected' ? 'bg-green-500 animate-pulse' : 'bg-slate-400'}`}></span>
+                                            <span className={`w-1.5 h-1.5 rounded-full ${status === 'connected' && !isChatOnly ? 'bg-green-500 animate-pulse' : 'bg-slate-400'}`}></span>
                                             <span className="text-[10px] text-slate-400 uppercase font-bold tracking-wider">
-                                                {status === 'connected' ? 'Live Now' : 'Online'}
+                                                {status === 'connected' && !isChatOnly ? 'Live Now' : 'Online'}
                                             </span>
                                         </div>
                                         {userDetails && (
@@ -144,8 +147,8 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ config, status, volume, logs, o
                                 </button>
                             </div>
 
-                            {/* Live Visualizer (Only when connected) */}
-                            {status === 'connected' && (
+                            {/* Live Visualizer (Only when connected & not in text-only mode) */}
+                            {status === 'connected' && !isChatOnly && (
                                 <div className="bg-slate-50 border-b border-slate-100 p-4">
                                     <LiveVisualizer volume={volume} isActive={true} />
                                 </div>
@@ -159,7 +162,9 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ config, status, volume, logs, o
                                             <MessageSquare className="w-6 h-6" />
                                         </div>
                                         <p className="text-sm font-medium text-slate-600">Welcome to {config.metadata.businessName}!</p>
-                                        <p className="text-xs text-slate-400">Start a call or type a message below to begin.</p>
+                                        <p className="text-xs text-slate-400">
+                                            {isChatOnly ? "Type a message below to begin." : "Start a call or type a message below to begin."}
+                                        </p>
                                     </div>
                                 )}
                                 {logs.map((log, index) => (
@@ -168,7 +173,7 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ config, status, volume, logs, o
                                         className={`flex ${log.type === 'user' ? 'justify-end' : 'justify-start'} animate-in fade-in duration-200`}
                                     >
                                         <div className={`max-w-[85%] rounded-2xl p-3 text-sm ${log.type === 'user'
-                                            ? 'bg-teal-600 text-white rounded-tr-none shadow-md shadow-teal-100'
+                                            ? `${isChatOnly ? 'bg-indigo-600 shadow-indigo-100' : 'bg-teal-600 shadow-teal-100'} text-white rounded-tr-none shadow-md`
                                             : log.type === 'model'
                                                 ? 'bg-white text-slate-700 border border-slate-200 rounded-tl-none shadow-sm'
                                                 : 'bg-slate-100 text-slate-500 italic text-[10px] py-1 px-3 rounded-full mx-auto'
@@ -201,30 +206,32 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ config, status, volume, logs, o
                                         <input
                                             type="text"
                                             placeholder="Type a message..."
-                                            className="w-full pl-4 pr-10 py-2.5 bg-slate-100 border-none rounded-full text-sm focus:ring-2 focus:ring-teal-500 transition-all outline-none"
+                                            className={`w-full pl-4 pr-10 py-2.5 bg-slate-100 border-none rounded-full text-sm focus:ring-2 ${isChatOnly ? 'focus:ring-indigo-500' : 'focus:ring-teal-500'} transition-all outline-none`}
                                             value={textInput}
                                             onChange={(e) => setTextInput(e.target.value)}
                                         />
                                         <button
                                             type="submit"
-                                            disabled={!textInput.trim()}
-                                            className="absolute right-1 top-1 p-1.5 text-teal-600 hover:bg-teal-50 rounded-full disabled:opacity-30 disabled:hover:bg-transparent transition-all outline-none"
+                                            disabled={!textInput.trim() || status === 'connecting'}
+                                            className={`absolute right-1 top-1 p-1.5 ${isChatOnly ? 'text-indigo-600 hover:bg-indigo-50' : 'text-teal-600 hover:bg-teal-50'} rounded-full disabled:opacity-30 disabled:hover:bg-transparent transition-all outline-none`}
                                         >
-                                            <Send className="w-4 h-4" />
+                                            {status === 'connecting' && isChatOnly ? <div className="w-4 h-4 border-2 border-indigo-600/30 border-t-indigo-600 rounded-full animate-spin" /> : <Send className="w-4 h-4" />}
                                         </button>
                                     </form>
 
-                                    <button
-                                        onClick={onToggleCall}
-                                        disabled={status === 'connecting'}
-                                        className={`p-3 rounded-full shadow-lg transition-all transform hover:scale-110 active:scale-95 outline-none focus:ring-0 ${status === 'connected'
-                                            ? 'bg-rose-500 text-white shadow-rose-100'
-                                            : 'bg-teal-600 text-white shadow-teal-100'
-                                            }`}
-                                        title={status === 'connected' ? "End Call" : "Start Voice Call"}
-                                    >
-                                        {status === 'connected' ? <MicOff className="w-5 h-5" /> : status === 'connecting' ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <Phone className="w-5 h-5" />}
-                                    </button>
+                                    {!isChatOnly && (
+                                        <button
+                                            onClick={onToggleCall}
+                                            disabled={status === 'connecting'}
+                                            className={`p-3 rounded-full shadow-lg transition-all transform hover:scale-110 active:scale-95 outline-none focus:ring-0 ${status === 'connected'
+                                                ? 'bg-rose-500 text-white shadow-rose-100'
+                                                : 'bg-teal-600 text-white shadow-teal-100'
+                                                }`}
+                                            title={status === 'connected' ? "End Call" : "Start Voice Call"}
+                                        >
+                                            {status === 'connected' ? <MicOff className="w-5 h-5" /> : status === 'connecting' ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <Phone className="w-5 h-5" />}
+                                        </button>
+                                    )}
                                 </div>
                                 <p className="text-[10px] text-center text-slate-400">
                                     Available 24/7 for your assistance.
@@ -239,9 +246,9 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ config, status, volume, logs, o
             {!isExpanded && (
                 <button
                     onClick={() => setIsExpanded(true)}
-                    className="group relative w-14 h-14 sm:w-16 sm:h-16 bg-teal-600 text-white rounded-full shadow-2xl flex items-center justify-center transition-all transform hover:scale-110 active:scale-95 hover:bg-teal-500 border-4 border-white ring-4 ring-teal-600/20 outline-none focus:ring-4 focus:ring-teal-600/40"
+                    className={`group relative w-14 h-14 sm:w-16 sm:h-16 ${isChatOnly ? 'bg-indigo-600' : 'bg-teal-600'} text-white rounded-full shadow-2xl flex items-center justify-center transition-all transform hover:scale-110 active:scale-95 ${isChatOnly ? 'hover:bg-indigo-500 ring-indigo-600/20 focus:ring-indigo-600/40' : 'hover:bg-teal-500 ring-teal-600/20 focus:ring-teal-600/40'} border-4 border-white ring-4 outline-none focus:ring-4`}
                 >
-                    {status === 'connected' ? (
+                    {status === 'connected' && !isChatOnly ? (
                         <div className="relative">
                             <Phone className="w-6 h-6 sm:w-7 sm:h-7 animate-pulse text-white" />
                             <span className="absolute -top-1 -right-1 w-3 h-3 sm:w-3.5 sm:h-3.5 bg-green-500 border-2 border-white rounded-full"></span>

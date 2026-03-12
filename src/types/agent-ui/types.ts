@@ -95,6 +95,7 @@ export interface BusinessConfig {
     };
     assistantId?: string;
     showFloatingWidget?: boolean;
+    showTextChatbot?: boolean;
   };
 }
 
