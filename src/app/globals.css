@@ -8,8 +8,12 @@
 
 @layer base {
   body {
-    @apply bg-[#0a1628] text-white selection:bg-[#CC0000] selection:text-white;
+    @apply bg-white text-slate-900 selection:bg-[#CC0000] selection:text-white;
     font-family: var(--font-dm-sans), sans-serif;
+  }
+  
+  .dark-theme-page {
+    @apply bg-[#0a1628] text-white;
   }
   
   h1, h2, h3, h4, h5, h6 {

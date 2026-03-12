@@ -37,7 +37,7 @@ export default function AgencyLandingPage() {
     };
 
     return (
-        <div className="min-h-screen bg-slate-950 overflow-x-hidden flex flex-col font-sans">
+        <div className="dark-theme-page min-h-screen bg-slate-950 overflow-x-hidden flex flex-col font-sans">
             {/* Top Navigation Bar / Branding */}
             <header className="fixed top-0 left-0 right-0 z-50 w-full py-4 px-6 lg:px-12 border-b border-white/5 bg-slate-950/70 backdrop-blur-xl transition-all duration-300 shadow-lg shadow-black/10">
                 <div className="container mx-auto flex items-center justify-between">
