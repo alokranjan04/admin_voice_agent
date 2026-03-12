@@ -6,6 +6,7 @@ import InfoPanel from '@/components/agent-ui/InfoPanel';
 import LiveVisualizer from '@/components/agent-ui/LiveVisualizer';
 import AdminSettings from '@/components/agent-ui/AdminSettings';
 import ChatWidget from '@/components/agent-ui/ChatWidget';
+import DialogflowWidget from '@/components/agent-ui/DialogflowWidget';
 import ErrorBoundary from '@/components/agent-ui/ErrorBoundary';
 // import { WelcomeForm } from '@/components/agent-ui/WelcomeForm'; // Not used in rendered JSX? functionality seems embedded or missing usage in App.tsx excerpt? 
 // Ah, App.tsx line 7 imported it, line 60 used state showWelcomeForm, but line 273 handleWelcomeFormSubmit defined.
@@ -545,14 +546,19 @@ const AgentInterface: React.FC<AgentInterfaceProps> = ({ initialOrgId, initialAg
                             )}
                         </div>
                     )}
-                    {!isWidget && config.vapi?.showFloatingWidget !== false && (
-                        <ChatWidget
-                            config={config}
-                            status={status}
-                            volume={volume}
-                            logs={logs}
-                            onToggleCall={handleToggleConnection}
-                        />
+                    
+                    {!isWidget && config.integrations?.dialogflow?.agentId ? (
+                        <DialogflowWidget config={config} />
+                    ) : (
+                        !isWidget && config.vapi?.showFloatingWidget !== false && (
+                            <ChatWidget
+                                config={config}
+                                status={status}
+                                volume={volume}
+                                logs={logs}
+                                onToggleCall={handleToggleConnection}
+                            />
+                        )
                     )}
                 </div>
             </div>
