@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Save, Check, Calendar as CalendarIcon, AlertTriangle, Shield, Zap, Copy } from 'lucide-react';
+import { X, Save, Check, Calendar as CalendarIcon, AlertTriangle, Shield, Zap, Copy, MessageSquare } from 'lucide-react';
 import { BusinessConfig } from '@/types/agent-ui/types';
 import { firebaseService } from '@/services/agent-ui/firebaseService';
 import { calendarService } from '@/services/agent-ui/calendarService';
@@ -432,6 +432,135 @@ const AdminSettings: React.FC<AdminSettingsProps> = ({
                                     <Shield className="w-3.5 h-3.5 mt-0.5 shrink-0" />
                                     <span><strong>Pro Tip:</strong> The widget is fully responsive. Ensure your container allows microphone access if using HTTPS.</span>
                                 </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* DIALOGFLOW CX CONFIGURATION */}
+                    <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+                        <div className="flex items-center gap-4 mb-5">
+                            <div className="w-12 h-12 bg-emerald-50 rounded-xl flex items-center justify-center text-emerald-600 ring-1 ring-emerald-100">
+                                <MessageSquare className="w-6 h-6" />
+                            </div>
+                            <div>
+                                <h4 className="font-bold text-slate-800">Dialogflow CX (Text Bot)</h4>
+                                <p className="text-xs text-slate-500">Enable Google Enterprise natural language routing</p>
+                            </div>
+                        </div>
+
+                        <div className="flex flex-col gap-4 p-4 bg-slate-50 rounded-xl border border-slate-100 shadow-inner">
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div>
+                                    <label className="block text-[11px] font-bold text-slate-700 mb-1.5 uppercase">Project ID</label>
+                                    <input
+                                        type="text"
+                                        placeholder="e.g. sutherland-voice-xxxxx"
+                                        className="w-full bg-white border border-slate-200 text-xs text-slate-700 rounded-lg px-3 py-2 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all placeholder:text-slate-300"
+                                        value={config.integrations?.dialogflow?.projectId || ""}
+                                        onChange={(e) => {
+                                            const newConfig = {
+                                                ...config,
+                                                integrations: {
+                                                    ...(config.integrations || {}),
+                                                    dialogflow: { ...(config.integrations?.dialogflow || {}), projectId: e.target.value }
+                                                }
+                                            };
+                                            setConfig(newConfig);
+                                            handleAutoSave(newConfig);
+                                        }}
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-[11px] font-bold text-slate-700 mb-1.5 uppercase">Location</label>
+                                    <input
+                                        type="text"
+                                        placeholder="e.g. global, us-central1"
+                                        className="w-full bg-white border border-slate-200 text-xs text-slate-700 rounded-lg px-3 py-2 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all placeholder:text-slate-300"
+                                        value={config.integrations?.dialogflow?.location || ""}
+                                        onChange={(e) => {
+                                            const newConfig = {
+                                                ...config,
+                                                integrations: {
+                                                    ...(config.integrations || {}),
+                                                    dialogflow: { ...(config.integrations?.dialogflow || {}), location: e.target.value }
+                                                }
+                                            };
+                                            setConfig(newConfig);
+                                            handleAutoSave(newConfig);
+                                        }}
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-[11px] font-bold text-slate-700 mb-1.5 uppercase">Agent ID</label>
+                                    <input
+                                        type="text"
+                                        placeholder="e.g. 1234abcd-56ef-78gh-90ij"
+                                        className="w-full bg-white border border-slate-200 text-xs text-slate-700 rounded-lg px-3 py-2 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all placeholder:text-slate-300"
+                                        value={config.integrations?.dialogflow?.agentId || ""}
+                                        onChange={(e) => {
+                                            const newConfig = {
+                                                ...config,
+                                                integrations: {
+                                                    ...(config.integrations || {}),
+                                                    dialogflow: { ...(config.integrations?.dialogflow || {}), agentId: e.target.value }
+                                                }
+                                            };
+                                            setConfig(newConfig);
+                                            handleAutoSave(newConfig);
+                                        }}
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* EMBED DIALOGFLOW CX */}
+                    <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+                        <div className="flex items-center gap-4 mb-5">
+                            <div className="w-12 h-12 bg-emerald-50 rounded-xl flex items-center justify-center text-emerald-600 ring-1 ring-emerald-100">
+                                <Copy className="w-6 h-6" />
+                            </div>
+                            <div>
+                                <h4 className="font-bold text-slate-800">Embed Dialogflow CX</h4>
+                                <p className="text-xs text-slate-500">Inject Google's official text chatbot widget</p>
+                            </div>
+                        </div>
+
+                        <div className="space-y-4">
+                            <div className="relative group">
+                                <textarea
+                                    readOnly
+                                    className="w-full bg-slate-900 text-slate-300 font-mono text-[9px] p-4 rounded-xl h-40 border border-slate-800 resize-none shadow-inner group-hover:border-slate-700 transition-colors"
+                                    value={`<!-- Google Dialogflow CX Web Integration -->
+<script src="https://www.gstatic.com/dialogflow-console/fast/df-messenger/prod/v1/df-messenger.js"></script>
+<df-messenger
+  location="${config.integrations?.dialogflow?.location || 'global'}"
+  project-id="${config.integrations?.dialogflow?.projectId || 'your-project-id'}"
+  agent-id="${config.integrations?.dialogflow?.agentId || 'your-agent-id'}"
+  language-code="en"
+  max-query-length="-1">
+  <df-messenger-chat-bubble chat-title="${config.metadata?.businessName || 'Chat'}"></df-messenger-chat-bubble>
+</df-messenger>
+<style>
+  df-messenger {
+    z-index: 999;
+    position: fixed;
+    bottom: 16px;
+    right: 16px;
+  }
+</style>`}
+                                />
+                                <button
+                                    onClick={() => {
+                                        const code = `<!-- Google Dialogflow CX Web Integration -->\n<script src="https://www.gstatic.com/dialogflow-console/fast/df-messenger/prod/v1/df-messenger.js"></script>\n<df-messenger\n  location="${config.integrations?.dialogflow?.location || 'global'}"\n  project-id="${config.integrations?.dialogflow?.projectId || 'your-project-id'}"\n  agent-id="${config.integrations?.dialogflow?.agentId || 'your-agent-id'}"\n  language-code="en"\n  max-query-length="-1">\n  <df-messenger-chat-bubble chat-title="${config.metadata?.businessName || 'Chat'}"></df-messenger-chat-bubble>\n</df-messenger>\n<style>\n  df-messenger {\n    z-index: 999;\n    position: fixed;\n    bottom: 16px;\n    right: 16px;\n  }\n</style>`;
+                                        navigator.clipboard.writeText(code);
+                                        alert("Dialogflow CX snippet copied!");
+                                    }}
+                                    className="absolute top-2 right-2 p-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg transition-all opacity-0 group-hover:opacity-100 active:scale-90"
+                                    title="Copy Dialogflow Script"
+                                >
+                                    <Copy className="w-4 h-4" />
+                                </button>
                             </div>
                         </div>
                     </div>

@@ -34,7 +34,12 @@ export interface Integrations {
   firebase?: {
     isConnected: boolean;
     projectId?: string;
-  }
+  };
+  dialogflow?: {
+    projectId?: string;
+    location?: string;
+    agentId?: string;
+  };
 }
 
 export interface BusinessConfig {
