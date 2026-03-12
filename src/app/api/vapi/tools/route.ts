@@ -60,8 +60,14 @@ export async function POST(req: NextRequest) {
                                 customerName: args.name || args.customerName || "Customer",
                                 customerEmail: args.email || args.customerEmail,
                                 customerPhone: args.phone || args.customerPhone,
+                                pickupAddress: args.pickupAddress,
                                 duration: args.duration
                             });
+                            // Mask technical fields so the AI doesn't read them out
+                            if (result && result.success) {
+                                delete result.eventId;
+                                delete result.eventLink;
+                            }
                             break;
 
                         case 'cancelEvent':

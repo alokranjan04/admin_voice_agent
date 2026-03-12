@@ -1,5 +1,11 @@
 import { getCalendarClient, getCalendarId, getBusinessHours, getAppointmentDuration } from '../lib/googleAuth';
 import nodemailer from 'nodemailer';
+import twilio from 'twilio';
+
+const twilioClient = twilio(
+    process.env.TWILIO_ACCOUNT_SID,
+    process.env.TWILIO_AUTH_TOKEN
+);
 
 /**
  * Safe date parser that treats YYYY-MM-DD strings as LOCAL time, not UTC.
@@ -249,6 +255,7 @@ export async function createEvent(details: {
     company?: string;
     industry?: string;
     problem?: string;
+    pickupAddress?: string;
 }) {
     try {
         const calendar = getCalendarClient();
@@ -382,6 +389,27 @@ export async function createEvent(details: {
                 console.error(`[Calendar ICS] Failed to send manual invite:`, err.message);
             }
         };
+
+        const sendSmsConfirmation = async (phone: string, text: string) => {
+            if (!phone) return;
+            try {
+                const from = process.env.TWILIO_PHONE_NUMBER;
+                if (!from) {
+                    console.warn('[Twilio SMS] Missing TWILIO_PHONE_NUMBER, cannot send SMS.');
+                    return;
+                }
+                const cleanPhone = phone.startsWith('+') ? phone : `+${phone.replace(/\D/g, '')}`;
+                
+                await twilioClient.messages.create({
+                    body: text,
+                    from: from,
+                    to: cleanPhone
+                });
+                console.log(`[Twilio SMS] Confirmation sent to ${cleanPhone}`);
+            } catch (err: any) {
+                console.error(`[Twilio SMS] Failed to send SMS:`, err.message);
+            }
+        };
         // --- End of Manual ICS Helper ---
 
 
@@ -392,8 +420,8 @@ export async function createEvent(details: {
             description: `
 Service: ${details.service || 'General Appointment'}
 Customer: ${finalName}
-${details.customerEmail ? `Email: ${details.customerEmail}` : ''}
 ${details.customerPhone ? `Phone: ${details.customerPhone}` : ''}
+${details.pickupAddress ? `Pickup Address: ${details.pickupAddress}` : ''}
 ${details.company ? `Company: ${details.company}` : ''}
 ${details.industry ? `Industry: ${details.industry}` : ''}
 ${details.problem ? `Problem to solve: ${details.problem}` : ''}
@@ -428,6 +456,13 @@ ${details.problem ? `Problem to solve: ${details.problem}` : ''}
                 requestBody: FinalEvent,
                 sendUpdates: shouldInvite ? 'all' : 'none'
             });
+
+            // Trigger SMS Confirmation
+            if (details.customerPhone) {
+                const dateStr = formatDateTime(startDateTime);
+                const smsText = `Confirmed: Your ${details.service || 'booking'} is scheduled for ${dateStr}. Pickup Address: ${details.pickupAddress || 'To be confirmed'}. Thank you!`;
+                await sendSmsConfirmation(details.customerPhone, smsText);
+            }
 
             return {
                 success: true,

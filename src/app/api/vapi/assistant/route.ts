@@ -42,8 +42,8 @@ export async function POST(req: Request) {
                         (config.vapi.userName ? `- Name: ${config.vapi.userName}\n` : '') +
                         (config.vapi.userEmail ? `- Email: ${config.vapi.userEmail}\n` : '') +
                         (config.vapi.userPhone ? `- Phone: ${config.vapi.userPhone}\n` : '') +
-                        `CONTACT RULE: If Name, Phone, or Email are missing from this context, politely ask the user for them before booking. If they are already provided, DO NOT ask for them again, but pass them directly to the createEvent tool.\nTITLE RULE: Always ask the user 'What is this booking for?' to use as the 'service' (event title).\nAVAILABILITY RULE: You MUST NEVER book an appointment (call createEvent) without FIRST checking if the time is open using 'checkAvailability' or 'findAvailableSlots'.`
-                        : "No specific user information provided yet. You MUST ask the user for their Name, Email, and Phone before booking the appointment.\nTITLE RULE: Always ask the user 'What is this booking for?' to use as the 'service' (event title).\nAVAILABILITY RULE: You MUST NEVER book an appointment (call createEvent) without FIRST checking if the time is open using 'checkAvailability' or 'findAvailableSlots'."
+                        `CONTACT RULE: DO NOT ask for or confirm the user's email address. You MUST ask for the car pickup address. You MUST confirm the user's phone number character-by-character (e.g., 'So that's plus one, eight, two...') before booking.\nTERMINOLOGY RULE: Refer to the appointment time as 'Pickup Time'.\nTITLE RULE: Always ask the user 'What is this booking for?' to use as the 'service' (event title).\nAVAILABILITY RULE: You MUST NEVER book an appointment without FIRST checking availability.`
+                        : "You MUST ask the user for their Name and Phone number. DO NOT ask for their email. You MUST ask for the car pickup address. You MUST confirm the phone number character-by-character.\nTERMINOLOGY RULE: Refer to the appointment time as 'Pickup Time'.\nTITLE RULE: Always ask the user 'What is this booking for?' to use as the 'service' (event title).\nAVAILABILITY RULE: You MUST NEVER book an appointment without FIRST checking availability."
                         }`
                 }
             ],
@@ -149,10 +149,11 @@ export async function POST(req: Request) {
                                 time: { type: "string", description: "Time in HH:MM format (24-hour)" },
                                 service: { type: "string", description: "Type of service" },
                                 customerName: { type: "string", description: "Customer name" },
-                                customerEmail: { type: "string", description: "Customer email. If provided in USER CONTEXT, you MUST pass it exactly without asking the user." },
-                                customerPhone: { type: "string", description: "Customer phone. If provided in USER CONTEXT, you MUST pass it exactly without asking the user." }
+                                customerEmail: { type: "string", description: "Customer email (SKIP - do not ask)" },
+                                customerPhone: { type: "string", description: "Customer phone (MUST confirm char-by-char)" },
+                                pickupAddress: { type: "string", description: "Car pickup address" }
                             },
-                            required: ["date", "time", "customerName", "service"]
+                            required: ["date", "time", "customerName", "service", "customerPhone", "pickupAddress"]
                         }
                     }
                 },
