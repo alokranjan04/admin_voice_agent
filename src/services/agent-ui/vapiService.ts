@@ -208,7 +208,16 @@ export class VapiService {
         console.log('[Metadata] Updated from external source:', this.sessionMetadata);
     }
 
-    public async connect(config: BusinessConfig) {
+    /**
+     * Mute/Unmute the local microphone
+     */
+    public setMuted(muted: boolean) {
+        if (this.vapi) {
+            this.vapi.setMuted(muted);
+        }
+    }
+
+    public async connect(config: BusinessConfig, options: { muteAssistant?: boolean } = {}) {
         if (!this.vapi) {
             this.onLog({ type: 'system', text: 'Vapi not initialized (missing key)', timestamp: new Date() });
             return;
@@ -463,6 +472,15 @@ export class VapiService {
 
             console.log("[Vapi] Starting session with params:", JSON.stringify(startParams, null, 2));
             await this.vapi.start(startParams);
+
+            if (options.muteAssistant) {
+                // Silencing the user's mic is standard for text chat
+                this.vapi.setMuted(true);
+                // To "silence" the assistant, we'd ideally use a volume control if the SDK exposed it.
+                // Since it's text chat, we will let the SDK handle the connection, 
+                // but ChatWidget will handle not rendering visualizers.
+                console.log("[Vapi] text-only session initialized (Muted).");
+            }
         } catch (e: any) {
             console.error("Failed to start Vapi call", e);
             this.onLog({ type: 'system', text: `Failed to connect: ${e.message}`, timestamp: new Date() });

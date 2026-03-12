@@ -17,7 +17,7 @@ interface ChatWidgetProps {
 
 const ChatWidget: React.FC<ChatWidgetProps> = ({ config, status, volume, logs, onToggleCall, overrideWidgetType }) => {
     const [isExpanded, setIsExpanded] = useState(false);
-    const [showWelcomeForm, setShowWelcomeForm] = useState(false); // Disabled as per user request
+    const [showWelcomeForm, setShowWelcomeForm] = useState(false);
     const [userDetails, setUserDetails] = useState<{ name: string; phone: string; email?: string } | null>(null);
     const [textInput, setTextInput] = useState('');
     const logsEndRef = useRef<HTMLDivElement>(null);
@@ -85,8 +85,8 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ config, status, volume, logs, o
             {/* Expanded Chat Window */}
             {isExpanded && (
                 <div className="mb-0 sm:mb-4 w-screen h-screen sm:w-[360px] md:w-[400px] sm:h-[520px] md:h-[600px] sm:max-h-[80vh] bg-white sm:rounded-2xl shadow-2xl border-t sm:border border-slate-200 flex flex-col overflow-hidden animate-in slide-in-from-bottom-4 duration-300">
-                    {/* Show Welcome Form on First Expansion */}
-                    {showWelcomeForm ? (
+                    {/* Show Welcome Form on First Expansion (Strictly disabled for Chat Mode) */}
+                    {showWelcomeForm && !isChatOnly ? (
                         <div className="h-full flex flex-col">
                             {/* Header */}
                             <div className="bg-slate-900 text-white p-4 pt-safe flex justify-between items-center">
@@ -132,7 +132,7 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ config, status, volume, logs, o
                                                 {status === 'connected' && !isChatOnly ? 'Live Now' : 'Online'}
                                             </span>
                                         </div>
-                                        {userDetails && (
+                                        {userDetails && !isChatOnly && (
                                             <p className="text-[10px] text-slate-400 mt-0.5 truncate">
                                                 Welcome, {userDetails.name}!
                                             </p>

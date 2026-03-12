@@ -13,15 +13,15 @@ interface AdminSettingsProps {
     onConnectCalendar: () => void;
     authError?: string | null;
     googleClientId: string;
+    config: BusinessConfig;
+    setConfig: React.Dispatch<React.SetStateAction<BusinessConfig>>;
 }
 
 const AdminSettings: React.FC<AdminSettingsProps> = ({
-    isOpen, onClose, isCalendarAuth, connectedEmail, onConnectCalendar, authError, googleClientId
+    isOpen, onClose, isCalendarAuth, connectedEmail, onConnectCalendar, authError, googleClientId, config, setConfig
 }) => {
     const [loading, setLoading] = useState(false);
     const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
-    // We maintain a local config state to handle the manual token persistence logic
-    const [config, setConfig] = useState<BusinessConfig>(DEFAULT_BUSINESS_CONFIG);
     const [origin, setOrigin] = useState('');
     const [orgId, setOrgId] = useState('YOUR_ORG_ID');
     const [agentId, setAgentId] = useState('YOUR_AGENT_ID');
@@ -34,15 +34,7 @@ const AdminSettings: React.FC<AdminSettingsProps> = ({
             setOrgId(localStorage.getItem('tenant_org_id') || 'YOUR_ORG_ID');
             setAgentId(localStorage.getItem('tenant_agent_id') || 'YOUR_AGENT_ID');
         }
-
-        if (isOpen) {
-            setLoading(true);
-            firebaseService.getAgentConfig().then(remoteConfig => {
-                if (remoteConfig) setConfig(remoteConfig);
-                setLoading(false);
-            });
-        }
-    }, [isOpen]);
+    }, []);
 
     const handleAutoSave = async (newConfig: BusinessConfig) => {
         setSaveStatus('saving');

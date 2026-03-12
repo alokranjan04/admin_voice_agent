@@ -303,7 +303,7 @@ const AgentInterface: React.FC<AgentInterfaceProps> = ({ initialOrgId, initialAg
     }, [logs]);
 
     // Handlers
-    const handleToggleConnection = async () => {
+    const handleToggleConnection = async (options: { silent?: boolean } = {}) => {
         if (status === 'connected' || status === 'connecting') {
             voiceService.disconnect();
         } else {
@@ -313,7 +313,7 @@ const AgentInterface: React.FC<AgentInterfaceProps> = ({ initialOrgId, initialAg
                 setError('API Key is missing (NEXT_PUBLIC_VAPI_PUBLIC_KEY).');
                 return;
             }
-            await voiceService.connect(config);
+            await voiceService.connect(config, { muteAssistant: options.silent });
         }
     };
 
@@ -372,6 +372,8 @@ const AgentInterface: React.FC<AgentInterfaceProps> = ({ initialOrgId, initialAg
                     onConnectCalendar={handleCalendarAuth}
                     authError={authError}
                     googleClientId={googleClientId}
+                    config={config}
+                    setConfig={setConfig}
                 />
 
                 {/* Left Sidebar: Business Information */}
@@ -437,7 +439,7 @@ const AgentInterface: React.FC<AgentInterfaceProps> = ({ initialOrgId, initialAg
                             <div className="mt-8 flex flex-col items-center gap-4 w-full">
 
                                 <button
-                                    onClick={handleToggleConnection}
+                                    onClick={() => handleToggleConnection()}
                                     disabled={status === 'connecting'}
                                     className={`
                                 flex items-center justify-center gap-3 px-8 py-4 rounded-full font-bold text-lg shadow-lg transition-all transform hover:scale-105 active:scale-95 min-w-[200px]
@@ -563,7 +565,7 @@ const AgentInterface: React.FC<AgentInterfaceProps> = ({ initialOrgId, initialAg
                             status={status}
                             volume={volume}
                             logs={logs}
-                            onToggleCall={handleToggleConnection}
+                            onToggleCall={() => handleToggleConnection({ silent: true })}
                             overrideWidgetType="chat"
                         />
                     )}
