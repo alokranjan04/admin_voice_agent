@@ -12,7 +12,7 @@ import { createVapiAssistant } from '@/services/vapiService';
 import { researchBusiness } from '@/services/researchService';
 import { getTemplateByIndustry } from '@/services/templateService';
 import { AgentConfiguration, INITIAL_CONFIG, DeliveryModeType, SUPPORTED_INDUSTRIES, BrandingConfig, DEFAULT_BRANDING, Lead } from '@/types';
-import { Wand2, Plus, Trash2, Loader2, AlertCircle, Copy, Check, Database, Calendar, Rocket, Braces, Search, Upload, Palette, Image as ImageIcon, Phone, PhoneCall, Link, Globe, ShieldCheck, Settings2, Users } from 'lucide-react';
+import { Wand2, Plus, Trash2, Loader2, AlertCircle, Copy, Check, Database, Calendar, Rocket, Braces, Search, Upload, Palette, Image as ImageIcon, Phone, PhoneCall, Link, Globe, ShieldCheck, Settings2, Users, MessageSquare } from 'lucide-react';
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { loadStripe } from '@stripe/stripe-js';
 
@@ -174,8 +174,9 @@ export default function AdminPage() {
     const [isSaving, setIsSaving] = useState(false);
     const [isResearching, setIsResearching] = useState(false);
     const [isLaunching, setIsLaunching] = useState(false);
-    const [copySuccess, setCopySuccess] = useState(false);
     const [showEmbedCode, setShowEmbedCode] = useState(false);
+    const [copyVoiceSuccess, setCopyVoiceSuccess] = useState(false);
+    const [copyTextSuccess, setCopyTextSuccess] = useState(false);
     const [agents, setAgents] = useState<any[]>([]);
     const [activeAgentId, setActiveAgentId] = useState<string | null>(null);
     const [branding, setBranding] = useState<BrandingConfig>(DEFAULT_BRANDING);
@@ -705,18 +706,90 @@ export default function AdminPage() {
 </script>
 <script src="${clientBaseUrl}/voice-widget.js"></script>`;
                                     navigator.clipboard.writeText(embedCode);
-                                    setCopySuccess(true);
-                                    setTimeout(() => setCopySuccess(false), 2000);
+                                    setCopyVoiceSuccess(true);
+                                    setTimeout(() => setCopyVoiceSuccess(false), 2000);
                                 }}
                                 className="w-full px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-lg transition-colors flex items-center justify-center gap-2"
                             >
-                                {copySuccess ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-                                {copySuccess ? 'Copied to Clipboard!' : 'Copy Embed Code'}
+                                {copyVoiceSuccess ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                                {copyVoiceSuccess ? 'Copied to Clipboard!' : 'Copy Embed Code'}
                             </button>
                         </div>
                         <p className="text-xs text-slate-500 italic">
                             💡 Paste this code before the closing &lt;/body&gt; tag of your website.
                         </p>
+                    </div>
+
+                    {/* Embed Text Bot Code */}
+                    <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-6 space-y-4">
+                        <div className="flex items-center gap-3 mb-2">
+                            <MessageSquare className="w-5 h-5 text-indigo-400" />
+                            <h3 className="text-lg font-bold text-white">Embed Text Chatbot on Your Website</h3>
+                        </div>
+                        <p className="text-slate-400 text-sm">
+                            Need a text-only chatbot instead? Use this configuration to load the AI in chat mode.
+                        </p>
+                        <div className="bg-slate-900/50 border border-slate-600 rounded-lg p-4 space-y-3">
+                            <code className="block text-emerald-400 font-mono text-xs break-all whitespace-pre-wrap">
+                                {(() => {
+                                    const orgId = user ? getOrgId(user) : 'anonymous_org';
+                                    const safeName = config.metadata.businessName.trim().toLowerCase().replace(/[^a-z0-9]+/g, '_');
+                                    const agentId = activeAgentId || `agent_${safeName}`;
+                                    const clientBaseUrl = config.vapi.clientUrl || (typeof window !== 'undefined' ? window.location.origin : '');
+                                    return `<!-- Text AI Widget -->
+<script>
+  window.VOICE_WIDGET_CONFIG = {
+    vapiPublicKey: "${process.env.NEXT_PUBLIC_VAPI_PUBLIC_KEY || 'your-vapi-public-key'}",
+    assistantId: "${vapiAssistantId || 'your-assistant-id'}",
+    orgId: "${orgId}",
+    agentId: "${agentId}",
+    position: "bottom-right",
+    primaryColor: "#667eea",
+    secondaryColor: "#764ba2",
+    buttonConfig: {
+      idle: { icon: "chat" },
+      loading: {},
+      active: {}
+    }
+  };
+</script>
+<script src="${clientBaseUrl}/voice-widget.js"></script>`;
+                                })()}
+                            </code>
+                            <button
+                                onClick={() => {
+                                    const orgId = user ? getOrgId(user) : 'anonymous_org';
+                                    const safeName = config.metadata.businessName.trim().toLowerCase().replace(/[^a-z0-9]+/g, '_');
+                                    const agentId = activeAgentId || `agent_${safeName}`;
+                                    const clientBaseUrl = config.vapi.clientUrl || (typeof window !== 'undefined' ? window.location.origin : '');
+                                    const embedCode = `<!-- Text AI Widget -->
+<script>
+  window.VOICE_WIDGET_CONFIG = {
+    vapiPublicKey: "${process.env.NEXT_PUBLIC_VAPI_PUBLIC_KEY || 'your-vapi-public-key'}",
+    assistantId: "${vapiAssistantId || 'your-assistant-id'}",
+    orgId: "${orgId}",
+    agentId: "${agentId}",
+    position: "bottom-right",
+    primaryColor: "#667eea",
+    secondaryColor: "#764ba2",
+    buttonConfig: {
+      idle: { icon: "chat" },
+      loading: {},
+      active: {}
+    }
+  };
+</script>
+<script src="${clientBaseUrl}/voice-widget.js"></script>`;
+                                    navigator.clipboard.writeText(embedCode);
+                                    setCopyTextSuccess(true);
+                                    setTimeout(() => setCopyTextSuccess(false), 2000);
+                                }}
+                                className="w-full px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-lg transition-colors flex items-center justify-center gap-2"
+                            >
+                                {copyTextSuccess ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                                {copyTextSuccess ? 'Copied to Clipboard!' : 'Copy Text Bot Code'}
+                            </button>
+                        </div>
                     </div>
 
                     <div className="flex flex-wrap items-center justify-center gap-4 pt-4">
