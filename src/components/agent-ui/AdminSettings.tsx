@@ -358,14 +358,31 @@ const AdminSettings: React.FC<AdminSettingsProps> = ({
                                     <p className="text-[13px] font-bold text-slate-700">Floating Voice Bot</p>
                                     <p className="text-[11px] text-slate-500">Show chat bubble on host website</p>
                                 </div>
-                                <button
-                                    onClick={handleToggleWidget}
-                                    className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ring-offset-2 focus:ring-2 focus:ring-teal-500 ${config.vapi?.showFloatingWidget !== false ? 'bg-teal-600' : 'bg-slate-300'}`}
-                                >
-                                    <span
-                                        className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out ${config.vapi?.showFloatingWidget !== false ? 'translate-x-5' : 'translate-x-0'}`}
+                                <label className="relative inline-flex items-center cursor-pointer">
+                                    <input
+                                        type="checkbox"
+                                        className="sr-only peer"
+                                        checked={config.vapi?.showFloatingWidget !== false}
+                                        onChange={(e) => {
+                                            const newConfig = {
+                                                ...config,
+                                                vapi: {
+                                                    ...(config.vapi || {}),
+                                                    showFloatingWidget: e.target.checked
+                                                }
+                                            };
+                                            setConfig(newConfig);
+                                            handleAutoSave(newConfig);
+                                            // Handle persistence identical to how showTextChatbot does
+                                            if (e.target.checked) {
+                                                localStorage.removeItem('hide_floating_widget');
+                                            } else {
+                                                localStorage.setItem('hide_floating_widget', 'true');
+                                            }
+                                        }}
                                     />
-                                </button>
+                                    <div className={`w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer ${config.vapi?.showFloatingWidget !== false ? 'peer-checked:bg-teal-600' : ''} peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all shadow-inner md:hover:scale-105 active:scale-95 transition-transform`}></div>
+                                </label>
                             </div>
                         </div>
                     </div>

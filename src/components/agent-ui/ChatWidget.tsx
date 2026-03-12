@@ -17,7 +17,7 @@ interface ChatWidgetProps {
 
 const ChatWidget: React.FC<ChatWidgetProps> = ({ config, status, volume, logs, onToggleCall, overrideWidgetType }) => {
     const [isExpanded, setIsExpanded] = useState(false);
-    const [showWelcomeForm, setShowWelcomeForm] = useState(true);
+    const [showWelcomeForm, setShowWelcomeForm] = useState(false); // Disabled as per user request
     const [userDetails, setUserDetails] = useState<{ name: string; phone: string; email?: string } | null>(null);
     const [textInput, setTextInput] = useState('');
     const logsEndRef = useRef<HTMLDivElement>(null);
