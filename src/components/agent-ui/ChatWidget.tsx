@@ -152,17 +152,42 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ config, status, volume, logs, o
 
                                 <div className="text-center space-y-2 relative z-10">
                                     <h2 className="text-xl font-bold text-slate-800">
-                                        {status === 'connected' ? "I'm Listening..." : "Ready to speak?"}
+                                        {status === 'connected' ? "In Progress" : "Ready to start?"}
                                     </h2>
                                     <p className="text-slate-500 text-sm max-w-[200px] mx-auto">
                                         {status === 'connected' 
-                                            ? "Speak now to interact with your AI assistant." 
-                                            : "Start a call to speak with our AI agent about bookings and services."}
+                                            ? "I'm listening to your request." 
+                                            : "Start a call to speak with our AI agent."}
                                     </p>
                                 </div>
 
+                                {/* Live Transcript Area */}
+                                <div className="w-full flex-1 mt-6 overflow-hidden flex flex-col min-h-0 bg-white/40 backdrop-blur-sm rounded-2xl border border-white/50 shadow-inner">
+                                    <div className="flex-1 overflow-y-auto p-4 space-y-3 scrollbar-hide">
+                                        {logs.length === 0 ? (
+                                            <div className="h-full flex flex-col items-center justify-center opacity-30">
+                                                <Terminal className="w-8 h-8 mb-2" />
+                                                <p className="text-[10px] font-medium uppercase tracking-widest">Transcript Ready</p>
+                                            </div>
+                                        ) : (
+                                            logs.filter(l => l.type === 'user' || l.type === 'model').map((log, index) => (
+                                                <div key={index} className={`flex flex-col ${log.type === 'user' ? 'items-end' : 'items-start'}`}>
+                                                    <div className={`max-w-[85%] p-3 rounded-2xl text-xs font-medium shadow-sm leading-relaxed ${
+                                                        log.type === 'user' 
+                                                        ? 'bg-teal-600 text-white rounded-tr-none' 
+                                                        : 'bg-white text-slate-700 rounded-tl-none border border-slate-100'
+                                                    }`}>
+                                                        {log.text}
+                                                    </div>
+                                                </div>
+                                            ))
+                                        )}
+                                        <div ref={logsEndRef} />
+                                    </div>
+                                </div>
+
                                 {status === 'connected' && (
-                                    <div className="w-full max-w-[240px] mt-8 bg-white/80 backdrop-blur-sm rounded-2xl p-4 shadow-sm relative z-10 border border-white">
+                                    <div className="w-full max-w-[240px] mt-4 bg-white/80 backdrop-blur-sm rounded-2xl p-3 shadow-sm relative z-10 border border-white">
                                         <LiveVisualizer volume={volume} isActive={true} />
                                     </div>
                                 )}

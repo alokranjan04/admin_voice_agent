@@ -232,10 +232,18 @@ export default function AdminPage() {
     const handleSaveBranding = async () => {
         setIsBrandingLoading(true);
         try {
+            const orgId = getOrgId(user);
+            // 1. Save branding settings
             await saveBranding(branding);
-            alert("Branding settings saved for your organization!");
+            
+            // 2. Also save current configuration to persist avatarUrl and metadata
+            if (activeAgentId || !isDemoMode) {
+                await saveConfiguration(config);
+            }
+            
+            alert("All settings including Branding and Bot Face have been saved!");
         } catch (error: any) {
-            alert("Error saving branding: " + error.message);
+            alert("Error saving: " + error.message);
         } finally {
             setIsBrandingLoading(false);
         }
@@ -982,6 +990,40 @@ export default function AdminPage() {
                         <p className="text-xs text-slate-500">This will add a "Visit Website" button on the success screen</p>
                     </div>
 
+                    <div className="space-y-4 p-4 bg-indigo-50 border border-indigo-100 rounded-xl mt-6">
+                        <div className="flex items-center gap-2">
+                             <div className="p-2 bg-indigo-600 rounded-lg shadow-md shadow-indigo-200">
+                                <ImageIcon className="w-5 h-5 text-white" />
+                             </div>
+                             <h3 className="text-lg font-bold text-slate-800">Bot Personalization (Face of Agent)</h3>
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-sm font-semibold text-slate-700">Bot Avatar Image URL</label>
+                            <div className="flex gap-4 items-start">
+                                <div className="flex-1 relative">
+                                    <ImageIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                                    <input
+                                        type="text"
+                                        className="w-full pl-9 pr-4 py-3 text-sm border border-slate-300 rounded-xl focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-all shadow-sm bg-white"
+                                        placeholder="https://example.com/avatar.png"
+                                        value={config.vapi.avatarUrl || ""}
+                                        onChange={e => setConfig(prev => ({ ...prev, vapi: { ...prev.vapi, avatarUrl: e.target.value } }))}
+                                    />
+                                    <p className="text-[10px] text-slate-500 italic mt-2 ml-1">
+                                        Tip: Go to Google Images, find a professional face, right-click and "Copy Image Address", then paste it here.
+                                    </p>
+                                </div>
+                                <div className="w-20 h-20 rounded-2xl border-2 border-indigo-200 overflow-hidden shadow-lg bg-white flex-shrink-0 flex items-center justify-center">
+                                    {config.vapi.avatarUrl ? (
+                                        <img src={config.vapi.avatarUrl} alt="Preview" className="w-full h-full object-cover" />
+                                    ) : (
+                                        <Bot className="w-10 h-10 text-slate-300" />
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <div className="mt-8 bg-slate-50 border border-slate-200 rounded-xl p-6">
                         <div className="flex items-center gap-2 mb-6">
                             <Palette className="w-5 h-5 text-indigo-600" />
@@ -1168,27 +1210,6 @@ export default function AdminPage() {
                                         <option key={opt.id} value={opt.id}>{opt.name}</option>
                                     ))}
                                 </select>
-                            </div>
-                            <div className="space-y-1 col-span-2">
-                                <label className="text-xs font-bold text-slate-600 uppercase">Bot Avatar Image URL</label>
-                                <div className="flex gap-2">
-                                    <div className="relative flex-1">
-                                        <ImageIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                                        <input
-                                            type="text"
-                                            className="w-full pl-9 pr-4 py-2 text-sm border border-slate-300 rounded focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-colors bg-white font-mono"
-                                            placeholder="https://example.com/avatar.png"
-                                            value={config.vapi.avatarUrl || ""}
-                                            onChange={e => setConfig(prev => ({ ...prev, vapi: { ...prev.vapi, avatarUrl: e.target.value } }))}
-                                        />
-                                    </div>
-                                    {config.vapi.avatarUrl && (
-                                        <div className="w-10 h-10 rounded border overflow-hidden flex-shrink-0 bg-slate-100">
-                                            <img src={config.vapi.avatarUrl} alt="Preview" className="w-full h-full object-cover" />
-                                        </div>
-                                    )}
-                                </div>
-                                <p className="text-[10px] text-slate-500 italic mt-1">Recommended: Square image of a person (approx 400x400px)</p>
                             </div>
                         </div>
 
