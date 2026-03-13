@@ -17,9 +17,8 @@ interface ChatWidgetProps {
 
 const ChatWidget: React.FC<ChatWidgetProps> = ({ config, status, volume, logs, onToggleCall, overrideWidgetType }) => {
     const [isExpanded, setIsExpanded] = useState(false);
-    const [showWelcomeForm, setShowWelcomeForm] = useState(false);
+    const [showWelcomeForm, setShowWelcomeForm] = useState(true);
     const [userDetails, setUserDetails] = useState<{ name: string; phone: string; email?: string } | null>(null);
-    const [textInput, setTextInput] = useState('');
     const logsEndRef = useRef<HTMLDivElement>(null);
 
     const isChatOnly = overrideWidgetType === 'chat';
@@ -63,22 +62,6 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ config, status, volume, logs, o
         window.parent.postMessage({ type: 'VOICE_WIDGET_RESIZE', isExpanded }, '*');
     }, [logs, isExpanded]);
 
-    const handleSendMessage = (e?: React.FormEvent) => {
-        e?.preventDefault();
-        if (textInput.trim()) {
-            // If not connected, start a call first
-            if (status === 'disconnected') {
-                onToggleCall(); // Start the call
-                // Wait a moment for the call to connect, then send the message
-                setTimeout(() => {
-                    voiceService.sendTextMessage(textInput.trim());
-                }, 2000);
-            } else {
-                voiceService.sendTextMessage(textInput.trim());
-            }
-            setTextInput('');
-        }
-    };
 
     return (
         <div className={`fixed bottom-0 ${isChatOnly ? 'right-[4.5rem] sm:right-28' : 'right-0 sm:right-6'} sm:bottom-6 z-[9999] flex flex-col items-end pointer-events-auto transition-all`}>
@@ -110,10 +93,11 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ config, status, volume, logs, o
                             </div>
                             {/* Welcome Form Content */}
                             <div className="flex-1 overflow-y-auto bg-white">
-                                <WelcomeForm
-                                    onSubmit={handleWelcomeFormSubmit}
-                                    businessName={config.metadata?.businessName}
-                                />
+                                    <WelcomeForm
+                                        onSubmit={handleWelcomeFormSubmit}
+                                        businessName={config.metadata?.businessName}
+                                        avatarUrl={config.vapi?.avatarUrl}
+                                    />
                             </div>
                         </div>
                     ) : (
@@ -121,22 +105,23 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ config, status, volume, logs, o
                             {/* Header */}
                             <div className="bg-slate-900 text-white p-4 pt-safe flex justify-between items-center">
                                 <div className="flex items-center gap-3 flex-1 min-w-0">
-                                    <div className="w-8 h-8 bg-teal-500 rounded-lg flex items-center justify-center flex-shrink-0">
-                                        <Bot className="w-5 h-5 text-white" />
-                                    </div>
+                                    {config.vapi?.avatarUrl ? (
+                                        <div className="w-10 h-10 rounded-full border-2 border-slate-700 overflow-hidden bg-slate-800 flex-shrink-0">
+                                            <img src={config.vapi.avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+                                        </div>
+                                    ) : (
+                                        <div className="w-10 h-10 bg-teal-500 rounded-full flex items-center justify-center flex-shrink-0">
+                                            <Bot className="w-6 h-6 text-white" />
+                                        </div>
+                                    )}
                                     <div className="flex-1 min-w-0">
                                         <h3 className="font-bold text-sm leading-tight truncate">{config.metadata.businessName} Assistant</h3>
                                         <div className="flex items-center gap-1.5">
-                                            <span className={`w-1.5 h-1.5 rounded-full ${status === 'connected' && !isChatOnly ? 'bg-green-500 animate-pulse' : 'bg-slate-400'}`}></span>
+                                            <span className={`w-1.5 h-1.5 rounded-full ${status === 'connected' ? 'bg-green-500 animate-pulse' : 'bg-slate-400'}`}></span>
                                             <span className="text-[10px] text-slate-400 uppercase font-bold tracking-wider">
-                                                {status === 'connected' && !isChatOnly ? 'Live Now' : 'Online'}
+                                                {status === 'connected' ? 'Live Now' : 'Online'}
                                             </span>
                                         </div>
-                                        {userDetails && !isChatOnly && (
-                                            <p className="text-[10px] text-slate-400 mt-0.5 truncate">
-                                                Welcome, {userDetails.name}!
-                                            </p>
-                                        )}
                                     </div>
                                 </div>
                                 <button
@@ -147,120 +132,66 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ config, status, volume, logs, o
                                 </button>
                             </div>
 
-                            {/* Live Visualizer (Only when connected & not in text-only mode) */}
-                            {status === 'connected' && !isChatOnly && (
-                                <div className="bg-slate-50 border-b border-slate-100 p-4">
-                                    <LiveVisualizer volume={volume} isActive={true} />
-                                </div>
-                            )}
+                            {/* Voice-Only Content */}
+                            <div className="flex-1 flex flex-col items-center justify-center p-8 bg-slate-50 relative overflow-hidden">
+                                {/* Decorative background element */}
+                                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-teal-500/5 rounded-full blur-3xl pointer-events-none"></div>
 
-                            {/* Chat Logs */}
-                            <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50/30">
-                                {logs.length === 0 && (
-                                    <div className="h-full flex flex-col items-center justify-center text-center p-6 space-y-2">
-                                        <div className="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center text-slate-400 mb-2">
-                                            <MessageSquare className="w-6 h-6" />
-                                        </div>
-                                        <p className="text-sm font-medium text-slate-600">Welcome to {config.metadata.businessName}!</p>
-                                        <p className="text-xs text-slate-400">
-                                            {isChatOnly ? "Type a message below to begin." : "Start a call or type a message below to begin."}
-                                        </p>
+                                {config.vapi?.avatarUrl ? (
+                                    <div className={`w-32 h-32 rounded-full border-4 ${status === 'connected' ? 'border-teal-500' : 'border-slate-200'} overflow-hidden shadow-2xl mb-6 relative z-10 transition-all duration-300`}>
+                                        <img src={config.vapi.avatarUrl} alt="Bot Avatar" className="w-full h-full object-cover" />
+                                        {status === 'connected' && (
+                                            <div className="absolute inset-0 bg-teal-500/10 animate-pulse"></div>
+                                        )}
+                                    </div>
+                                ) : (
+                                    <div className={`w-32 h-32 rounded-full bg-gradient-to-br from-teal-500 to-teal-600 flex items-center justify-center shadow-2xl mb-6 relative z-10 transition-all duration-300 ${status === 'connected' ? 'ring-8 ring-teal-500/20' : ''}`}>
+                                        <Bot className="w-16 h-16 text-white" />
                                     </div>
                                 )}
-                                {logs.map((log, index) => (
-                                    <div
-                                        key={index}
-                                        className={`flex ${log.type === 'user' ? 'justify-end' : 'justify-start'} animate-in fade-in duration-200`}
-                                    >
-                                        <div className={`max-w-[85%] rounded-2xl p-3 text-sm ${log.type === 'user'
-                                            ? `${isChatOnly ? 'bg-indigo-600 shadow-indigo-100' : 'bg-teal-600 shadow-teal-100'} text-white rounded-tr-none shadow-md`
-                                            : log.type === 'model'
-                                                ? 'bg-white text-slate-700 border border-slate-200 rounded-tl-none shadow-sm'
-                                                : 'bg-slate-100 text-slate-500 italic text-[10px] py-1 px-3 rounded-full mx-auto'
-                                            }`}>
-                                            {log.type !== 'system' && log.type !== 'tool' && (
-                                                <div className="flex items-center gap-1.5 mb-1 opacity-70">
-                                                    {log.type === 'user' ? <User className="w-3 h-3" /> : <Bot className="w-3 h-3" />}
-                                                    <span className="text-[10px] font-bold uppercase tracking-widest">
-                                                        {log.type === 'user' ? 'You' : 'Agent'}
-                                                    </span>
-                                                </div>
-                                            )}
-                                            {log.type === 'model' ? (
-                                                <div className="leading-relaxed">
-                                                    {renderFormattedMessage(formatMessage(log.text))}
-                                                </div>
-                                            ) : (
-                                                <p className="leading-relaxed">{log.text}</p>
-                                            )}
-                                        </div>
+
+                                <div className="text-center space-y-2 relative z-10">
+                                    <h2 className="text-xl font-bold text-slate-800">
+                                        {status === 'connected' ? "I'm Listening..." : "Ready to speak?"}
+                                    </h2>
+                                    <p className="text-slate-500 text-sm max-w-[200px] mx-auto">
+                                        {status === 'connected' 
+                                            ? "Speak now to interact with your AI assistant." 
+                                            : "Start a call to speak with our AI agent about bookings and services."}
+                                    </p>
+                                </div>
+
+                                {status === 'connected' && (
+                                    <div className="w-full max-w-[240px] mt-8 bg-white/80 backdrop-blur-sm rounded-2xl p-4 shadow-sm relative z-10 border border-white">
+                                        <LiveVisualizer volume={volume} isActive={true} />
                                     </div>
-                                ))}
-                                <div ref={logsEndRef} />
+                                )}
                             </div>
 
-                            {/* Footer / Input */}
-                            <div className="p-4 pb-safe bg-white border-t border-slate-100 space-y-3">
-                                {/* Quick Actions */}
-                                {textInput.length === 0 && (
-                                    <div className="flex gap-2 animate-in fade-in slide-in-from-bottom-2 duration-300">
-                                        <button
-                                            onClick={() => {
-                                                setTextInput("I want to check my booking service");
-                                                setTimeout(() => handleSendMessage(), 100);
-                                            }}
-                                            className="flex-1 py-2 px-3 bg-slate-50 border border-slate-200 rounded-xl text-[11px] font-semibold text-slate-600 hover:bg-slate-100 hover:border-slate-300 transition-all flex items-center justify-center gap-1.5 shadow-sm"
-                                        >
-                                            <Calendar className="w-3.5 h-3.5 text-indigo-500" />
-                                            Check booking
-                                        </button>
-                                        <button
-                                            onClick={() => {
-                                                setTextInput("I want to book a service");
-                                                setTimeout(() => handleSendMessage(), 100);
-                                            }}
-                                            className="flex-1 py-2 px-3 bg-slate-50 border border-slate-200 rounded-xl text-[11px] font-semibold text-slate-600 hover:bg-slate-100 hover:border-slate-300 transition-all flex items-center justify-center gap-1.5 shadow-sm"
-                                        >
-                                            <Wrench className="w-3.5 h-3.5 text-indigo-500" />
-                                            Book service
-                                        </button>
-                                    </div>
-                                )}
-                                <div className="flex items-center gap-2">
-                                    <form onSubmit={handleSendMessage} className="flex-1 relative">
-                                        <input
-                                            type="text"
-                                            placeholder="Type a message..."
-                                            className={`w-full pl-4 pr-10 py-2.5 bg-slate-100 border-none rounded-full text-sm focus:ring-2 ${isChatOnly ? 'focus:ring-indigo-500' : 'focus:ring-teal-500'} transition-all outline-none`}
-                                            value={textInput}
-                                            onChange={(e) => setTextInput(e.target.value)}
-                                        />
-                                        <button
-                                            type="submit"
-                                            disabled={!textInput.trim() || status === 'connecting'}
-                                            className={`absolute right-1 top-1 p-1.5 ${isChatOnly ? 'text-indigo-600 hover:bg-indigo-50' : 'text-teal-600 hover:bg-teal-50'} rounded-full disabled:opacity-30 disabled:hover:bg-transparent transition-all outline-none`}
-                                        >
-                                            {status === 'connecting' && isChatOnly ? <div className="w-4 h-4 border-2 border-indigo-600/30 border-t-indigo-600 rounded-full animate-spin" /> : <Send className="w-4 h-4" />}
-                                        </button>
-                                    </form>
-
-                                    {!isChatOnly && (
-                                        <button
-                                            onClick={onToggleCall}
-                                            disabled={status === 'connecting'}
-                                            className={`p-3 rounded-full shadow-lg transition-all transform hover:scale-110 active:scale-95 outline-none focus:ring-0 ${status === 'connected'
-                                                ? 'bg-rose-500 text-white shadow-rose-100'
-                                                : 'bg-teal-600 text-white shadow-teal-100'
-                                                }`}
-                                            title={status === 'connected' ? "End Call" : "Start Voice Call"}
-                                        >
-                                            {status === 'connected' ? <MicOff className="w-5 h-5" /> : status === 'connecting' ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <Bot className="w-5 h-5" />}
-                                        </button>
+                            {/* Footer / Call Toggle */}
+                            <div className="p-6 bg-white border-t border-slate-100 flex justify-center">
+                                <button
+                                    onClick={onToggleCall}
+                                    disabled={status === 'connecting'}
+                                    className={`w-full max-w-[240px] py-4 rounded-2xl shadow-xl transition-all transform hover:scale-105 active:scale-95 outline-none focus:ring-0 flex items-center justify-center gap-3 font-bold text-lg ${status === 'connected'
+                                        ? 'bg-rose-500 text-white shadow-rose-100 ring-rose-500/20'
+                                        : 'bg-teal-600 text-white shadow-teal-100 ring-teal-600/20'
+                                        }`}
+                                >
+                                    {status === 'connected' ? (
+                                        <>
+                                            <MicOff className="w-6 h-6" />
+                                            End Call
+                                        </>
+                                    ) : status === 'connecting' ? (
+                                        <div className="w-6 h-6 border-3 border-white/30 border-t-white rounded-full animate-spin" />
+                                    ) : (
+                                        <>
+                                            <Phone className="w-6 h-6" />
+                                            Start Call
+                                        </>
                                     )}
-                                </div>
-                                <p className="text-[10px] text-center text-slate-400">
-                                    Available 24/7 for your assistance.
-                                </p>
+                                </button>
                             </div>
                         </>
                     )}
@@ -273,13 +204,22 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ config, status, volume, logs, o
                     onClick={() => setIsExpanded(true)}
                     className={`group relative w-14 h-14 sm:w-16 sm:h-16 ${isChatOnly ? 'bg-indigo-600' : 'bg-teal-600'} text-white rounded-full shadow-2xl flex items-center justify-center transition-all transform hover:scale-110 active:scale-95 ${isChatOnly ? 'hover:bg-indigo-500 ring-indigo-600/20 focus:ring-indigo-600/40' : 'hover:bg-teal-500 ring-teal-600/20 focus:ring-teal-600/40'} border-4 border-white ring-4 outline-none focus:ring-4`}
                 >
-                    {status === 'connected' && !isChatOnly ? (
-                        <div className="relative">
-                            <Bot className="w-6 h-6 sm:w-7 sm:h-7 animate-pulse text-white" />
-                            <span className="absolute -top-1 -right-1 w-3 h-3 sm:w-3.5 sm:h-3.5 bg-green-500 border-2 border-white rounded-full"></span>
+                    {config.vapi?.avatarUrl ? (
+                         <div className="w-full h-full rounded-full overflow-hidden border-2 border-white">
+                            <img src={config.vapi.avatarUrl} alt="Bot" className="w-full h-full object-cover" />
+                            {status === 'connected' && (
+                                <span className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 border-2 border-white rounded-full animate-pulse"></span>
+                            )}
                         </div>
                     ) : (
-                        <Bot className="w-6 h-6 sm:w-7 sm:h-7 text-white" />
+                        status === 'connected' ? (
+                            <div className="relative">
+                                <Bot className="w-6 h-6 sm:w-7 sm:h-7 animate-pulse text-white" />
+                                <span className="absolute -top-1 -right-1 w-3 h-3 sm:w-3.5 sm:h-3.5 bg-green-500 border-2 border-white rounded-full"></span>
+                            </div>
+                        ) : (
+                            <Bot className="w-6 h-6 sm:w-7 sm:h-7 text-white" />
+                        )
                     )}
 
                     {/* Tooltip-like label */}

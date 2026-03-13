@@ -4,14 +4,15 @@ import { User, Phone, Mail, ArrowRight, Bot } from 'lucide-react';
 interface WelcomeFormProps {
     onSubmit: (data: { name: string; phone: string; email?: string }) => void;
     businessName?: string;
+    avatarUrl?: string;
 }
 
-export const WelcomeForm: React.FC<WelcomeFormProps> = ({ onSubmit, businessName = 'AI Assistant' }) => {
+export const WelcomeForm: React.FC<WelcomeFormProps> = ({ onSubmit, businessName = 'AI Assistant', avatarUrl }) => {
     const [name, setName] = useState('');
     const [countryCode, setCountryCode] = useState('+1');
     const [phone, setPhone] = useState('');
     const [email, setEmail] = useState('');
-    const [errors, setErrors] = useState<{ name?: string; phone?: string }>({});
+    const [errors, setErrors] = useState<{ name?: string; phone?: string; email?: string }>({});
     const [isTyping, setIsTyping] = useState(true);
 
     // Welcome message typing effect
@@ -25,7 +26,7 @@ export const WelcomeForm: React.FC<WelcomeFormProps> = ({ onSubmit, businessName
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        const newErrors: { name?: string; phone?: string } = {};
+        const newErrors: { name?: string; phone?: string; email?: string } = {};
 
         if (!name.trim()) {
             newErrors.name = 'Name is required';
@@ -37,6 +38,12 @@ export const WelcomeForm: React.FC<WelcomeFormProps> = ({ onSubmit, businessName
             newErrors.phone = 'Phone number is required';
         } else if (!validatePhone(fullPhone)) {
             newErrors.phone = 'Please enter a valid phone number';
+        }
+
+        if (!email.trim()) {
+            newErrors.email = 'Email is required';
+        } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+            newErrors.email = 'Please enter a valid email address';
         }
 
         if (Object.keys(newErrors).length > 0) {
@@ -90,9 +97,15 @@ export const WelcomeForm: React.FC<WelcomeFormProps> = ({ onSubmit, businessName
                 <div className="mb-8">
                     <div className="bg-slate-50 rounded-2xl p-6 border border-slate-200 shadow-sm">
                         <div className="flex items-start gap-3">
-                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-teal-500 to-teal-600 flex items-center justify-center flex-shrink-0">
-                                <Bot className="w-6 h-6 text-white" />
-                            </div>
+                            {avatarUrl ? (
+                                <div className="w-10 h-10 rounded-full border border-slate-200 overflow-hidden bg-white flex-shrink-0">
+                                    <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+                                </div>
+                            ) : (
+                                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-teal-500 to-teal-600 flex items-center justify-center flex-shrink-0">
+                                    <Bot className="w-6 h-6 text-white" />
+                                </div>
+                            )}
                             <div className="flex-1">
                                 <p className="text-slate-700 leading-relaxed">
                                     {isTyping ? (
@@ -175,23 +188,27 @@ export const WelcomeForm: React.FC<WelcomeFormProps> = ({ onSubmit, businessName
                             {errors.phone && <p className="mt-1 text-sm text-red-500">{errors.phone}</p>}
                         </div>
 
-                        {/* Email Field (Optional) */}
+                        {/* Email Field */}
                         <div>
                             <label className="block text-sm font-medium text-slate-700 mb-2">
-                                Email <span className="text-slate-400">(optional)</span>
+                                Your Email <span className="text-red-500">*</span>
                             </label>
                             <div className="relative">
                                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
                                 <input
                                     type="email"
                                     value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
-                                    className="w-full pl-11 pr-4 py-3 bg-white border border-slate-300 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all"
+                                    onChange={(e) => {
+                                        setEmail(e.target.value);
+                                        setErrors((prev) => ({ ...prev, email: undefined }));
+                                    }}
+                                    className={`w-full pl-11 pr-4 py-3 bg-white border ${errors.email ? 'border-red-500' : 'border-slate-300'
+                                        } rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all`}
                                     placeholder="your.email@example.com"
                                 />
                             </div>
+                            {errors.email && <p className="mt-1 text-sm text-red-500">{errors.email}</p>}
                         </div>
-
                         {/* Submit Button */}
                         <button
                             type="submit"
@@ -199,15 +216,6 @@ export const WelcomeForm: React.FC<WelcomeFormProps> = ({ onSubmit, businessName
                         >
                             Start Conversation
                             <ArrowRight className="w-5 h-5" />
-                        </button>
-
-                        {/* Skip Button */}
-                        <button
-                            type="button"
-                            onClick={() => onSubmit({ name: 'Guest', phone: 'N/A', email: '' })}
-                            className="w-full text-slate-400 hover:text-slate-600 text-xs font-medium py-2 transition-colors cursor-pointer"
-                        >
-                            Skip for now
                         </button>
                     </form>
                 )}

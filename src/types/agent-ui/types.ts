@@ -94,6 +94,7 @@ export interface BusinessConfig {
       userPhone?: string;
     };
     assistantId?: string;
+    avatarUrl?: string;
     showFloatingWidget?: boolean;
     showTextChatbot?: boolean;
   };

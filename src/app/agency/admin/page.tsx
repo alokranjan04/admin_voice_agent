@@ -1169,6 +1169,27 @@ export default function AdminPage() {
                                     ))}
                                 </select>
                             </div>
+                            <div className="space-y-1 col-span-2">
+                                <label className="text-xs font-bold text-slate-600 uppercase">Bot Avatar Image URL</label>
+                                <div className="flex gap-2">
+                                    <div className="relative flex-1">
+                                        <ImageIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                                        <input
+                                            type="text"
+                                            className="w-full pl-9 pr-4 py-2 text-sm border border-slate-300 rounded focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-colors bg-white font-mono"
+                                            placeholder="https://example.com/avatar.png"
+                                            value={config.vapi.avatarUrl || ""}
+                                            onChange={e => setConfig(prev => ({ ...prev, vapi: { ...prev.vapi, avatarUrl: e.target.value } }))}
+                                        />
+                                    </div>
+                                    {config.vapi.avatarUrl && (
+                                        <div className="w-10 h-10 rounded border overflow-hidden flex-shrink-0 bg-slate-100">
+                                            <img src={config.vapi.avatarUrl} alt="Preview" className="w-full h-full object-cover" />
+                                        </div>
+                                    )}
+                                </div>
+                                <p className="text-[10px] text-slate-500 italic mt-1">Recommended: Square image of a person (approx 400x400px)</p>
+                            </div>
                         </div>
 
                         <div className="p-4 bg-slate-50 border rounded-lg grid grid-cols-3 gap-4">
