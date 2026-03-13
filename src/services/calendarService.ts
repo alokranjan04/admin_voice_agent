@@ -338,8 +338,16 @@ export async function createEvent(details: {
                     return;
                 }
 
-                // Format dates for ICS (YYYYMMDDTHHMMSSZ, must be UTC)
-                const formatIcsTime = (date: Date) => date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+                // Format dates for ICS (Local-time floating with TZID is more robust for manual invites)
+                const formatIcsTime = (date: Date) => {
+                    const y = date.getFullYear();
+                    const m = String(date.getMonth() + 1).padStart(2, '0');
+                    const d = String(date.getDate()).padStart(2, '0');
+                    const hh = String(date.getHours()).padStart(2, '0');
+                    const min = String(date.getMinutes()).padStart(2, '0');
+                    const ss = String(date.getSeconds()).padStart(2, '0');
+                    return `${y}${m}${d}T${hh}${min}${ss}`;
+                };
 
                 const icsContent = [
                     'BEGIN:VCALENDAR',
@@ -349,9 +357,9 @@ export async function createEvent(details: {
                     'METHOD:REQUEST',
                     'BEGIN:VEVENT',
                     `UID:event-${Date.now()}@tellyourjourney.com`,
-                    `DTSTAMP:${formatIcsTime(new Date())}`,
-                    `DTSTART:${formatIcsTime(startDateTime)}`,
-                    `DTEND:${formatIcsTime(endDateTime)}`,
+                    `DTSTAMP:${formatIcsTime(new Date())}Z`,
+                    `DTSTART;TZID=Asia/Kolkata:${formatIcsTime(startDateTime)}`,
+                    `DTEND;TZID=Asia/Kolkata:${formatIcsTime(endDateTime)}`,
                     `SUMMARY:${eventTitle}`,
                     `DESCRIPTION:${details.problem ? 'Problem to solve: ' + details.problem : 'Voice AI Demo Call'}`,
                     `ORGANIZER;CN="TellYourJourney":mailto:${gmailUser}`,
@@ -366,16 +374,18 @@ export async function createEvent(details: {
                     auth: { user: gmailUser, pass: gmailPass }
                 });
 
+                console.log(`[Calendar ICS] Attempting to send manual invite to ${details.customerEmail} using SMTP...`);
+
                 await transporter.sendMail({
                     from: `"TellYourJourney AI" <${gmailUser}>`,
                     to: details.customerEmail,
                     subject: `Invitation: ${eventTitle}`,
-                    text: `Hi ${finalName},\n\nYour ${details.service || 'appointment'} has been successfully booked for ${formatDateTime(startDateTime)}.\n\nPlease find the calendar invite attached.\n\nBest,\nTellYourJourney Team`,
+                    text: `Hi ${finalName},\n\nYour ${details.service || 'appointment'} has been successfully booked for ${formatDateTime(startDateTime)} (IST).\n\nPlease find the calendar invite attached.\n\nBest,\nTellYourJourney Team`,
                     attachments: [
                         {
                             filename: 'invite.ics',
                             content: icsContent,
-                            contentType: 'text/calendar; method=REQUEST'
+                            contentType: 'text/calendar; charset=utf-8; method=REQUEST'
                         }
                     ]
                 });
@@ -446,11 +456,20 @@ ${details.problem ? `Problem to solve: ${details.problem}` : ''}
         }
 
         try {
+            // TIER 1: Main booking. We set sendUpdates: none to avoid unreliable/broken Google native emails.
+            // We strictly rely on our own sendManualIcsInvite below which uses SMTP.
             const response = await calendar.events.insert({
                 calendarId,
                 requestBody: FinalEvent,
-                sendUpdates: shouldInvite ? 'all' : 'none'
+                sendUpdates: 'none' 
             });
+
+            console.log(`[Calendar] Event created: ${response.data.id}. Proceeding with manual notifications...`);
+
+            // ALWAYS send manual ICS invite if email is provided, to ensure reliability.
+            if (shouldInvite) {
+                await sendManualIcsInvite();
+            }
 
             // Trigger SMS Confirmation
             if (details.customerPhone) {
@@ -466,49 +485,31 @@ ${details.problem ? `Problem to solve: ${details.problem}` : ''}
                 message: `Perfect! I've booked your ${details.service || 'appointment'} for ${formatDateTime(startDateTime)}. ${details.customerEmail ? 'You will receive a confirmation email shortly.' : 'Your appointment is confirmed!'}`
             };
         } catch (insertError: any) {
-            // Unverified OAuth Apps / GSuite Restrictions often fail with 400/403 when dispatching `sendUpdates: all` to external guests.
-            // If it fails, fallback immediately to safely booking the event on the Admin calendar without the restricted guests.
+            // Fallback for extreme cases (e.g. Google rejected the guests entirely)
             if (shouldInvite) {
-                console.warn('[Calendar] Failed to sendUpdates: "all". Attempting to retain attendees with sendUpdates: "none"...', insertError.message);
+                console.warn('[Calendar] Insert failed with attendees. Retrying without guests and sending manual SMTP email...', insertError.message);
+                delete FinalEvent.attendees;
 
-                try {
-                    // TIER 1: Keep attendees but don't email them.
-                    const tier1Response = await calendar.events.insert({
-                        calendarId,
-                        requestBody: FinalEvent,
-                        sendUpdates: 'none'
-                    });
+                const tier2Response = await calendar.events.insert({
+                    calendarId,
+                    requestBody: FinalEvent,
+                    sendUpdates: 'none'
+                });
 
-                    // Google API blocked native emails, so we manually send the ICS via standard SMTP
-                    await sendManualIcsInvite();
+                await sendManualIcsInvite();
 
-                    return {
-                        success: true,
-                        eventId: tier1Response.data.id,
-                        eventLink: tier1Response.data.htmlLink,
-                        message: `Perfect! I've booked your ${details.service || 'appointment'} for ${formatDateTime(startDateTime)}. Your appointment is confirmed and an invite has been sent to your email!`
-                    };
-                } catch (tier1Error: any) {
-                    // TIER 2: If the email itself is completely invalid, strip the guest list to save the booking.
-                    console.warn('[Calendar] Guests completely rejected. Stripping attendees block entirely.', tier1Error.message);
-                    delete FinalEvent.attendees;
-
-                    const tier2Response = await calendar.events.insert({
-                        calendarId,
-                        requestBody: FinalEvent,
-                        sendUpdates: 'none'
-                    });
-
-                    // Even if Google absolutely hated the email string, we still try our own SMTP delivery
-                    await sendManualIcsInvite();
-
-                    return {
-                        success: true,
-                        eventId: tier2Response.data.id,
-                        eventLink: tier2Response.data.htmlLink,
-                        message: `Perfect! I've booked your ${details.service || 'appointment'} for ${formatDateTime(startDateTime)}. Your appointment is confirmed on our calendar!`
-                    };
+                if (details.customerPhone) {
+                    const dateStr = formatDateTime(startDateTime);
+                    const smsText = `Confirmed: Your ${details.service || 'booking'} is scheduled for ${dateStr}. Thank you!`;
+                    await sendSmsConfirmation(details.customerPhone, smsText);
                 }
+
+                return {
+                    success: true,
+                    eventId: tier2Response.data.id,
+                    eventLink: tier2Response.data.htmlLink,
+                    message: `Perfect! I've booked your ${details.service || 'appointment'} for ${formatDateTime(startDateTime)}. Your appointment is confirmed and an invite has been sent to your email!`
+                };
             }
             throw insertError;
         }
