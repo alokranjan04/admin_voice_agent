@@ -23,7 +23,9 @@ export async function POST(req: Request) {
             .replace(/{{Company name}}/gi, companyName)
             .replace(/{{ROLE_DESCRIPTION}}/g, roleDesc);
 
-        let firstMessage = (config.vapi.firstMessage || `Hello, thank you for calling ${companyName}!`)
+        let firstMessage = (config.vapi.firstMessage || (config.vapi.userName 
+            ? `Hello ${config.vapi.userName}! Thank you for calling ${companyName}. How can I help you today?` 
+            : `Hello, thank you for calling ${companyName}!`))
             .replace(/{{COMPANY_NAME}}/g, companyName)
             .replace(/{{Company name}}/gi, companyName)
             .replace(/{{USER_NAME}}/gi, config.vapi.userName || 'there')
@@ -38,12 +40,17 @@ export async function POST(req: Request) {
                 {
                     role: 'system',
                     content: `${systemPrompt}\n\n# DATE CHECK REQUIRED\nYou do not know the current date. To schedule ANY appointment, you MUST first call the "getCurrentDateTime" tool to get the current date and time. Do not guess or assume the date.\n\n# BEHAVIOR RULES:\n1. EMAIL CONFIRMATION: If the user provides their email by speaking it, you MUST spell it back to them character-by-character to confirm it is correct.\n2. PITCHING A DEMO: After explaining our services and how we can help in their domain, you MUST ask: 'Can I book a demo with the owner? He can explain things to you in more detail.'\n\n# USER CONTEXT\n${(config.vapi.userName || config.vapi.userEmail || config.vapi.userPhone)
-                        ? `Information about the user is already known:\n` +
+                        ? `Information about the user is already known:
+` +
                         (config.vapi.userName ? `- Name: ${config.vapi.userName}\n` : '') +
                         (config.vapi.userEmail ? `- Email: ${config.vapi.userEmail}\n` : '') +
                         (config.vapi.userPhone ? `- Phone: ${config.vapi.userPhone}\n` : '') +
-                        `CONTACT RULE: DO NOT ask for or confirm the user's email address. You MUST ask for the car pickup address. You MUST confirm the user's phone number character-by-character (e.g., 'So that's plus one, eight, two...') before booking.\nTERMINOLOGY RULE: Refer to the appointment time as 'Pickup Time'.\nTITLE RULE: Always ask the user 'What is this booking for?' to use as the 'service' (event title).\nAVAILABILITY RULE: You MUST NEVER book an appointment without FIRST checking availability.`
-                        : "You MUST ask the user for their Name and Phone number. DO NOT ask for their email. You MUST ask for the car pickup address. You MUST confirm the phone number character-by-character.\nTERMINOLOGY RULE: Refer to the appointment time as 'Pickup Time'.\nTITLE RULE: Always ask the user 'What is this booking for?' to use as the 'service' (event title).\nAVAILABILITY RULE: You MUST NEVER book an appointment without FIRST checking availability."
+                        `CONTACT RULE: If Name, Phone, or Email are missing from the list above, you MUST ask the user for them. If they ARE provided, DO NOT ask for them. Always confirm the phone number character-by-character (e.g., 'So that's plus one, eight, two...') before finalizing a booking.
+TITLE RULE: Always ask the user 'What is this booking for?' to use as the 'service' (event title).
+AVAILABILITY RULE: You MUST NEVER book an appointment without FIRST checking availability.`
+                        : `You MUST ask the user for their Name, Phone number, and Email address before booking. You MUST confirm the phone number character-by-character.
+TITLE RULE: Always ask the user 'What is this booking for?' to use as the 'service' (event title).
+AVAILABILITY RULE: You MUST NEVER book an appointment without FIRST checking availability.`
                         }`
                 }
             ],
@@ -149,11 +156,10 @@ export async function POST(req: Request) {
                                 time: { type: "string", description: "Time in HH:MM format (24-hour)" },
                                 service: { type: "string", description: "Type of service" },
                                 customerName: { type: "string", description: "Customer name" },
-                                customerEmail: { type: "string", description: "Customer email (SKIP - do not ask)" },
-                                customerPhone: { type: "string", description: "Customer phone (MUST confirm char-by-char)" },
-                                pickupAddress: { type: "string", description: "Car pickup address" }
+                                customerEmail: { type: "string", description: "Customer email" },
+                                customerPhone: { type: "string", description: "Customer phone (MUST confirm char-by-char)" }
                             },
-                            required: ["date", "time", "customerName", "service", "customerPhone", "pickupAddress"]
+                            required: ["date", "time", "customerName", "service", "customerPhone"]
                         }
                     }
                 },

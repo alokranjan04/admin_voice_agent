@@ -258,8 +258,9 @@ export class VapiService {
    - Phone: ${this.sessionMetadata.phone || this.sessionMetadata.userPhone || "Unknown"}
    - Email: ${this.sessionMetadata.email || this.sessionMetadata.userEmail || "Unknown"}
    PHONETIC HINT: If the user's name is "Amrita", ensure you pronounce it clearly as "Am-ree-ta".
-   BOOKING RULE: Once the user selects or confirms a time from the available slots, perform the 'createEvent' call immediately. Do not wait for additional confirmation if they have already picked a slot.
-   CONTACT RULE: If Name, Phone, or Email are 'Unknown' or missing from the context above, politely ask the user to provide the missing details before booking. If they are already provided, DO NOT ask for them again, but pass them directly to the createEvent tool.
+   BOOKING RULE: Once the user selects or confirms a time from the available slots, perform the 'createEvent' call immediately.
+   CONTACT RULE: If Name, Phone, or Email are listed as 'Unknown' above, you MUST politely ask the user to provide them before booking. If they are ALREADY provided (not 'Unknown'), DO NOT ask for them and do NOT verify them. Use them directly.
+   CONFIRMATION RULE: Before booking, verify the user's phone number character-by-character (e.g., 'So that is plus one, eight, two...') ONLY IF you just collected it. If it was already in the context, skip this.
    TITLE RULE: Always ask the user "What is this booking for?" or "What is the topic of our meeting?" so you can use their answer as the 'service' (title) parameter when creating the calendar event.
    AVAILABILITY RULE: You MUST NEVER book an appointment (call createEvent) without FIRST checking if the time is open using 'checkAvailability' or 'findAvailableSlots'.
 8. LANGUAGE: You are fully proficient in both English and Hindi. Always reply fluently in the language the user speaks to you. If the user speaks Hindi, reply strictly in Hindi.\n\n`;
@@ -317,7 +318,6 @@ export class VapiService {
             }
 
             const temperature = vapiConf?.temperature !== undefined ? parseFloat(String(vapiConf.temperature)) : 0.7;
-            let firstMessage = vapiConf?.firstMessage || `Hello, I am the AI Assistant for ${companyName}. How can I help you today?`;
 
             // Personalize first message
             const urlParams = new URLSearchParams(window.location.search);
@@ -327,6 +327,10 @@ export class VapiService {
                 || vapiConf?.transcriber?.userName
                 || (vapiConf as any)?.userName
                 || "";
+
+            let firstMessage = vapiConf?.firstMessage || (userName 
+                ? `Hello ${userName}! This is the AI Assistant for ${companyName}. How can I help you today?` 
+                : `Hello, I am the AI Assistant for ${companyName}. How can I help you today?`);
 
             console.log("[Personalization] Sources:", {
                 sessionMetadata: this.sessionMetadata?.userName,
@@ -526,10 +530,10 @@ export class VapiService {
         let userContext = "";
         if (userMetadata) {
             userContext = `\n\nCURRENT USER CONTEXT (Already Provided):
-- Name: ${userMetadata.userName || userMetadata.name || 'Not provided'}
-- Phone: ${userMetadata.userPhone || userMetadata.phone || 'Not provided'}
-- Email: ${userMetadata.userEmail || userMetadata.email || 'Not provided'}
-- NOTE: If name, phone, or email are listed above, do NOT ask the user for them again. Use them for booking directly.`;
+- Name: ${userMetadata.userName || userMetadata.name || 'Unknown'}
+- Phone: ${userMetadata.userPhone || userMetadata.phone || 'Unknown'}
+- Email: ${userMetadata.userEmail || userMetadata.email || 'Unknown'}
+- NOTE: If Name, Phone, or Email are listed as 'Unknown', you MUST ask the user for them. If they are already provided, DO NOT ask for them and proceed to use them for booking.`;
         }
 
         const prompt = `AI Assistant is a sophisticated training platform at ${companyName}...
