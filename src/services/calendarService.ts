@@ -299,6 +299,7 @@ export async function createEvent(details: {
 
         startDateTime.setHours(hours, minutes, 0, 0);
 
+        const endDateTime = new Date(startDateTime.getTime() + slotDuration * 60000);
         const tzOffset = '+05:30'; 
         const startString = buildTargetTzString(startDateTime, tzOffset);
         const endString = buildTargetTzString(endDateTime, tzOffset);
