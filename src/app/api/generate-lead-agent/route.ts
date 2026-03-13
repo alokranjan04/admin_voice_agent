@@ -94,7 +94,7 @@ export async function POST(req: Request) {
 
         // Language → locale code map (used for VAPI's language hint)
         const languageCodeMap: Record<string, string> = {
-            'English': 'en',
+            'English': 'en-IN',
             'Hindi': 'hi',
             'French': 'fr',
             'German': 'de',
@@ -303,7 +303,7 @@ Be enthusiastic. Greet ${name} by name. Let's show ${name} what an AI-powered ${
                 },
                 transcriber: {
                     provider: "deepgram",
-                    model: "nova-2",
+                    model: "nova-3",
                     language: langCode
                 },
                 firstMessage,

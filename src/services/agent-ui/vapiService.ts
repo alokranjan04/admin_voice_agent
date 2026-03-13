@@ -442,8 +442,8 @@ export class VapiService {
                 voice: { provider: voiceProvider as any, voiceId: voiceId },
                 transcriber: {
                     provider: (vapiConf?.transcriber?.provider || "deepgram") as any,
-                    model: vapiConf?.transcriber?.model || "nova-2",
-                    language: vapiConf?.transcriber?.language || "hi",
+                    model: vapiConf?.transcriber?.model || "nova-3",
+                    language: vapiConf?.transcriber?.language || "en-IN",
                     smartFormat: true,
                     keywords: [
                         ...companyName.split(/\s+/),

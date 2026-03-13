@@ -215,8 +215,8 @@ AI Assistant’s overarching mission is to strengthen the human side of customer
     voiceId: 'Mia', // specialized voice name
     transcriber: {
       provider: 'deepgram',
-      language: 'en',
-      model: 'nova-2',
+      language: 'en-IN',
+      model: 'nova-3',
       userName: '',
       userEmail: '',
       userPhone: ''

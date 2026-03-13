@@ -96,7 +96,7 @@ const VAPI_TRANSCRIBER_PROVIDERS = [
 
 const VAPI_TRANSCRIBER_MODELS: Record<string, string[]> = {
     'openai': ['whisper-1', 'gpt-4o-mini-transcribe'],
-    'deepgram': ['nova-2', 'nova-2-medical', 'nova-2-meeting', 'nova-2-phonecall', 'nova-2-voicemail'],
+    'deepgram': ['nova-3', 'nova-2', 'nova-2-medical', 'nova-2-meeting', 'nova-2-phonecall', 'nova-2-voicemail'],
     'azure': ['standard'],
     'gladia': ['standard'],
     'talkscriber': ['whisper']
@@ -1102,11 +1102,22 @@ export default function AdminPage() {
                                 <label className="text-xs font-bold text-slate-600 uppercase">Provider</label>
                                 <select
                                     className="w-full p-2 text-sm border rounded bg-white"
-                                    value={config.vapi.provider || "OpenAI"}
-                                    onChange={e => setConfig(prev => ({ ...prev, vapi: { ...prev.vapi, provider: e.target.value } }))}
+                                    value={config.vapi.provider || "openai"}
+                                    onChange={e => {
+                                        const newProvider = e.target.value;
+                                        const defaultModel = VAPI_MODELS[newProvider]?.[0] || '';
+                                        setConfig(prev => ({
+                                            ...prev,
+                                            vapi: {
+                                                ...prev.vapi,
+                                                provider: newProvider,
+                                                model: defaultModel
+                                            }
+                                        }));
+                                    }}
                                 >
-                                    {["OpenAI", "Azure OpenAI", "Anthropic", "Anthropic bedrock", "Google", "Custom llm", "Groq", "Cerebras", "Deep seek", "Xai", "Mistral"].map(opt => (
-                                        <option key={opt} value={opt}>{opt}</option>
+                                    {VAPI_MODEL_PROVIDERS.map(opt => (
+                                        <option key={opt.id} value={opt.id}>{opt.name}</option>
                                     ))}
                                 </select>
                             </div>
@@ -1114,10 +1125,10 @@ export default function AdminPage() {
                                 <label className="text-xs font-bold text-slate-600 uppercase">Model</label>
                                 <select
                                     className="w-full p-2 text-sm border rounded bg-white"
-                                    value={config.vapi.model || "GPT 4o Mini Cluster"}
+                                    value={config.vapi.model || ""}
                                     onChange={e => setConfig(prev => ({ ...prev, vapi: { ...prev.vapi, model: e.target.value } }))}
                                 >
-                                    {["GPT 4o Mini Cluster", "GPT 4.1", "GPT 4.1 Mini", "GPT 4.1 Nano", "gpt-4o", "gpt-4-turbo", "gpt-3.5-turbo"].map(opt => (
+                                    {(VAPI_MODELS[config.vapi.provider?.toLowerCase() || 'openai'] || []).map(opt => (
                                         <option key={opt} value={opt}>{opt}</option>
                                     ))}
                                 </select>
@@ -1126,11 +1137,22 @@ export default function AdminPage() {
                                 <label className="text-xs font-bold text-slate-600 uppercase">Voice Provider</label>
                                 <select
                                     className="w-full p-2 text-sm border rounded bg-white"
-                                    value={config.vapi.voiceProvider || "OpenAI"}
-                                    onChange={e => setConfig(prev => ({ ...prev, vapi: { ...prev.vapi, voiceProvider: e.target.value } }))}
+                                    value={config.vapi.voiceProvider || "vapi"}
+                                    onChange={e => {
+                                        const newProvider = e.target.value;
+                                        const defaultVoice = VAPI_VOICES_BY_PROVIDER[newProvider]?.[0]?.id || '';
+                                        setConfig(prev => ({
+                                            ...prev,
+                                            vapi: {
+                                                ...prev.vapi,
+                                                voiceProvider: newProvider,
+                                                voiceId: defaultVoice
+                                            }
+                                        }));
+                                    }}
                                 >
-                                    {["OpenAI", "Vapi", "Cartesia", "11labs", "Rime AI", "LMNT", "Deepgram", "Azure", "MiniMax", "Neuphonic", "Smallest AI"].map(opt => (
-                                        <option key={opt} value={opt}>{opt}</option>
+                                    {VAPI_VOICE_PROVIDERS.map(opt => (
+                                        <option key={opt.id} value={opt.id}>{opt.name}</option>
                                     ))}
                                 </select>
                             </div>
@@ -1138,11 +1160,11 @@ export default function AdminPage() {
                                 <label className="text-xs font-bold text-slate-600 uppercase">Voice</label>
                                 <select
                                     className="w-full p-2 text-sm border rounded bg-white"
-                                    value={config.vapi.voiceId || "alloy"}
+                                    value={config.vapi.voiceId || ""}
                                     onChange={e => setConfig(prev => ({ ...prev, vapi: { ...prev.vapi, voiceId: e.target.value } }))}
                                 >
-                                    {["alloy", "echo", "fable", "onyx", "nova", "shimmer"].map(opt => (
-                                        <option key={opt} value={opt} className="capitalize">{opt}</option>
+                                    {(VAPI_VOICES_BY_PROVIDER[config.vapi.voiceProvider?.toLowerCase() || 'vapi'] || []).map(opt => (
+                                        <option key={opt.id} value={opt.id}>{opt.name}</option>
                                     ))}
                                 </select>
                             </div>

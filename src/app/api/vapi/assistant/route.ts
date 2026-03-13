@@ -63,8 +63,8 @@ export async function POST(req: Request) {
         } else {
             transcriberObj = {
                 provider: tProvider,
-                model: String(config.vapi.transcriber.model || 'nova-2').toLowerCase(),
-                language: String(config.vapi.transcriber.language || 'en').toLowerCase(),
+                model: String(config.vapi.transcriber.model || 'nova-3').toLowerCase(),
+                language: String(config.vapi.transcriber.language || 'en-IN').toLowerCase(),
                 smartFormat: true, // camelCase for Vapi
                 keywords: [],      // Optional keywords
             };
