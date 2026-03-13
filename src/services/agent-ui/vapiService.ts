@@ -253,16 +253,17 @@ export class VapiService {
 4. AUTHENTICATION EXPIRED: If a tool returns 'needsReauth: true', politely tell the user: "It looks like the calendar connection has expired. Could you please click 'Disconnect' and then 'Connect Calendar' again in the admin settings?"
 5. OFFER SLOTS: If findAvailableSlots returns slots, you MUST list them to the user immediately.
 6. CALENDAR ID: Use 'alokranjan04@gmail.com' for all operations.
-7. LEAD CAPTURE PHASE (CRITICAL):
+7. PRE-VERIFIED USER CONTEXT (IDENTIFICATION):
    - Name: ${this.sessionMetadata.name || this.sessionMetadata.userName || "Unknown"}
    - Phone: ${this.sessionMetadata.phone || this.sessionMetadata.userPhone || "Unknown"}
    - Email: ${this.sessionMetadata.email || this.sessionMetadata.userEmail || "Unknown"}
    
-   RULE: If any of Name, Phone, or Email are 'Unknown', you MUST politely ask the user for them AT THE VERY START of the call. This is your FIRST priority. 
-   SKIP RULE: If they are NOT 'Unknown', do NOT ask for them.
-   CONFIRMATION: Confirm any NEWLY collected phone number character-by-character.
+   RULE: The user has ALREADY provided and verified their Name, Phone, and Email via our secure pre-call form.
+   RULE: If Name, Phone, or Email are provided (not 'Unknown'), you MUST NOT ask for them.
+   RULE: Use these values automatically for any bookings or tool calls. DO NOT re-confirm them with the user.
+   RULE: Only ask for a field if its value is 'Unknown'.
 8. PHONETIC HINT: If the user's name is "Amrita", ensure you pronounce it clearly as "Am-ree-ta".
-9. BOOKING RULE: Once the user selects or confirms a time, perform 'createEvent' immediately.
+9. BOOKING RULE: Once the user selects or confirms a time, perform 'createEvent' immediately using the pre-verified context.
 10. LANGUAGE: Proficient in English and Hindi. Use the user's language.\n\n`;
 
         let systemPrompt = "";
@@ -402,8 +403,8 @@ export class VapiService {
                                     type: "object",
                                     properties: {
                                         name: { type: "string" },
-                                        phone: { type: "string", description: "Customer phone. If provided in USER CONTEXT, you MUST pass it exactly without asking the user." },
-                                        email: { type: "string", description: "Customer email. If provided in USER CONTEXT, you MUST pass it exactly without asking the user." },
+                                        phone: { type: "string", description: "Customer phone number. MUST use the value from PRE-VERIFIED USER CONTEXT. DO NOT ask the user for this again." },
+                                        email: { type: "string", description: "Customer email address. MUST use the value from PRE-VERIFIED USER CONTEXT. DO NOT ask the user for this again." },
                                         service: { type: "string" },
                                         date: { type: "string" },
                                         time: { type: "string" }
@@ -531,7 +532,7 @@ export class VapiService {
 - Name: ${userMetadata.userName || userMetadata.name || 'Unknown'}
 - Phone: ${userMetadata.userPhone || userMetadata.phone || 'Unknown'}
 - Email: ${userMetadata.userEmail || userMetadata.email || 'Unknown'}
-- ACTION: Apply LEAD CAPTURE rules from directives.`;
+- IDENTITY RULE: These details are PRE-VERIFIED. DO NOT ask for them again if they are known.`;
 
         const prompt = `AI Assistant is a sophisticated training platform at ${companyName}...
 Additional Instruction:

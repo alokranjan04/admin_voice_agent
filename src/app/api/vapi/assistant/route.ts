@@ -39,16 +39,17 @@ export async function POST(req: Request) {
             messages: [
                 {
                     role: 'system',
-                    content: `${systemPrompt}\n\n# DATE CHECK REQUIRED\nYou do not know the current date. To schedule ANY appointment, you MUST first call the "getCurrentDateTime" tool to get the current date and time. Do not guess or assume the date.\n\n# BEHAVIOR RULES:\n1. EMAIL CONFIRMATION: If the user provides their email by speaking it, you MUST spell it back to them character-by-character to confirm it is correct.\n2. PITCHING A DEMO: After explaining our services and how we can help in their domain, you MUST ask: 'Can I book a demo with the owner? He can explain things to you in more detail.'\n\n# USER CONTEXT\n${(config.vapi.userName || config.vapi.userEmail || config.vapi.userPhone)
-                        ? `Information about the user is already known:
+                    content: `${systemPrompt}\n\n# DATE CHECK REQUIRED\nYou do not know the current date. To schedule ANY appointment, you MUST first call the "getCurrentDateTime" tool to get the current date and time. Do not guess or assume the date.\n\n# BEHAVIOR RULES:\n1. EMAIL CONFIRMATION: If the user provides their email by speaking it, you MUST spell it back to them character-by-character to confirm it is correct.\n2. PITCHING A DEMO: After explaining our services and how we can help in their domain, you MUST ask: 'Can I book a demo with the owner? He can explain things to you in more detail.'\n\n# USER CONTEXT (PRE-VERIFIED)
+${(config.vapi.userName || config.vapi.userEmail || config.vapi.userPhone)
+                        ? `Information about the user is already known and VERIFIED via a pre-call form:
 ` +
                         (config.vapi.userName ? `- Name: ${config.vapi.userName}\n` : '') +
                         (config.vapi.userEmail ? `- Email: ${config.vapi.userEmail}\n` : '') +
                         (config.vapi.userPhone ? `- Phone: ${config.vapi.userPhone}\n` : '') +
-                        `CONTACT RULE: If Name, Phone, or Email are missing from the list above, you MUST ask the user for them at the very beginning of the conversation. If they ARE provided, DO NOT ask for them. Always confirm the phone number character-by-character (e.g., 'So that's plus one, eight, two...') before finalizing a booking.
+                        `CONTACT RULE: If Name, Phone, or Email are provided above, DO NOT ask for them. They are 100% authorized and verified. Only ask for a field if it is missing or explicitly 'Unknown'.
 TITLE RULE: Always ask the user 'What is this booking for?' to use as the 'service' (event title).
 AVAILABILITY RULE: You MUST NEVER book an appointment without FIRST checking availability.`
-                        : `You MUST introduce yourself and then immediately ask the user for their Name, Phone number, and Email address if you don't already have them. You MUST confirm the phone number character-by-character.
+                        : `You MUST introduce yourself and then immediately ask the user for their Name, Phone number, and Email address if you don't already have them. 
 TITLE RULE: Always ask the user 'What is this booking for?' to use as the 'service' (event title).
 AVAILABILITY RULE: You MUST NEVER book an appointment without FIRST checking availability.`
                         }`
@@ -156,8 +157,8 @@ AVAILABILITY RULE: You MUST NEVER book an appointment without FIRST checking ava
                                 time: { type: "string", description: "Time in HH:MM format (24-hour)" },
                                 service: { type: "string", description: "Type of service" },
                                 customerName: { type: "string", description: "Customer name" },
-                                customerEmail: { type: "string", description: "Customer email" },
-                                customerPhone: { type: "string", description: "Customer phone (MUST confirm char-by-char)" }
+                                customerEmail: { type: "string", description: "Customer email. MUST use value from USER CONTEXT if available. DO NOT ask user again." },
+                                customerPhone: { type: "string", description: "Customer phone. MUST use value from USER CONTEXT if available. DO NOT ask user again." }
                             },
                             required: ["date", "time", "customerName", "service", "customerPhone"]
                         }
