@@ -133,7 +133,7 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ config, status, volume, logs, o
                             </div>
 
                             {/* Voice-Only Content */}
-                            <div className="flex-1 flex flex-col items-center justify-center p-8 bg-slate-50 relative overflow-hidden">
+                            <div className="flex-1 flex flex-col items-center p-8 bg-slate-50 relative overflow-hidden">
                                 {/* Decorative background element */}
                                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-teal-500/5 rounded-full blur-3xl pointer-events-none"></div>
 
@@ -167,7 +167,7 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ config, status, volume, logs, o
                                         {logs.length === 0 ? (
                                             <div className="h-full flex flex-col items-center justify-center opacity-30">
                                                 <Terminal className="w-8 h-8 mb-2" />
-                                                <p className="text-[10px] font-medium uppercase tracking-widest">Transcript Ready</p>
+                                                <p className="text-[10px] font-medium uppercase tracking-widest text-center px-4">Transcript Ready - Start speaking to see text</p>
                                             </div>
                                         ) : (
                                             logs.filter(l => l.type === 'user' || l.type === 'model').map((log, index) => (

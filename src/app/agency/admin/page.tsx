@@ -698,14 +698,17 @@ export default function AdminPage() {
                         </p>
                     </div>
 
-                    {/* Embed Voice Bot Code */}
+                    {/* Embed Voice Bot Code - Option 1: Script */}
                     <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-6 space-y-4">
-                        <div className="flex items-center gap-3 mb-2">
-                            <Braces className="w-5 h-5 text-indigo-400" />
-                            <h3 className="text-lg font-bold text-white">Embed Voice Bot on Your Website</h3>
+                        <div className="flex items-center justify-between gap-3 mb-2">
+                            <div className="flex items-center gap-3">
+                                <Braces className="w-5 h-5 text-indigo-400" />
+                                <h3 className="text-lg font-bold text-white">Embed Code - Option 1: Floating Widget</h3>
+                            </div>
+                            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest border border-slate-700 px-2 py-0.5 rounded">Script</span>
                         </div>
                         <p className="text-slate-400 text-sm">
-                            Copy and paste this code into your website to add the voice assistant widget.
+                            Best for adding a floating bubble at the bottom of your website.
                         </p>
                         <div className="bg-slate-900/50 border border-slate-600 rounded-lg p-4 space-y-3">
                             <code className="block text-emerald-400 font-mono text-xs break-all whitespace-pre-wrap">
@@ -758,9 +761,69 @@ export default function AdminPage() {
                                 {copyVoiceSuccess ? 'Copied to Clipboard!' : 'Copy Embed Code'}
                             </button>
                         </div>
-                        <p className="text-xs text-slate-500 italic">
-                            💡 Paste this code before the closing &lt;/body&gt; tag of your website.
+                    </div>
+
+                    {/* Embed Voice Bot Code - Option 2: IFrame */}
+                    <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-6 space-y-4">
+                        <div className="flex items-center justify-between gap-3 mb-2">
+                            <div className="flex items-center gap-3">
+                                <Globe className="w-5 h-5 text-emerald-400" />
+                                <h3 className="text-lg font-bold text-white">Embed Code - Option 2: Embedded Page</h3>
+                            </div>
+                            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest border border-slate-700 px-2 py-0.5 rounded">IFrame</span>
+                        </div>
+                        <p className="text-slate-400 text-sm">
+                            Best for embedding the agent into a specific section of your page or a CMS (WordPress, Wix, Webflow).
                         </p>
+                        <div className="bg-slate-900/50 border border-slate-600 rounded-lg p-4 space-y-3">
+                            <div className="p-3 bg-amber-500/10 border border-amber-500/20 rounded-md">
+                                <p className="text-[10px] text-amber-200 uppercase font-bold mb-1 flex items-center gap-2">
+                                    <ShieldCheck className="w-3 h-3" />
+                                    Microphone Access Required
+                                </p>
+                                <p className="text-xs text-slate-400">
+                                    IFrames REQUIRE the <code>allow="microphone"</code> attribute to work. The snippet below is pre-configured for you.
+                                </p>
+                            </div>
+                            <code className="block text-emerald-400 font-mono text-xs break-all whitespace-pre-wrap">
+                                {(() => {
+                                    const orgId = user ? getOrgId(user) : 'anonymous_org';
+                                    const safeName = config.metadata.businessName.trim().toLowerCase().replace(/[^a-z0-9]+/g, '_');
+                                    const agentId = activeAgentId || `agent_${safeName}`;
+                                    const clientBaseUrl = config.vapi.clientUrl || (typeof window !== 'undefined' ? window.location.origin : '');
+                                    return `<!-- Voice AI IFrame Integration -->
+<iframe 
+  src="${clientBaseUrl}/agentUI?orgId=${orgId}&agentId=${agentId}&widget=true" 
+  width="100%" 
+  height="700px" 
+  frameborder="0" 
+  allow="microphone; camera; clipboard-read; clipboard-write;"
+></iframe>`;
+                                })()}
+                            </code>
+                            <button
+                                onClick={() => {
+                                    const orgId = user ? getOrgId(user) : 'anonymous_org';
+                                    const safeName = config.metadata.businessName.trim().toLowerCase().replace(/[^a-z0-9]+/g, '_');
+                                    const agentId = activeAgentId || `agent_${safeName}`;
+                                    const clientBaseUrl = config.vapi.clientUrl || (typeof window !== 'undefined' ? window.location.origin : '');
+                                    const embedCode = `<!-- Voice AI IFrame Integration -->
+<iframe 
+  src="${clientBaseUrl}/agentUI?orgId=${orgId}&agentId=${agentId}&widget=true" 
+  width="100%" 
+  height="700px" 
+  frameborder="0" 
+  allow="microphone; camera; clipboard-read; clipboard-write;"
+></iframe>`;
+                                    navigator.clipboard.writeText(embedCode);
+                                    alert("IFrame embed code copied! Remember to ensure your site is served over HTTPS.");
+                                }}
+                                className="w-full px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold rounded-lg transition-colors flex items-center justify-center gap-2"
+                            >
+                                <Copy className="w-4 h-4" />
+                                Copy IFrame Code
+                            </button>
+                        </div>
                     </div>
 
                     {/* Embed Text Bot Code */}
