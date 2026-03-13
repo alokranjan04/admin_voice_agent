@@ -142,6 +142,7 @@ const VAPI_LANGUAGES = [
     { id: 'en', name: 'English' },
     { id: 'en-US', name: 'English (US)' },
     { id: 'en-GB', name: 'English (UK)' },
+    { id: 'en-IN', name: 'English (India)' },
     { id: 'hi', name: 'Hindi' },
     { id: 'es', name: 'Spanish' },
     { id: 'fr', name: 'French' },
