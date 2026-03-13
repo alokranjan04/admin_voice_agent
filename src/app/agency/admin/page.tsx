@@ -188,6 +188,7 @@ export default function AdminPage() {
     const [vapiAssistantId, setVapiAssistantId] = useState<string | null>(null);
     const [leads, setLeads] = useState<Lead[]>([]);
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const avatarFileInputRef = useRef<HTMLInputElement>(null);
 
     // Handle Stripe Checkout Success Redirect
     useEffect(() => {
@@ -445,6 +446,39 @@ export default function AdminPage() {
         } finally {
             setIsGenerating(false);
         }
+    };
+
+    const handleAvatarImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        // Check file type
+        if (!file.type.startsWith('image/')) {
+            alert("Please select an image file.");
+            return;
+        }
+
+        // Check file size (limit to 1MB for base64 storage)
+        if (file.size > 1 * 1024 * 1024) {
+            alert("Image size must be less than 1MB.");
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const content = e.target?.result as string;
+            if (content) {
+                setConfig(prev => ({
+                    ...prev,
+                    vapi: {
+                        ...prev.vapi,
+                        avatarUrl: content
+                    }
+                }));
+            }
+        };
+        reader.readAsDataURL(file);
+        if (avatarFileInputRef.current) avatarFileInputRef.current.value = '';
     };
 
     const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -998,7 +1032,23 @@ export default function AdminPage() {
                              <h3 className="text-lg font-bold text-slate-800">Bot Personalization (Face of Agent)</h3>
                         </div>
                         <div className="space-y-2">
-                            <label className="text-sm font-semibold text-slate-700">Bot Avatar Image URL</label>
+                            <div className="flex items-center justify-between">
+                                <label className="text-sm font-semibold text-slate-700">Bot Avatar Image URL</label>
+                                <button
+                                    onClick={() => avatarFileInputRef.current?.click()}
+                                    className="text-[10px] font-bold text-indigo-600 hover:text-indigo-700 flex items-center gap-1 uppercase tracking-wider"
+                                >
+                                    <Upload className="w-3 h-3" />
+                                    Upload Image
+                                </button>
+                                <input
+                                    type="file"
+                                    ref={avatarFileInputRef}
+                                    onChange={handleAvatarImageUpload}
+                                    accept="image/*"
+                                    className="hidden"
+                                />
+                            </div>
                             <div className="flex gap-4 items-start">
                                 <div className="flex-1 relative">
                                     <ImageIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
