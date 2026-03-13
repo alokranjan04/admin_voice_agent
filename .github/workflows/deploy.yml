@@ -10,6 +10,7 @@ env:
   REGION: us-central1
   SERVICE_NAME: voice-ai-admin
   ARTIFACT_REPOSITORY: voice-ai-repo
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   deploy:
