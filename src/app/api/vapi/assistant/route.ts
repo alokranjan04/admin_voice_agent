@@ -45,10 +45,10 @@ export async function POST(req: Request) {
                         (config.vapi.userName ? `- Name: ${config.vapi.userName}\n` : '') +
                         (config.vapi.userEmail ? `- Email: ${config.vapi.userEmail}\n` : '') +
                         (config.vapi.userPhone ? `- Phone: ${config.vapi.userPhone}\n` : '') +
-                        `CONTACT RULE: If Name, Phone, or Email are missing from the list above, you MUST ask the user for them. If they ARE provided, DO NOT ask for them. Always confirm the phone number character-by-character (e.g., 'So that's plus one, eight, two...') before finalizing a booking.
+                        `CONTACT RULE: If Name, Phone, or Email are missing from the list above, you MUST ask the user for them at the very beginning of the conversation. If they ARE provided, DO NOT ask for them. Always confirm the phone number character-by-character (e.g., 'So that's plus one, eight, two...') before finalizing a booking.
 TITLE RULE: Always ask the user 'What is this booking for?' to use as the 'service' (event title).
 AVAILABILITY RULE: You MUST NEVER book an appointment without FIRST checking availability.`
-                        : `You MUST ask the user for their Name, Phone number, and Email address before booking. You MUST confirm the phone number character-by-character.
+                        : `You MUST introduce yourself and then immediately ask the user for their Name, Phone number, and Email address if you don't already have them. You MUST confirm the phone number character-by-character.
 TITLE RULE: Always ask the user 'What is this booking for?' to use as the 'service' (event title).
 AVAILABILITY RULE: You MUST NEVER book an appointment without FIRST checking availability.`
                         }`
