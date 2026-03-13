@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { User, Phone, Mail, ArrowRight } from 'lucide-react';
+import { User, Phone, Mail, ArrowRight, Bot } from 'lucide-react';
 
 interface WelcomeFormProps {
     onSubmit: (data: { name: string; phone: string; email?: string }) => void;
@@ -91,7 +91,7 @@ export const WelcomeForm: React.FC<WelcomeFormProps> = ({ onSubmit, businessName
                     <div className="bg-slate-50 rounded-2xl p-6 border border-slate-200 shadow-sm">
                         <div className="flex items-start gap-3">
                             <div className="w-10 h-10 rounded-full bg-gradient-to-br from-teal-500 to-teal-600 flex items-center justify-center flex-shrink-0">
-                                <span className="text-white font-semibold text-sm">AI</span>
+                                <Bot className="w-6 h-6 text-white" />
                             </div>
                             <div className="flex-1">
                                 <p className="text-slate-700 leading-relaxed">

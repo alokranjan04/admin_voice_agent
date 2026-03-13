@@ -12,7 +12,7 @@ import { createVapiAssistant } from '@/services/vapiService';
 import { researchBusiness } from '@/services/researchService';
 import { getTemplateByIndustry } from '@/services/templateService';
 import { AgentConfiguration, INITIAL_CONFIG, DeliveryModeType, SUPPORTED_INDUSTRIES, BrandingConfig, DEFAULT_BRANDING, Lead } from '@/types';
-import { Wand2, Plus, Trash2, Loader2, AlertCircle, Copy, Check, Database, Calendar, Rocket, Braces, Search, Upload, Palette, Image as ImageIcon, Phone, PhoneCall, Link, Globe, ShieldCheck, Settings2, Users, MessageSquare } from 'lucide-react';
+import { Wand2, Plus, Trash2, Loader2, AlertCircle, Copy, Check, Database, Calendar, Bot, Rocket, Braces, Search, Upload, Palette, Image as ImageIcon, Phone, PhoneCall, Link, Globe, ShieldCheck, Settings2, Users, MessageSquare } from 'lucide-react';
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { loadStripe } from '@stripe/stripe-js';
 
@@ -800,7 +800,7 @@ export default function AdminPage() {
                                 disabled={isCalling}
                                 className="px-8 py-3 bg-brand-500 hover:bg-brand-600 text-white font-bold rounded-xl flex items-center gap-3 shadow-lg shadow-brand-500/25 transition-all hover:scale-105 active:scale-95 disabled:opacity-70"
                             >
-                                {isCalling ? <Loader2 className="w-5 h-5 animate-spin" /> : <Phone className="w-5 h-5" />}
+                                {isCalling ? <Loader2 className="w-5 h-5 animate-spin" /> : <Bot className="w-5 h-5" />}
                                 Call Me Now
                             </button>
                         )}

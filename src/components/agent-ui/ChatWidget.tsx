@@ -254,7 +254,7 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ config, status, volume, logs, o
                                                 }`}
                                             title={status === 'connected' ? "End Call" : "Start Voice Call"}
                                         >
-                                            {status === 'connected' ? <MicOff className="w-5 h-5" /> : status === 'connecting' ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <Phone className="w-5 h-5" />}
+                                            {status === 'connected' ? <MicOff className="w-5 h-5" /> : status === 'connecting' ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <Bot className="w-5 h-5" />}
                                         </button>
                                     )}
                                 </div>
@@ -275,11 +275,11 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ config, status, volume, logs, o
                 >
                     {status === 'connected' && !isChatOnly ? (
                         <div className="relative">
-                            <Phone className="w-6 h-6 sm:w-7 sm:h-7 animate-pulse text-white" />
+                            <Bot className="w-6 h-6 sm:w-7 sm:h-7 animate-pulse text-white" />
                             <span className="absolute -top-1 -right-1 w-3 h-3 sm:w-3.5 sm:h-3.5 bg-green-500 border-2 border-white rounded-full"></span>
                         </div>
                     ) : (
-                        <MessageSquare className="w-6 h-6 sm:w-7 sm:h-7 text-white" />
+                        <Bot className="w-6 h-6 sm:w-7 sm:h-7 text-white" />
                     )}
 
                     {/* Tooltip-like label */}
