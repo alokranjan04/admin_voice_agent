@@ -253,17 +253,17 @@ export class VapiService {
 4. AUTHENTICATION EXPIRED: If a tool returns 'needsReauth: true', politely tell the user: "It looks like the calendar connection has expired. Could you please click 'Disconnect' and then 'Connect Calendar' again in the admin settings?"
 5. OFFER SLOTS: If findAvailableSlots returns slots, you MUST list them to the user immediately.
 6. CALENDAR ID: Use 'alokranjan04@gmail.com' for all operations.
-7. USER CONTEXT:
+7. LEAD CAPTURE PHASE (CRITICAL):
    - Name: ${this.sessionMetadata.name || this.sessionMetadata.userName || "Unknown"}
    - Phone: ${this.sessionMetadata.phone || this.sessionMetadata.userPhone || "Unknown"}
    - Email: ${this.sessionMetadata.email || this.sessionMetadata.userEmail || "Unknown"}
-   PHONETIC HINT: If the user's name is "Amrita", ensure you pronounce it clearly as "Am-ree-ta".
-   BOOKING RULE: Once the user selects or confirms a time from the available slots, perform the 'createEvent' call immediately.
-   CONTACT RULE: If Name, Phone, or Email are listed as 'Unknown' above, you MUST politely ask the user to provide them AT THE START of the conversation. Collecting this information is your FIRST priority. Only if they are ALREADY provided (not 'Unknown'), you should skip asking and use them directly.
-   CONFIRMATION RULE: Before booking, verify the user's phone number character-by-character (e.g., 'So that is plus one, eight, two...') ONLY IF you just collected it. If it was already in the context, skip this.
-   TITLE RULE: Always ask the user "What is this booking for?" or "What is the topic of our meeting?" so you can use their answer as the 'service' (title) parameter when creating the calendar event.
-   AVAILABILITY RULE: You MUST NEVER book an appointment (call createEvent) without FIRST checking if the time is open using 'checkAvailability' or 'findAvailableSlots'.
-8. LANGUAGE: You are fully proficient in both English and Hindi. Always reply fluently in the language the user speaks to you. If the user speaks Hindi, reply strictly in Hindi.\n\n`;
+   
+   RULE: If any of Name, Phone, or Email are 'Unknown', you MUST politely ask the user for them AT THE VERY START of the call. This is your FIRST priority. 
+   SKIP RULE: If they are NOT 'Unknown', do NOT ask for them.
+   CONFIRMATION: Confirm any NEWLY collected phone number character-by-character.
+8. PHONETIC HINT: If the user's name is "Amrita", ensure you pronounce it clearly as "Am-ree-ta".
+9. BOOKING RULE: Once the user selects or confirms a time, perform 'createEvent' immediately.
+10. LANGUAGE: Proficient in English and Hindi. Use the user's language.\n\n`;
 
         let systemPrompt = "";
         if (vapiConf?.systemPrompt) {
@@ -527,14 +527,11 @@ export class VapiService {
         });
         const dateNote = `\nIMPORTANT: The current date and time is ${currentDateTimeStr}. Use this to understand relative terms like 'tomorrow' or 'next Monday'.`;
 
-        let userContext = "";
-        if (userMetadata) {
-            userContext = `\n\nCURRENT USER CONTEXT (Already Provided):
+        let userContext = `\n\nCURRENT USER CONTEXT:
 - Name: ${userMetadata.userName || userMetadata.name || 'Unknown'}
 - Phone: ${userMetadata.userPhone || userMetadata.phone || 'Unknown'}
 - Email: ${userMetadata.userEmail || userMetadata.email || 'Unknown'}
-- NOTE: If Name, Phone, or Email are listed as 'Unknown', you MUST ask the user for them at the start of the call. If they are already provided, DO NOT ask for them and proceed to use them for booking.`;
-        }
+- ACTION: Apply LEAD CAPTURE rules from directives.`;
 
         const prompt = `AI Assistant is a sophisticated training platform at ${companyName}...
 Additional Instruction:
