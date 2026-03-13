@@ -137,9 +137,8 @@ export async function POST(req: NextRequest) {
         const toolCalls = body.message?.toolCalls || [];
 
         if (toolCalls.length === 0) {
-            return NextResponse.json({
-                error: 'No tool calls found in request'
-            }, { status: 400 });
+            console.log('[Vapi Webhook] No tool calls found. Returning 200 OK for lifecycle/system event.');
+            return NextResponse.json({ success: true, message: 'Lifecycle event received' });
         }
 
         // Process each tool call

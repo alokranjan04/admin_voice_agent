@@ -443,7 +443,15 @@ export class VapiService {
                 transcriber: {
                     provider: (vapiConf?.transcriber?.provider || "deepgram") as any,
                     model: vapiConf?.transcriber?.model || "nova-3",
-                    language: vapiConf?.transcriber?.language || "en-IN",
+                    language: (() => {
+                        const lang = vapiConf?.transcriber?.language || "en-IN";
+                        if (lang.toLowerCase() === 'en-in') return 'en-IN';
+                        if (lang.toLowerCase() === 'en-us') return 'en-US';
+                        if (lang.toLowerCase() === 'en-gb') return 'en-GB';
+                        if (lang.toLowerCase() === 'en-au') return 'en-AU';
+                        if (lang.toLowerCase() === 'en-nz') return 'en-NZ';
+                        return lang;
+                    })(),
                     smartFormat: true,
                     keywords: [
                         ...companyName.split(/\s+/),
