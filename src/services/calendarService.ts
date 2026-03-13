@@ -299,15 +299,9 @@ export async function createEvent(details: {
 
         startDateTime.setHours(hours, minutes, 0, 0);
 
-        const endDateTime = new Date(startDateTime.getTime() + slotDuration * 60000);
-
-        // Format times locally without 'Z' suffix so Google uses the given timeZone
-        const startString = `${details.date}T${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:00`;
-
-        const endHours = endDateTime.getHours();
-        const endMinutes = endDateTime.getMinutes();
-        // Handle overflow to next day natively
-        const endString = `${endDateTime.toISOString().split('T')[0]}T${String(endHours).padStart(2, '0')}:${String(endMinutes).padStart(2, '0')}:00`;
+        const tzOffset = '+05:30'; 
+        const startString = buildTargetTzString(startDateTime, tzOffset);
+        const endString = buildTargetTzString(endDateTime, tzOffset);
 
         // 🚨 CRITICAL FIX: Explicitly double-check availability to prevent double-booking 
         // even if the LLM forgot to call the findAvailableSlots or checkAvailability tools first.
