@@ -63,13 +63,17 @@ export default function DemoCallButton({ customClass, text }: DemoCallButtonProp
                 headers: { 'Content-Type': 'application/json' }
             });
 
-            if (!res.ok) throw new Error('Failed to generate demo agent');
+            if (!res.ok) {
+                const errorData = await res.json().catch(() => ({}));
+                console.error("Failed to generate demo agent. Error details:", errorData);
+                throw new Error(errorData.error || 'Failed to generate demo agent');
+            }
 
             const data = await res.json();
             const assistantId = data.assistantId;
 
             await vapi.start(assistantId);
-        } catch (err) {
+        } catch (err: any) {
             console.error("Failed to start Demo Voice call:", err);
             setCallStatus('idle');
         }
