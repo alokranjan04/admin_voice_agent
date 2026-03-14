@@ -168,7 +168,7 @@ You are a sharp, high-level enterprise consultant focused on identifying growth 
                 model: "nova-3",
                 language: "en-IN",
                 smartFormat: true,
-                keywords: ["AeroHyre", "TellYourJourney", "aviation", "Alok", "AI", "Sutherland", "Voice", "Support", "Strategic", "Book a Demo", "Demo Booking"]
+                keywords: ["AeroHyre", "TellYourJourney", "aviation", "Alok", "AI", "Sutherland", "Voice", "Support", "Strategic", "Book", "Demo", "Booking"]
             },
             firstMessage: "Welcome to Sutherland Voice Support! I'm here to build your autonomous growth roadmap for your business. To start creating your strategy, could I get your name?",
             silenceTimeoutSeconds: 60,

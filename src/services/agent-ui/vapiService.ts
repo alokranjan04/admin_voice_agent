@@ -482,8 +482,9 @@ export class VapiService {
                         ...companyName.split(/\s+/),
                         "Youhe",
                         "Amrita",
-                        "Book a Demo",
-                        "Demo Booking",
+                        "Book",
+                        "Demo",
+                        "Booking",
                         ...(this.sessionMetadata.name || "").split(/\s+/),
                         ...(this.sessionMetadata.userName || "").split(/\s+/),
                     ]
