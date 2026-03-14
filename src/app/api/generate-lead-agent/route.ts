@@ -326,15 +326,19 @@ Be enthusiastic. Greet ${name} by name. Let's show ${name} what an AI-powered ${
         // TRACK FOR CLEANUP (Expires in 30 mins)
         if (assistantId && adminDb) {
             try {
+                const isInitialSutherland = assistantId === initialSutherlandId;
                 const expiry = new Date(Date.now() + 30 * 60 * 1000);
                 await adminDb.collection('temporary_assistants').doc(assistantId).set({
                     assistantId,
-                    company,
+                    company: isInitialSutherland ? "Sutherland" : company,
                     leadEmail: email,
                     leadName: name,
-                    industry: industry || '',
-                    companyDetails: companyDetails || '',
-                    services: extractedServices || [],
+                    industry: isInitialSutherland ? "Global Experience Transformation" : (industry || ''),
+                    companyDetails: isInitialSutherland ? "Global Experience Transformation Agency. Sutherland Voice Support." : (companyDetails || ''),
+                    services: isInitialSutherland ? [
+                        { name: "Sutherland CX Support", description: "Voice AI powered customer experience support." },
+                        { name: "Digital Transformation", description: "Strategic consulting for digital CX." }
+                    ] : (extractedServices || []),
                     expiresAt: expiry.toISOString(),
                     createdAt: new Date().toISOString()
                 });
