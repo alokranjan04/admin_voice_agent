@@ -339,6 +339,41 @@ export const firebaseService = {
     }
   },
 
+  async getLeadAgentConfig(assistantId: string): Promise<BusinessConfig | null> {
+    if (!db) return null;
+    try {
+      console.log(`[Auth] Lead Agent Fetch: temporary_assistants/${assistantId}`);
+      const leadRef = doc(db, 'temporary_assistants', assistantId);
+      const docSnap = await getDoc(leadRef);
+
+      if (docSnap.exists()) {
+        const leadData = docSnap.data();
+        // Construct a BusinessConfig from lead data
+        return {
+          ...DEFAULT_BUSINESS_CONFIG,
+          id: assistantId,
+          metadata: {
+            ...DEFAULT_BUSINESS_CONFIG.metadata,
+            businessName: leadData.company || "Your Business",
+            industry: leadData.industry || "",
+            description: leadData.companyDetails || ""
+          },
+          services: leadData.services || [],
+          vapi: {
+            ...DEFAULT_BUSINESS_CONFIG.vapi,
+            assistantId: assistantId,
+            showFloatingWidget: true,
+            showTextChatbot: false
+          }
+        } as BusinessConfig;
+      }
+      return null;
+    } catch (e) {
+      console.error('Error fetching lead agent config:', e);
+      return null;
+    }
+  },
+
   async saveAgentConfig(config: BusinessConfig): Promise<boolean> {
     if (!db) return false;
     try {

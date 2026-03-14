@@ -63,9 +63,10 @@ const NotFoundState: React.FC = () => (
 interface AgentInterfaceProps {
     initialOrgId?: string;
     initialAgentId?: string;
+    initialAssistantId?: string;
 }
 
-const AgentInterface: React.FC<AgentInterfaceProps> = ({ initialOrgId, initialAgentId }) => {
+const AgentInterface: React.FC<AgentInterfaceProps> = ({ initialOrgId, initialAgentId, initialAssistantId }) => {
     const searchParams = useSearchParams();
     const router = useRouter(); // For programmatic navigation if needed
 
@@ -240,6 +241,9 @@ const AgentInterface: React.FC<AgentInterfaceProps> = ({ initialOrgId, initialAg
 
         // Firebase Config
         const unsubscribeConfig = firebaseService.subscribeToLatestConfig(async (remoteConfig, source) => {
+            // Only update if we are NOT in lead-demo mode (loading by initialAssistantId)
+            if (initialAssistantId) return;
+
             const sourceTag = source === 'tenant' ? '[TENANT]' : '[GLOBAL-LATEST]';
             setLogs(prev => [...prev, {
                 type: 'system',
@@ -253,30 +257,29 @@ const AgentInterface: React.FC<AgentInterfaceProps> = ({ initialOrgId, initialAg
             // Sync Floating Widget Preference
             if (remoteConfig.vapi?.showFloatingWidget === false) {
                 localStorage.setItem('hide_floating_widget', 'true');
-                // iframe handling if embedded? 
             } else {
                 localStorage.removeItem('hide_floating_widget');
             }
+        });
 
-            // Auto-load persisted calendar token
-            if (!calendarService.isAuthenticated()) {
-                const calIntegration = remoteConfig.integrations?.googleCalendar;
-                if (calIntegration?.accessToken) {
-                    // ... same logic as App.tsx
-                    try {
-                        const token = calIntegration.accessToken;
-                        const profile = await calendarService.setManualToken(token);
-                        setIsCalendarAuth(true);
-                        setConnectedEmail(profile.email);
-                        setLogs(prev => [...prev, { type: 'system', text: `[AUTH] Database Synced (${profile.email})`, timestamp: new Date() }]);
-                    } catch (e: any) {
-                        setLogs(prev => [...prev, { type: 'system', text: `[AUTH SYNC FAIL] ${e.message}`, timestamp: new Date() }]);
-                    }
-                } else {
-                    // Log Guest Mode
+        const loadLeadConfig = async () => {
+            if (initialAssistantId) {
+                const leadConfig = await firebaseService.getLeadAgentConfig(initialAssistantId);
+                if (leadConfig) {
+                    setLogs(prev => [...prev, {
+                        type: 'system',
+                        text: `[LEAD-DEMO] Demo Configuration active: ${leadConfig.metadata.businessName}`,
+                        timestamp: new Date()
+                    }]);
+                    setConfig(leadConfig);
+                    setIsLoadingConfig(false);
                 }
             }
-        });
+        };
+
+        if (initialAssistantId) {
+            loadLeadConfig();
+        }
 
         // Service Updates
         voiceService.onStatusChange = (newStatus) => setStatus(newStatus);
@@ -313,7 +316,10 @@ const AgentInterface: React.FC<AgentInterfaceProps> = ({ initialOrgId, initialAg
                 setError('API Key is missing (NEXT_PUBLIC_VAPI_PUBLIC_KEY).');
                 return;
             }
-            await voiceService.connect(config, { muteAssistant: options.silent });
+            await voiceService.connect(config, { 
+                muteAssistant: options.silent,
+                assistantId: initialAssistantId || config.vapi?.assistantId 
+            });
         }
     };
 

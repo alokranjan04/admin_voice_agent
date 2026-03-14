@@ -331,6 +331,9 @@ Be enthusiastic. Greet ${name} by name. Let's show ${name} what an AI-powered ${
                     company,
                     leadEmail: email,
                     leadName: name,
+                    industry: industry || '',
+                    companyDetails: companyDetails || '',
+                    services: extractedServices || [],
                     expiresAt: expiry.toISOString(),
                     createdAt: new Date().toISOString()
                 });

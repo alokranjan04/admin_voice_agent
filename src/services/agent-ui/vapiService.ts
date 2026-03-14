@@ -217,7 +217,7 @@ export class VapiService {
         }
     }
 
-    public async connect(config: BusinessConfig, options: { muteAssistant?: boolean } = {}) {
+    public async connect(config: BusinessConfig, options: { muteAssistant?: boolean, assistantId?: string } = {}) {
         if (!this.vapi) {
             this.onLog({ type: 'system', text: 'Vapi not initialized (missing key)', timestamp: new Date() });
             return;
@@ -226,6 +226,26 @@ export class VapiService {
         this.currentConfig = config;
         this.onStatusChange('connecting');
         this.onLog({ type: 'system', text: 'Connecting to Vapi...', timestamp: new Date() });
+
+        // If assistantId is provided, use it directly (Demo Mode / Lead Agent Mode)
+        if (options.assistantId) {
+            try {
+                this.onLog({ type: 'system', text: `Starting session with Assistant ID: ${options.assistantId}`, timestamp: new Date() });
+                await this.vapi.start(options.assistantId, {
+                    metadata: {
+                        leadName: this.sessionMetadata.name || '',
+                        leadEmail: this.sessionMetadata.email || '',
+                        leadPhone: this.sessionMetadata.phone || ''
+                    }
+                });
+                return;
+            } catch (e: any) {
+                console.error("Failed to start Vapi call by ID", e);
+                this.onLog({ type: 'system', text: `Failed to connect by ID: ${e.message}`, timestamp: new Date() });
+                this.onStatusChange('disconnected');
+                return;
+            }
+        }
 
         const vapiConf = config.vapi;
         this.onLog({ type: 'system', text: `Config Loaded: ${config.id || 'unidentified'}. Vapi data present: ${!!vapiConf}`, timestamp: new Date() });
@@ -330,8 +350,8 @@ export class VapiService {
                 || "";
 
             let firstMessage = vapiConf?.firstMessage || (userName 
-                ? `Hello ${userName}! This is the AI Assistant for ${companyName}. How can I help you today?` 
-                : `Hello, I am the AI Assistant for ${companyName}. How can I help you today?`);
+                ? `Hello ${userName}! This is the AI Assistant for ${companyName}. I'm here to help accelerate your business growth. How can I assist you today?` 
+                : `Hello, I'm the AI Assistant for ${companyName}. I'm here to help accelerate your business growth. How can I assist you today?`);
 
             console.log("[Personalization] Sources:", {
                 sessionMetadata: this.sessionMetadata?.userName,
@@ -469,6 +489,7 @@ export class VapiService {
                         .filter(k => k && k.length > 2)
                         .filter((v, i, a) => a.indexOf(v) === i)
                 },
+                backgroundDenoising: true,
                 clientMessages: ["transcript", "hang", "function-call", "tool-calls", "speech-update", "metadata", "conversation-update"],
                 // Enable Server URL for Backend Tool Handling (if configured)
                 serverUrl: process.env.NEXT_PUBLIC_APP_URL
