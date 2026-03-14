@@ -5,7 +5,6 @@ import { useSearchParams, useParams, useRouter } from 'next/navigation';
 import InfoPanel from '@/components/agent-ui/InfoPanel';
 import LiveVisualizer from '@/components/agent-ui/LiveVisualizer';
 import AdminSettings from '@/components/agent-ui/AdminSettings';
-import ChatWidget from '@/components/agent-ui/ChatWidget';
 import ErrorBoundary from '@/components/agent-ui/ErrorBoundary';
 // import { WelcomeForm } from '@/components/agent-ui/WelcomeForm'; // Not used in rendered JSX? functionality seems embedded or missing usage in App.tsx excerpt? 
 // Ah, App.tsx line 7 imported it, line 60 used state showWelcomeForm, but line 273 handleWelcomeFormSubmit defined.
@@ -85,7 +84,6 @@ const AgentInterface: React.FC<AgentInterfaceProps> = ({ initialOrgId, initialAg
     const [config, setConfig] = useState<BusinessConfig>(DEFAULT_BUSINESS_CONFIG);
     const [isLoadingConfig, setIsLoadingConfig] = useState(true);
     const [showSettings, setShowSettings] = useState(false);
-    const [showLogs, setShowLogs] = useState(false); // Default false for simplicity, will update in useEffect
     const [isWidget, setIsWidget] = useState(false);
 
     // getEnvVar
@@ -94,7 +92,6 @@ const AgentInterface: React.FC<AgentInterfaceProps> = ({ initialOrgId, initialAg
 
     useEffect(() => {
         // Initial setup
-        setShowLogs(window.innerHeight > 850);
 
         let bridgeToken = "";
 
@@ -227,7 +224,6 @@ const AgentInterface: React.FC<AgentInterfaceProps> = ({ initialOrgId, initialAg
                             if (!refreshToken) {
                                 alert("Warning: No Refresh Token received. The agent may disconnect after 1 hour. Please revoke access and try again.");
                             }
-
                         } catch (e) {
                             console.error("Failed to save token", e);
                         }
@@ -239,59 +235,66 @@ const AgentInterface: React.FC<AgentInterfaceProps> = ({ initialOrgId, initialAg
             );
         }
 
-        // Firebase Config
-        const unsubscribeConfig = firebaseService.subscribeToLatestConfig(async (remoteConfig, source) => {
-            // Only update if we are NOT in lead-demo mode (loading by initialAssistantId)
-            if (initialAssistantId) return;
-
-            const sourceTag = source === 'tenant' ? '[TENANT]' : '[GLOBAL-LATEST]';
-            setLogs(prev => [...prev, {
-                type: 'system',
-                text: `${sourceTag} Configuration active: ${remoteConfig.metadata.businessName}`,
-                timestamp: new Date()
-            }]);
-
-            setConfig(remoteConfig);
-            setIsLoadingConfig(false);
-
-            // Sync Floating Widget Preference
-            if (remoteConfig.vapi?.showFloatingWidget === false) {
-                localStorage.setItem('hide_floating_widget', 'true');
-            } else {
-                localStorage.removeItem('hide_floating_widget');
-            }
-        });
-
-        const loadLeadConfig = async () => {
-            if (initialAssistantId) {
-                const leadConfig = await firebaseService.getLeadAgentConfig(initialAssistantId);
-                if (leadConfig) {
-                    setLogs(prev => [...prev, {
-                        type: 'system',
-                        text: `[LEAD-DEMO] Demo Configuration active: ${leadConfig.metadata.businessName}`,
-                        timestamp: new Date()
-                    }]);
-                    setConfig(leadConfig);
-                    setIsLoadingConfig(false);
-                }
-            }
-        };
-
-        if (initialAssistantId) {
-            loadLeadConfig();
-        }
-
         // Service Updates
         voiceService.onStatusChange = (newStatus) => setStatus(newStatus);
         voiceService.onVolumeChange = (vol) => setVolume(vol);
         voiceService.onLog = (entry) => setLogs(prev => [...prev, entry]);
 
         return () => {
-            unsubscribeConfig();
             voiceService.disconnect();
         };
 
     }, [initialOrgId, initialAgentId, searchParams, googleClientId]);
+
+    const loadLeadConfig = useCallback(async (id: string) => {
+        setIsLoadingConfig(true);
+        setError(null);
+        try {
+            console.log(`[AgentInterface] Loading lead config for: ${id}`);
+            const leadConfig = await firebaseService.getLeadAgentConfig(id);
+            if (leadConfig) {
+                console.log(`[AgentInterface] Config loaded: ${leadConfig.metadata.businessName}`);
+                setConfig(leadConfig);
+                setLogs(prev => [...prev, {
+                    type: 'system',
+                    text: `[LEAD-DEMO] Demo Configuration active: ${leadConfig.metadata.businessName}`,
+                    timestamp: new Date()
+                }]);
+            } else {
+                console.warn(`[AgentInterface] No config found for assistantId: ${id}`);
+            }
+        } catch (err) {
+            console.error("Failed to load lead config:", err);
+        } finally {
+            setIsLoadingConfig(false);
+        }
+    }, []);
+
+    useEffect(() => {
+        if (initialAssistantId) {
+            loadLeadConfig(initialAssistantId);
+        } else {
+            // Subscribe to regular config
+            const unsubscribe = firebaseService.subscribeToLatestConfig(async (remoteConfig, source) => {
+                const sourceTag = source === 'tenant' ? '[TENANT]' : '[GLOBAL-LATEST]';
+                setLogs(prev => [...prev, {
+                    type: 'system',
+                    text: `${sourceTag} Configuration active: ${remoteConfig.metadata.businessName}`,
+                    timestamp: new Date()
+                }]);
+                setConfig(remoteConfig);
+                setIsLoadingConfig(false);
+
+                // Sync Floating Widget Preference
+                if (remoteConfig.vapi?.showFloatingWidget === false) {
+                    localStorage.setItem('hide_floating_widget', 'true');
+                } else {
+                    localStorage.removeItem('hide_floating_widget');
+                }
+            });
+            return () => unsubscribe();
+        }
+    }, [initialAssistantId, loadLeadConfig]);
 
     // Title effect
     useEffect(() => {
@@ -356,13 +359,7 @@ const AgentInterface: React.FC<AgentInterfaceProps> = ({ initialOrgId, initialAg
     if (isWidget) {
         return (
             <div className="h-screen w-full bg-transparent overflow-hidden pointer-events-none">
-                <ChatWidget
-                    config={config}
-                    status={status}
-                    volume={volume}
-                    logs={logs}
-                    onToggleCall={handleToggleConnection}
-                />
+                <p className="text-white p-4">Widget mode deprecated.</p>
             </div>
         );
     }
@@ -455,20 +452,15 @@ const AgentInterface: React.FC<AgentInterfaceProps> = ({ initialOrgId, initialAg
                                 ${status === 'connecting' ? 'opacity-75 cursor-wait' : ''}
                             `}
                                 >
-                                    {status === 'connected' ? (
+                                        {status === 'connected' ? (
                                         <>
-                                            <MicOff className="w-5 h-5 sm:w-6 sm:h-6" />
+                                            <MicOff className="w-6 h-6" />
                                             End Session
-                                        </>
-                                    ) : status === 'connecting' ? (
-                                        <>
-                                            <div className="w-5 h-5 sm:w-6 sm:h-6 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                                            Connecting...
                                         </>
                                     ) : (
                                         <>
-                                            <Bot className="w-5 h-5 sm:w-6 sm:h-6" />
-                                            Start Call
+                                            <Phone className="w-6 h-6" />
+                                            {status === 'connecting' ? 'Connecting...' : 'Start Call'}
                                         </>
                                     )}
                                 </button>
@@ -481,11 +473,11 @@ const AgentInterface: React.FC<AgentInterfaceProps> = ({ initialOrgId, initialAg
                                 )}
 
                                 {!isWidget && (
-                                    <p className="text-slate-400 text-sm mt-2 max-w-md text-center">
-                                        {status === 'connected'
-                                            ? "Listening... Speak naturally to the agent."
-                                            : "Click 'Start Call' to initialize the Voice AI Agent (Powered by Gemini)."}
-                                    </p>
+                                    <p className="text-slate-400 text-xs md:text-sm mt-2 max-w-md text-center px-4">
+                                {status === 'connected'
+                                    ? "Listening... Speak naturally to the agent."
+                                    : "Click 'Start Call' to initialize the Voice AI Agent (Powered by VAPI)."}
+                            </p>
                                 )}
 
                                 {!isCalendarAuth && !isWidget && (
@@ -497,88 +489,53 @@ const AgentInterface: React.FC<AgentInterfaceProps> = ({ initialOrgId, initialAg
                                     </div>
                                 )}
                             </div>
+                            </div>
                         </div>
                     </main>
+                </div>
 
-                    {/* Bottom Log / Debug Panel */}
-                    {!isWidget && (
-                        <div className={`bg-slate-900 text-slate-300 ${showLogs ? 'h-40 sm:h-56' : 'h-9'} border-t border-slate-700 flex flex-col flex-shrink-0 transition-all duration-300 overflow-hidden`}>
-                            <div
-                                className="px-4 py-1.5 flex items-center justify-between gap-2 text-slate-400 border-b border-slate-800 bg-slate-900/50 cursor-pointer hover:bg-slate-800 transition-colors"
-                                onClick={() => setShowLogs(!showLogs)}
-                            >
-                                <div className="flex items-center gap-2">
-                                    <Terminal className="w-4 h-4 text-teal-500" />
-                                    <span className="font-semibold text-[10px] sm:text-xs uppercase tracking-wider">Live Transcript & Logs</span>
+                {/* Bottom Log / Debug Panel - Fixed Height */}
+                <div className="bg-slate-900 text-slate-300 h-48 md:h-64 border-t border-slate-700 flex flex-col flex-shrink-0">
+                    <div className="px-3 md:px-4 py-2 flex items-center gap-2 text-slate-400 border-b border-slate-800 bg-slate-900/50">
+                        <Terminal className="w-4 h-4" />
+                        <span className="font-semibold text-[10px] md:text-xs uppercase tracking-wider">Live Transcript & Logs</span>
+                    </div>
+                    <div className="flex-1 overflow-y-auto p-2 md:p-4 space-y-2 md:space-y-3 font-mono text-[10px] md:text-xs">
+                        <div className="flex gap-2 opacity-50">
+                            <span className="text-teal-500">[INIT]</span>
+                            <span>Configuration loaded for {config.metadata.businessName}</span>
+                        </div>
+
+                        {logs.map((log, index) => (
+                            <div key={index} className={`flex gap-3 ${log.type === 'user' ? 'text-blue-300' : log.type === 'model' ? 'text-green-300' : 'text-slate-500'}`}>
+                                <div className="min-w-[60px] text-slate-600 select-none">
+                                    {log.timestamp.toLocaleTimeString([], { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' })}
                                 </div>
-                                <div className="flex items-center gap-2">
-                                    {showLogs && <span className="text-[10px] text-slate-500 hidden sm:inline">Click to collapse</span>}
-                                    <button className="p-1 hover:text-white transition-colors">
-                                        <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-300 ${showLogs ? 'rotate-0' : 'rotate-180'}`} />
-                                    </button>
+                                <div className="flex-shrink-0 mt-0.5">
+                                    {log.type === 'user' ? <User className="w-3 h-3" /> : log.type === 'model' ? <Bot className="w-3 h-3" /> : <Info className="w-3 h-3" />}
+                                </div>
+                                <div className="break-words w-full">
+                                    <span className={`font-bold mr-2 uppercase text-[10px] tracking-wider ${log.type === 'user' ? 'text-blue-500' : log.type === 'model' ? 'text-green-500' : 'text-slate-500'
+                                        }`}>
+                                        {log.type === 'model' ? 'Agent' : log.type}
+                                    </span>
+                                    {log.type === 'model' ? (
+                                        <div className="inline-block">
+                                            {renderFormattedMessage(formatMessage(log.text))}
+                                        </div>
+                                    ) : (
+                                        log.text
+                                    )}
                                 </div>
                             </div>
-                            {showLogs && (
-                                <div className="flex-1 overflow-y-auto p-4 space-y-3 font-mono text-[10px] sm:text-xs">
-                                    <div className="flex gap-2 opacity-50">
-                                        <span className="text-teal-500">[INIT]</span>
-                                        <span>Configuration loaded for {config.metadata.businessName}</span>
-                                    </div>
-
-                                    {logs.map((log, index) => (
-                                        <div key={index} className={`flex gap-3 ${log.type === 'user' ? 'text-blue-300' : log.type === 'model' ? 'text-green-300' : 'text-slate-500'}`}>
-                                            <div className="min-w-[60px] text-slate-600 select-none">
-                                                {log.timestamp.toLocaleTimeString([], { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' })}
-                                            </div>
-                                            <div className="flex-shrink-0 mt-0.5">
-                                                {log.type === 'user' ? <User className="w-3 h-3" /> : log.type === 'model' ? <Bot className="w-3 h-3" /> : <Info className="w-3 h-3" />}
-                                            </div>
-                                            <div className="break-words w-full">
-                                                <span className={`font-bold mr-2 uppercase text-[10px] tracking-wider ${log.type === 'user' ? 'text-blue-500' : log.type === 'model' ? 'text-green-500' : 'text-slate-500'
-                                                    }`}>
-                                                    {log.type === 'model' ? 'Agent' : log.type}
-                                                </span>
-                                                {log.type === 'model' ? (
-                                                    <div className="inline-block">
-                                                        {renderFormattedMessage(formatMessage(log.text))}
-                                                    </div>
-                                                ) : (
-                                                    log.text
-                                                )}
-                                            </div>
-                                        </div>
-                                    ))}
-                                    <div ref={logsEndRef} />
-                                </div>
-                            )}
-                        </div>
-                    )}
-                    
-                    {/* Floating Widgets Rendering */}
-                    {!isWidget && config.vapi?.showFloatingWidget !== false && (
-                        <ChatWidget
-                            config={config}
-                            status={status}
-                            volume={volume}
-                            logs={logs}
-                            onToggleCall={handleToggleConnection}
-                        />
-                    )}
-
-                    {!isWidget && config.vapi?.showTextChatbot !== false && (
-                        <ChatWidget
-                            config={config}
-                            status={status}
-                            volume={volume}
-                            logs={logs}
-                            onToggleCall={() => handleToggleConnection({ silent: true })}
-                            overrideWidgetType="chat"
-                        />
-                    )}
+                        ))}
+                        <div ref={logsEndRef} />
+                    </div>
                 </div>
             </div>
-        </ErrorBoundary>
-    );
+        </div>
+    </ErrorBoundary>
+);
 };
 
 export default AgentInterface;

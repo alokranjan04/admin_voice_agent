@@ -319,8 +319,9 @@ Be enthusiastic. Greet ${name} by name. Let's show ${name} what an AI-powered ${
             throw new Error(`Failed to create Vapi Assistant: ${vapiData.message || 'Unknown error'}`);
         }
 
-        const assistantId = vapiData.id;
-        console.log(`[Generate Agent API] Created Assistant ID: ${assistantId}`);
+        const initialSutherlandId = "4fa0d881-632c-4ddd-b8eb-19021402d0d1";
+        const assistantId = (company.toLowerCase().includes('sutherland')) ? initialSutherlandId : vapiData.id;
+        console.log(`[Generate Agent API] Resolved Assistant ID: ${assistantId} (Initial: ${assistantId === initialSutherlandId})`);
 
         // TRACK FOR CLEANUP (Expires in 30 mins)
         if (assistantId && adminDb) {
@@ -344,7 +345,10 @@ Be enthusiastic. Greet ${name} by name. Let's show ${name} what an AI-powered ${
         }
 
         // 2. Determine the host URL for the Test Drive link
-        const testLink = `${protocol}://${host}/test/${assistantId}`;
+        // USER REQUEST: Always point to the "initial" Sutherland bot if applicable
+        const emailAssistantId = assistantId;
+
+        const testLink = `${protocol}://${host}/test/${emailAssistantId}`;
 
         // 3. Handle Delivery Mode — Call directly via VAPI API (no internal fetch)
         // 3. Handle Delivery Mode — Call directly via VAPI API
