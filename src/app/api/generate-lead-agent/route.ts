@@ -106,28 +106,28 @@ export async function POST(req: Request) {
         // Language-aware first message - PERSONALIZED & VALUE-LED
         const firstMessageMap: Record<string, string> = {
             'English': interest 
-                ? `Hello ${name}! Welcome to your custom ${company} AI representative. I see you're interested in ${interest}, so let's jump right in. This is the real AI agent we've built for you—how can I show you how we revolutionize that area for ${company}?`
-                : `Hello ${name}! Welcome to your custom ${company} AI representative. This is the real, fully-functional bot built specifically for your business. I'm curious—which part of ${company} are you most interested in exploring for AI: Customer Support, Sales, or Operations?`,
+                ? `Hello ${name}! I'm calling from ${company}. I see you're interested in ${interest}, so let's jump right in. How can I show you how we can revolutionize that area for ${company}?`
+                : `Hello ${name}! I'm calling from ${company}. I noticed you're exploring how AI can transform your business. I'm curious—which part of ${company} are you most interested in: Customer Support, Sales, or Operations?`,
             
             'Hindi': interest
-                ? `Arre ${name} ji! ${company} ke liye aapka real AI representative ready hai. Maine dekha aap ${interest} mein interested hain—to chaliye seedhe point par aate hain. Main aapko kaise dikha sakta hoon ki hum ${company} ke liye is area ko kaise behtar bana sakte hain?`
-                : `Arre ${name} ji! ${company} ke liye aapka real AI representative ready hai. Main thoda curious hoon—aap business ke kis area mein AI explore karna chahte hain: Customer Support, Sales and Lead Gen, ya internal Operations?`,
+                ? `Arre ${name} ji! Main ${company} se bol raha hoon. Maine dekha aap ${interest} mein interested hain—to chaliye seedhe point par aate hain. Main aapko kaise dikha sakta hoon ki hum ${company} ke liye is area ko kaise behtar bana sakte hain?`
+                : `Arre ${name} ji! Main ${company} se bol raha hoon. Main thoda curious hoon—aap business ke kis area mein AI explore karna chahte hain: Customer Support, Sales and Lead Gen, ya internal Operations?`,
             
             'French': interest
-                ? `Bonjour ${name} ! Bienvenue chez votre représentant IA personnalisé pour ${company}. Je vois que vous êtes intéressé par ${interest}, alors entrons directement dans le vif du sujet. C'est le véritable agent IA que nous avons construit pour vous.`
-                : `Bonjour ${name} ! Bienvenue chez votre représentant IA personnalisé pour ${company}. C'est le véritable agent IA, entièrement fonctionnel. Quelle partie de votre entreprise souhaitez-vous explorer ?`,
+                ? `Bonjour ${name} ! Je vous appelle de la part de ${company}. Je vois que vous êtes intéressé par ${interest}, alors entrons directement dans le vif du sujet. Comment puis-je vous montrer comment nous révolutionnons ce domaine pour ${company} ?`
+                : `Bonjour ${name} ! Je vous appelle de la part de ${company}. Quelle partie de votre entreprise souhaitez-vous explorer aujourd'hui : le service client, la vente ou les opérations ?`,
             
             'German': interest
-                ? `Hallo ${name}! Willkommen bei Ihrem maßgeschneiderten ${company} KI-Repräsentanten. Ich sehe, Sie interessieren sich für ${interest}. Dies ist der echte KI-Agent, den wir für Sie erstellt haben.`
-                : `Hallo ${name}! Willkommen bei Ihrem maßgeschneiderten ${company} KI-Repräsentanten. Dies ist der echte, voll funktionsfähige Bot für Ihr Unternehmen. Welchen Bereich möchten Sie erkunden?`,
+                ? `Hallo ${name}! Ich rufe von ${company} an. Ich sehe, Sie interessieren sich für ${interest}, also lassen Sie uns direkt zum Thema kommen. Wie kann ich Ihnen zeigen, wie wir diesen Bereich für ${company} revolutionieren?`
+                : `Hallo ${name}! Ich rufe von ${company} an. Welchen Bereich Ihres Unternehmens möchten Sie mit KI erkunden: Kundensupport, Vertrieb oder Betrieb?`,
             
             'Spanish': interest
-                ? `¡Hola ${name}! Bienvenido a tu representante de IA personalizado de ${company}. Veo que te interesa ${interest}. Este es el agente de IA real que hemos creado para ti.`
-                : `¡Hola ${name}! Bienvenido a tu representante de IA personalizado de ${company}. Este es el bot real y totalmente funcional para tu empresa. ¿Qué área te interesa explorar?`,
+                ? `¡Hola ${name}! Te llamo de parte de ${company}. Veo que te interesa ${interest}, así que entremos en materia. ¿Cómo puedo mostrarte cómo revolucionamos esa área para ${company}?`
+                : `¡Hola ${name}! Te llamo de parte de ${company}. ¿Qué área de tu negocio te interesa más explorar con IA: atención al cliente, ventas o procesos internos?`,
             
             'Arabic': interest
-                ? `مرحباً ${name}! مرحباً بك في ممثل الذكاء الاصطناعي المخصص لـ ${company}. أرى أنك مهتم بـ ${interest}. هذا هو وكيل الذكاء الاصطناعي الحقيقي الذي أنشأناه لك.`
-                : `مرحباً ${name}! مرحباً بك في ممثل الذكاء الاصطناعي المخصص لـ ${company}. هذا هو البوت الحقيقي والكامل لعملك. أي مجال تود استكشافه؟`,
+                ? `مرحباً ${name}! أنا أتصل بك من ${company}. أرى أنك مهتم بـ ${interest}، لذا دعنا ننتقل مباشرة إلى الموضوع. كيف يمكنني أن أريك كيف نحدث ثورة في هذا المجال من أجل ${company}؟`
+                : `مرحباً ${name}! أنا أتصل بك من ${company}. أي جزء من عملك أنت مهتم أكثر باستكشافه للذكاء الاصطناعي: دعم العملاء، المبيعات، أم العمليات الداخلية؟`,
         };
         const firstMessage = firstMessageMap[language] || firstMessageMap['English'];
 
@@ -156,9 +156,9 @@ export async function POST(req: Request) {
             timeZone: 'Asia/Kolkata'
         });
 
-        const systemPrompt = `You are a highly persuasive, intelligent, and friendly AI Voice Agent representing ${company}. Your primary goal is to provide a real, high-value interaction for the prospect, ${name}, who just launched this AI representative. 
+        const systemPrompt = `You are a highly persuasive, intelligent, and friendly representative for ${company}. Your primary goal is to provide a high-value interaction for the prospect, ${name}, who just requested information about your AI solutions. 
 
-**IMPORTANT:** Start by mentioning that you are the real, fully-functional AI representative for ${company}—not just a demo—and that they can try out your full capabilities right now.
+**STRICT RULE:** Do NOT mention that you are an "AI agent", "bot", or "custom representative." Simply act as a knowledgeable team member from ${company}.
 
 == CURRENT DATE & TIME ==
 Today is ${nowIST} (IST). ALWAYS use this as the real current date when referring to today, tomorrow, or any relative dates. DO NOT rely on your training data for the current date.
@@ -517,7 +517,7 @@ Be enthusiastic. Greet ${name} by name. Let's show ${name} what an AI-powered ${
                     </div>
                     <p style="font-size: 16px; line-height: 1.6; color: #4b5563;">
                         Hi ${name},<br><br>
-                        We have built a <strong>real, fully-functional Voice AI Agent</strong> trained to represent <strong>${company}</strong>. This is not just a demo—it is a live representative ready for your testing.
+                        We have prepared your personalized AI strategy for <strong>${company}</strong>.
                         <br><br>
                         <strong>${deliveryMessage}</strong>
                     </p>
