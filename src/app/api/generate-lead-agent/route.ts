@@ -114,28 +114,28 @@ export async function POST(req: Request) {
         // Language-aware first message - FUNCTIONAL & PERSONALIZED
         const firstMessageMap: Record<string, string> = {
             'English': interest 
-                ? `Hello ${name}! I'm the AI assistant for ${company}. I see you're looking into our ${interest} solutions. How can I assist you with that today?`
-                : `Hello ${name}! I'm the AI assistant for ${company}. How can I help you explore our solutions for Customer Support, Sales, or Operations today?`,
+                ? `Hello ${name}! I'm the AI assistant for ${company}. How can I assist you with our ${interest} services today?`
+                : `Hello ${name}! I'm the AI assistant for ${company}. How can I help you today? I can assist with Customer Support, Sales, or Operations.`,
             
             'Hindi': interest
-                ? `Namaste ${name} ji! Main ${company} ka AI assistant bol raha hoon. Maine dekha aap hamari ${interest} solutions dekh rahe hain. Main aaj aapki kaise madad kar sakta hoon?`
-                : `Namaste ${name} ji! Main ${company} ka AI assistant bol raha hoon. Main aaj aapki kaise madad kar sakta hoon: Customer Support, Sales, ya Operations mein?`,
+                ? `Namaste ${name} ji! Main ${company} ka AI assistant bol raha hoon. Main aaj aapki ${interest} services mein kaise madad kar sakta hoon?`
+                : `Namaste ${name} ji! Main ${company} ka AI assistant bol raha hoon. Main aaj aapki kaise madad kar sakta hoon? Aap mujhse Customer Support, Sales, ya Operations ke baare mein pooch sakte hain.`,
             
             'French': interest
-                ? `Bonjour ${name} ! Je suis l'assistant IA de ${company}. Je vois que vous consultez nos solutions de ${interest}. Comment puis-je vous aider aujourd'hui ?`
-                : `Bonjour ${name} ! Je suis l'assistant IA de ${company}. Comment puis-je vous aider à explorer nos solutions de service client, de vente ou d'opérations aujourd'hui ?`,
+                ? `Bonjour ${name} ! Je suis l'assistant IA de ${company}. Comment puis-je vous aider avec nos services de ${interest} aujourd'hui ?`
+                : `Bonjour ${name} ! Je suis l'assistant IA de ${company}. Comment puis-je vous aider aujourd'hui ? Je peux vous renseigner sur le support client, les ventes ou les opérations.`,
             
             'German': interest
-                ? `Hallo ${name}! Ich bin der KI-Assistent von ${company}. Ich sehe, Sie schauen sich unsere ${interest}-Lösungen an. Wie kann ich Ihnen heute dabei behilflich sein?`
-                : `Hallo ${name}! Ich bin der KI-Assistent von ${company}. Wie kann ich Ihnen heute helfen, unsere Lösungen für Kundensupport, Vertrieb oder Betrieb zu erkunden?`,
+                ? `Hallo ${name}! Ich bin der KI-Assistent von ${company}. Wie kann ich Ihnen heute bei unseren ${interest}-Dienstleistungen behilflich sein?`
+                : `Hallo ${name}! Ich bin der KI-Assistent von ${company}. Wie kann ich Ihnen heute helfen? Ich kann Sie zu Kundensupport, Vertrieb oder Betrieb beraten.`,
             
             'Spanish': interest
-                ? `¡Hola ${name}! Soy el asistente de IA para ${company}. Veo que estás interesado en nuestras soluciones de ${interest}. ¿En qué puedo ayudarte hoy?`
-                : `¡Hola ${name}! Soy el asistente de IA para ${company}. ¿En qué puedo ayudarte hoy a explorar nuestras soluciones de soporte, ventas u operaciones?`,
+                ? `¡Hola ${name}! Soy el asistente de IA para ${company}. ¿En qué puedo ayudarte con nuestros servicios de ${interest} hoy?`
+                : `¡Hola ${name}! Soy el asistente de IA para ${company}. ¿En qué puedo ayudarte hoy? Puedo asistirte con soporte, ventas u operaciones.`,
             
             'Arabic': interest
-                ? `مرحباً ${name}! أنا المساعد الذكي لشركة ${company}. أرى أنك مهتم بحلولنا في ${interest}. كيف يمكنني مساعدتك في ذلك اليوم؟`
-                : `مرحباً ${name}! أنا المساعد الذكي لشركة ${company}. كيف يمكنني مساعدتك اليوم في استكشاف حلولنا لدعم العملاء، المبيعات، أو العمليات؟`,
+                ? `مرحباً ${name}! أنا المساعد الذكي لشركة ${company}. كيف يمكنني مساعدتك في خدمات ${interest} اليوم؟`
+                : `مرحباً ${name}! أنا المساعد الذكي لشركة ${company}. كيف يمكنني مساعدتك اليوم؟ يمكنني مساعدتك في دعم العملاء، المبيعات، أو العمليات.`,
         };
         const firstMessage = firstMessageMap[language] || firstMessageMap['English'];
 
