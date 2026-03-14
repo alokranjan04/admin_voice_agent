@@ -392,3 +392,38 @@ function processResult(result: any) {
     }
   } as Partial<AgentConfiguration>;
 }
+
+/**
+ * Generates 4-5 industry-specific common questions and answers for a given company and industry.
+ */
+export async function generateIndustryFAQs(companyName: string, industry: string, focalArea: string, context?: string): Promise<string> {
+  const apiKey = getGeminiApiKey();
+  if (!apiKey) return "";
+
+  const genAI = new GoogleGenerativeAI(apiKey);
+  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+  const prompt = `
+    You are a professional business consultant. Generate 4-5 common questions and answers (FAQ) for a customer interacting with an AI assistant from a company called "${companyName}".
+    
+    Industry: ${industry}
+    Focal Area (Support/Sales/Ops): ${focalArea}
+    Additional Context: ${context || 'N/A'}
+    
+    The FAQs should be professional, helpful, and specific to the industry and focal area. 
+    Format the output as a clean Markdown list with "Q:" and "A:".
+    
+    Example:
+    ### Common Questions
+    **Q: What is the typical turnaround time?**
+    **A: We typically process all requests within 24 business hours.**
+  `;
+
+  try {
+    const result = await model.generateContent(prompt);
+    return result.response.text().trim();
+  } catch (err) {
+    console.error("[Gemini Service] FAQ generation failed:", err);
+    return "";
+  }
+}

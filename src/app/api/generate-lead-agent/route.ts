@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import nodemailer from 'nodemailer';
 import { researchBusiness } from '@/services/researchService';
-import { summarizeBusinessResearch, extractServicesFromResearch } from '@/services/geminiService';
+import { summarizeBusinessResearch, extractServicesFromResearch, generateIndustryFAQs } from '@/services/geminiService';
 import { adminDb } from '@/lib/firebase-admin';
 
 export async function POST(req: Request) {
@@ -91,6 +91,14 @@ export async function POST(req: Request) {
                 console.warn(`[Generate Agent API] Fallback service extraction failed:`, serviceErr);
             }
         }
+        // 0.8 Industry FAQ Step: Generate common questions for training
+        let industryFAQs = '';
+        try {
+            console.log(`[Generate Agent API] Generating Industry FAQs for ${company} (${industry}) - Focus: ${interest}`);
+            industryFAQs = await generateIndustryFAQs(company, industry || "General Business", interest || "Customer Support", companyDetails || researchSummary);
+        } catch (faqErr) {
+            console.warn(`[Generate Agent API] FAQ generation failed:`, faqErr);
+        }
 
         // Language → locale code map (used for VAPI's language hint)
         const languageCodeMap: Record<string, string> = {
@@ -103,31 +111,31 @@ export async function POST(req: Request) {
         };
         const langCode = languageCodeMap[language] || 'en';
 
-        // Language-aware first message - PERSONALIZED & VALUE-LED
+        // Language-aware first message - FUNCTIONAL & PERSONALIZED
         const firstMessageMap: Record<string, string> = {
             'English': interest 
-                ? `Hello ${name}! I'm calling from ${company}. I see you're interested in ${interest}, so let's jump right in. How can I show you how we can revolutionize that area for ${company}?`
-                : `Hello ${name}! I'm calling from ${company}. I noticed you're exploring how AI can transform your business. I'm curious—which part of ${company} are you most interested in: Customer Support, Sales, or Operations?`,
+                ? `Hello ${name}! I'm the AI assistant for ${company}. I see you're looking into our ${interest} solutions. How can I assist you with that today?`
+                : `Hello ${name}! I'm the AI assistant for ${company}. How can I help you explore our solutions for Customer Support, Sales, or Operations today?`,
             
             'Hindi': interest
-                ? `Arre ${name} ji! Main ${company} se bol raha hoon. Maine dekha aap ${interest} mein interested hain—to chaliye seedhe point par aate hain. Main aapko kaise dikha sakta hoon ki hum ${company} ke liye is area ko kaise behtar bana sakte hain?`
-                : `Arre ${name} ji! Main ${company} se bol raha hoon. Main thoda curious hoon—aap business ke kis area mein AI explore karna chahte hain: Customer Support, Sales and Lead Gen, ya internal Operations?`,
+                ? `Namaste ${name} ji! Main ${company} ka AI assistant bol raha hoon. Maine dekha aap hamari ${interest} solutions dekh rahe hain. Main aaj aapki kaise madad kar sakta hoon?`
+                : `Namaste ${name} ji! Main ${company} ka AI assistant bol raha hoon. Main aaj aapki kaise madad kar sakta hoon: Customer Support, Sales, ya Operations mein?`,
             
             'French': interest
-                ? `Bonjour ${name} ! Je vous appelle de la part de ${company}. Je vois que vous êtes intéressé par ${interest}, alors entrons directement dans le vif du sujet. Comment puis-je vous montrer comment nous révolutionnons ce domaine pour ${company} ?`
-                : `Bonjour ${name} ! Je vous appelle de la part de ${company}. Quelle partie de votre entreprise souhaitez-vous explorer aujourd'hui : le service client, la vente ou les opérations ?`,
+                ? `Bonjour ${name} ! Je suis l'assistant IA de ${company}. Je vois que vous consultez nos solutions de ${interest}. Comment puis-je vous aider aujourd'hui ?`
+                : `Bonjour ${name} ! Je suis l'assistant IA de ${company}. Comment puis-je vous aider à explorer nos solutions de service client, de vente ou d'opérations aujourd'hui ?`,
             
             'German': interest
-                ? `Hallo ${name}! Ich rufe von ${company} an. Ich sehe, Sie interessieren sich für ${interest}, also lassen Sie uns direkt zum Thema kommen. Wie kann ich Ihnen zeigen, wie wir diesen Bereich für ${company} revolutionieren?`
-                : `Hallo ${name}! Ich rufe von ${company} an. Welchen Bereich Ihres Unternehmens möchten Sie mit KI erkunden: Kundensupport, Vertrieb oder Betrieb?`,
+                ? `Hallo ${name}! Ich bin der KI-Assistent von ${company}. Ich sehe, Sie schauen sich unsere ${interest}-Lösungen an. Wie kann ich Ihnen heute dabei behilflich sein?`
+                : `Hallo ${name}! Ich bin der KI-Assistent von ${company}. Wie kann ich Ihnen heute helfen, unsere Lösungen für Kundensupport, Vertrieb oder Betrieb zu erkunden?`,
             
             'Spanish': interest
-                ? `¡Hola ${name}! Te llamo de parte de ${company}. Veo que te interesa ${interest}, así que entremos en materia. ¿Cómo puedo mostrarte cómo revolucionamos esa área para ${company}?`
-                : `¡Hola ${name}! Te llamo de parte de ${company}. ¿Qué área de tu negocio te interesa más explorar con IA: atención al cliente, ventas o procesos internos?`,
+                ? `¡Hola ${name}! Soy el asistente de IA para ${company}. Veo que estás interesado en nuestras soluciones de ${interest}. ¿En qué puedo ayudarte hoy?`
+                : `¡Hola ${name}! Soy el asistente de IA para ${company}. ¿En qué puedo ayudarte hoy a explorar nuestras soluciones de soporte, ventas u operaciones?`,
             
             'Arabic': interest
-                ? `مرحباً ${name}! أنا أتصل بك من ${company}. أرى أنك مهتم بـ ${interest}، لذا دعنا ننتقل مباشرة إلى الموضوع. كيف يمكنني أن أريك كيف نحدث ثورة في هذا المجال من أجل ${company}؟`
-                : `مرحباً ${name}! أنا أتصل بك من ${company}. أي جزء من عملك أنت مهتم أكثر باستكشافه للذكاء الاصطناعي: دعم العملاء، المبيعات، أم العمليات الداخلية؟`,
+                ? `مرحباً ${name}! أنا المساعد الذكي لشركة ${company}. أرى أنك مهتم بحلولنا في ${interest}. كيف يمكنني مساعدتك في ذلك اليوم؟`
+                : `مرحباً ${name}! أنا المساعد الذكي لشركة ${company}. كيف يمكنني مساعدتك اليوم في استكشاف حلولنا لدعم العملاء، المبيعات، أو العمليات؟`,
         };
         const firstMessage = firstMessageMap[language] || firstMessageMap['English'];
 
@@ -139,12 +147,13 @@ export async function POST(req: Request) {
         ].filter(Boolean).join('\n');
 
         let businessContext = "";
-        if (manualContext || researchSummary || websiteContent) {
+        if (manualContext || researchSummary || websiteContent || industryFAQs) {
             businessContext = `\n\n== BUSINESS KNOWLEDGE BASE ==\n`;
             if (manualContext) businessContext += `${manualContext}\n\n`;
             if (researchSummary) businessContext += `### VERIFIED BUSINESS DETAILS (from Google):\n${researchSummary}\n\n`;
             if (websiteContent && !researchSummary) businessContext += `### WEBSITE CONTENT:\n${websiteContent.substring(0, 2000)}\n\n`;
-            businessContext += `== END ==\n\nUse the above information to answer questions about ${company} accurately. If asked about a menu or items, use the verified details above. Do NOT make up services or details not listed above.`;
+            if (industryFAQs) businessContext += `### INDUSTRY SPECIFIC FAQS & GUIDELINES:\n${industryFAQs}\n\n`;
+            businessContext += `== END ==\n\nUse the above information to answer questions about ${company} accurately. If asked about common services or pricing, use the verified details above. Do NOT make up services or details not listed above.`;
         }
 
         // Real-time date context (prevents AI from using training cutoff date)
@@ -156,42 +165,37 @@ export async function POST(req: Request) {
             timeZone: 'Asia/Kolkata'
         });
 
-        const systemPrompt = `You are a highly persuasive, intelligent, and friendly representative for ${company}. Your primary goal is to provide a high-value interaction for the prospect, ${name}, who just requested information about your AI solutions. 
+        const systemPrompt = `You are a professional and highly capable AI Assistant for ${company}. Your goal is to provide immediate, functional assistance to ${name}, who is exploring your expertise in ${industry}.
 
-**STRICT RULE:** Do NOT mention that you are an "AI agent", "bot", or "custom representative." Simply act as a knowledgeable team member from ${company}.
+**STRICT RULE:** You ARE the functional embodiment of ${company}'s intelligence. Do NOT use phrases like "booking a demo" or "sales discovery." Your purpose is to be helpful and proactive.
 
 == CURRENT DATE & TIME ==
-Today is ${nowIST} (IST). ALWAYS use this as the real current date when referring to today, tomorrow, or any relative dates. DO NOT rely on your training data for the current date.
+Today is ${nowIST} (IST).
 
-== YOUR IDENTITY & LEAD CONTEXT ==
-- Prospect Name: ${name}
-- Prospect Email: ${email}
-- Prospect Phone: ${phone}
-- Prospect Company: ${company}
-- Prospect Industry: ${industry || 'their industry'}
-- Prospect Primary Interest: ${interest || 'not specified yet'}
+== YOUR IDENTITY & CONTEXT ==
+- Primary Persona: Official AI Assistant for ${company}
+- User Name: ${name}
+- Industry Specialization: ${industry || 'General Business'}
+- Focal Area: ${interest || 'Full Suite'}
 
 ${businessContext}
 
-== CONVERSATIONAL STRATEGY (CRITICAL) ==
-${interest ? `**PHASE 1 (SKIPPED): INTEREST DISCOVERY** - User has already selected **${interest}**. Move immediately to Phase 2.` : `1. **PHASE 1: INTEREST DISCOVERY**: Your very first goal (already started in the First Message) is to find out WHICH area ${name} cares about: Customer Support, Sales/Lead Gen, or internal Operations.`}
-2. **PHASE 2: TAILORED VALUE**: Focus on **${interest || 'the selected area'}**. Provide EXACTLY ONE high-impact, specific example of how you (the AI) can solve a major pain point in that area for ${company}.
-   - If Customer Support: Focus on 24/7 instant resolution, handling complex queries with human-level nuance, and seamless CRM integration.
-   - If Sales/Lead Gen: Focus on qualifying leads instantly, handling objections, and booking high-quality meetings while interest is peak.
-   - If internal Operations: Focus on automating repetitive tasks, real-time data entry, and providing instant status updates for complex workflows.
-3. **PHASE 3: ENGAGEMENT CHECK**: Ask: "Does that sound like something that would make a big impact for your team?"
-4. **PHASE 4: DEMO TRANSITION**: ONLY after they show interest, ask a question, or confirm value, suggest: "I'd love to show you how this works in a live environment. Should we find a quick 15 minutes for a demo?"
+== OPERATIONAL STRATEGY ==
+1. **GREETING**: Greet ${name} warmly by name as the official representative of ${company}.
+2. **FUNCTIONAL ASSISTANCE**: Immediately address their interest in **${interest || 'our solutions'}**. 
+   - If Customer Support: Detail how you provide 24/7 instant resolution and handle complex customer needs with nuance.
+   - If Sales/Lead Gen: Explain how you qualify leads and drive growth through intelligent conversation.
+   - If Operations: Focus on automation and process efficiency.
+3. **VALUE DELIVERY**: Instead of "selling," describe your features as current active capabilities of ${company}. Provide specific examples based on the knowledge base.
+4. **ENGAGEMENT**: Ask: "How can I specifically help you optimize this area for your team today?"
 
-== CRITICAL INSTRUCTIONS (MANDATORY) ==
-1. **NO QUICK BOOKING**: Do NOT suggest a demo or use scheduling tools until you have built rapport and explained at least one specific capability tailored to their choice.
-2. **DATE AWARENESS:** Today is ${nowIST}.
-3. **NO REPETITIVE QUESTIONS:** You strictly already have the user's details. ${name}'s email is ${email} and phone is ${phone}. Use them IMMEDIATELY without asking.
-4. **SCHEDULING RULES:** Initial suggestions must be "tomorrow" or "day after tomorrow" from 10:00 AM onwards.
-5. **DRIVE TO VALUE**: Your main focus is build rapport and PROVE value before booking.
-6. **POST-BOOKING MESSAGE:** After a successful booking, NEVER provide a URL. ONLY say: "Your meeting is scheduled, and the details have been mailed to you."
-7. **Language:** Respond EXCLUSIVELY in ${language === 'Hindi' ? 'Hinglish' : language}.
+== CONVERSATIONAL RULES ==
+1. **IDENTITY:** You represent ${company}. You are here to assist, not to pitch a demo.
+2. **NO REPETITION:** You have the user's details (${email}, ${phone}). Use them only if necessary for assistance.
+3. **SCHEDULING:** If ${name} asks to coordinate a meet, use your tools to find a slot, but do not initiate this yourself unless prompted by ${name}.
+4. **LANGUAGE:** Respond EXCLUSIVELY in ${language === 'Hindi' ? 'Hinglish' : language}.
 
-Be enthusiastic. Greet ${name} by name. Let's show ${name} what an AI-powered ${company} looks like!`;
+Be helpful, concise, and professional. Greet ${name} by name and start serving ${company}!`;
 
         const vapiRes = await fetch('https://api.vapi.ai/assistant', {
             method: 'POST',
@@ -200,7 +204,7 @@ Be enthusiastic. Greet ${name} by name. Let's show ${name} what an AI-powered ${
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                name: `${company} AI Rep (${language})`,
+                name: `${company} ${interest || 'AI'} Assistant`,
                 serverUrl,
 
                 language: langCode,
@@ -319,26 +323,21 @@ Be enthusiastic. Greet ${name} by name. Let's show ${name} what an AI-powered ${
             throw new Error(`Failed to create Vapi Assistant: ${vapiData.message || 'Unknown error'}`);
         }
 
-        const initialSutherlandId = "4fa0d881-632c-4ddd-b8eb-19021402d0d1";
-        const assistantId = (isSutherland || company.toLowerCase().includes('sutherland')) ? initialSutherlandId : vapiData.id;
-        console.log(`[Generate Agent API] Resolved Assistant ID: ${assistantId} (Initial: ${assistantId === initialSutherlandId}, isSutherland: ${isSutherland})`);
+        const assistantId = vapiData.id;
+        console.log(`[Generate Agent API] Resolved Assistant ID: ${assistantId} (isSutherland: ${isSutherland})`);
 
         // TRACK FOR CLEANUP (Expires in 30 mins)
         if (assistantId && adminDb) {
             try {
-                const isInitialSutherland = assistantId === initialSutherlandId;
                 const expiry = new Date(Date.now() + 30 * 60 * 1000);
                 await adminDb.collection('temporary_assistants').doc(assistantId).set({
                     assistantId,
-                    company: isInitialSutherland ? "Sutherland" : company,
+                    company: company,
                     leadEmail: email,
                     leadName: name,
-                    industry: isInitialSutherland ? "Global Experience Transformation" : (industry || ''),
-                    companyDetails: isInitialSutherland ? "Global Experience Transformation Agency. Sutherland Voice Support." : (companyDetails || ''),
-                    services: isInitialSutherland ? [
-                        { name: "Sutherland CX Support", description: "Voice AI powered customer experience support." },
-                        { name: "Digital Transformation", description: "Strategic consulting for digital CX." }
-                    ] : (extractedServices || []),
+                    industry: industry || '',
+                    companyDetails: companyDetails || '',
+                    services: extractedServices || [],
                     expiresAt: expiry.toISOString(),
                     createdAt: new Date().toISOString()
                 });
@@ -349,10 +348,10 @@ Be enthusiastic. Greet ${name} by name. Let's show ${name} what an AI-powered ${
         }
 
         // 2. Determine the host URL for the Test Drive link
-        // USER REQUEST: Always point to the "initial" Sutherland bot if applicable
         const emailAssistantId = assistantId;
-
-        const testLink = `${protocol}://${host}/test/${emailAssistantId}`;
+        const testLink = isSutherland 
+            ? `${protocol}://${host}/business/sutherland/${emailAssistantId}`
+            : `${protocol}://${host}/test/${emailAssistantId}`;
 
         // 3. Handle Delivery Mode — Call directly via VAPI API (no internal fetch)
         // 3. Handle Delivery Mode — Call directly via VAPI API

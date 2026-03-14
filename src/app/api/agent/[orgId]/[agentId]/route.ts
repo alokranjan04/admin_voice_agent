@@ -17,13 +17,38 @@ export async function GET(
         }
 
         const docRef = doc(db, 'organizations', orgId, 'agents', agentId);
-        const docSnap = await getDoc(docRef);
+        let docSnap = await getDoc(docRef);
 
         if (!docSnap.exists()) {
-            return NextResponse.json(
-                { error: 'Agent not found' },
-                { status: 404 }
-            );
+            // Fallback for Lead Agents (Temporary Assistants)
+            console.log(`[Agent API] Agent ${agentId} not found in org ${orgId}. Checking temporary_assistants...`);
+            const leadRef = doc(db, 'temporary_assistants', agentId);
+            docSnap = await getDoc(leadRef);
+            
+            if (!docSnap.exists()) {
+                return NextResponse.json(
+                    { error: 'Agent not found' },
+                    { status: 404 }
+                );
+            }
+            
+            // Transform temporary lead data into AgentConfiguration format
+            const leadData = docSnap.data();
+            return NextResponse.json({
+                id: agentId,
+                metadata: {
+                    businessName: leadData.company || "Sutherland",
+                    industry: leadData.industry || "Global Experience Transformation",
+                    description: leadData.companyDetails || "Voice AI Division",
+                },
+                services: leadData.services || [],
+                locations: [],
+                vapi: {
+                    assistantId: agentId,
+                    provider: 'openai',
+                    model: 'gpt-4o-mini'
+                }
+            });
         }
 
         return NextResponse.json(docSnap.data());
