@@ -140,20 +140,20 @@ export async function POST(req: Request) {
         const firstMessage = firstMessageMap[language] || firstMessageMap['English'];
 
         // 1. Create the Vapi Assistant
-        // Priority: user-provided details > research summary > scraped website content
+        // Priority: user-provided details (highest) > website content (real-world) > research summary > industry FAQs
+        let businessContext = "";
         const manualContext = [
             companyDetails ? `User Provided Description: ${companyDetails}` : '',
             industry ? `Industry: ${industry}` : '',
         ].filter(Boolean).join('\n');
 
-        let businessContext = "";
         if (manualContext || researchSummary || websiteContent || industryFAQs) {
             businessContext = `\n\n== BUSINESS KNOWLEDGE BASE ==\n`;
             if (manualContext) businessContext += `${manualContext}\n\n`;
-            if (researchSummary) businessContext += `### VERIFIED BUSINESS DETAILS (from Google):\n${researchSummary}\n\n`;
-            if (websiteContent && !researchSummary) businessContext += `### WEBSITE CONTENT:\n${websiteContent.substring(0, 2000)}\n\n`;
+            if (websiteContent) businessContext += `### LIVE WEBSITE CONTENT (Direct from Source):\n${websiteContent.substring(0, 3000)}\n\n`;
+            if (researchSummary) businessContext += `### VERIFIED BUSINESS DETAILS (External Research):\n${researchSummary}\n\n`;
             if (industryFAQs) businessContext += `### INDUSTRY SPECIFIC FAQS & GUIDELINES:\n${industryFAQs}\n\n`;
-            businessContext += `== END ==\n\nUse the above information to answer questions about ${company} accurately. If asked about common services or pricing, use the verified details above. Do NOT make up services or details not listed above.`;
+            businessContext += `== END ==\n\nUse the above information to provide specific, high-fidelity answers about ${company}. Prioritize live website content for service details. If asked about something not in the knowledge base, state you'll find out, but prioritize using the verified details provided. Do NOT hallucinate.`;
         }
 
         // Real-time date context (prevents AI from using training cutoff date)
@@ -347,14 +347,9 @@ Be helpful, concise, and professional. Greet ${name} by name and start serving $
             }
         }
 
-        // 2. Determine the host URL for the Test Drive link
+        // 2. Determine the host URL for the Test Drive link (Standardized to premium theme)
         const emailAssistantId = assistantId;
-        
-        // Sanitize company name for the URL slug (e.g., "Alok Tech" -> "alok-tech")
-        const orgSlug = isSutherland 
-            ? 'sutherland' 
-            : company.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
-            
+        const orgSlug = isSutherland ? 'sutherland' : company.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
         const testLink = `${protocol}://${host}/business/${orgSlug || 'agent'}/${emailAssistantId}`;
 
         // 3. Handle Delivery Mode — Call directly via VAPI API (no internal fetch)
