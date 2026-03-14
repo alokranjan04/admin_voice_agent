@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { User, Phone, Mail, ArrowRight, Bot } from 'lucide-react';
+import { User, Phone, Mail, ArrowRight, Bot, ChevronDown } from 'lucide-react';
 
 interface WelcomeFormProps {
     onSubmit: (data: { name: string; phone: string; email?: string }) => void;
@@ -91,32 +91,32 @@ export const WelcomeForm: React.FC<WelcomeFormProps> = ({ onSubmit, businessName
     }, []);
 
     return (
-        <div className="flex flex-col h-full bg-white p-6 overflow-y-auto">
+        <div className="flex flex-col h-full bg-white p-6 overflow-y-auto no-scrollbar">
             <div className="flex-1 flex flex-col justify-center max-w-md mx-auto w-full">
                 {/* Welcome Message */}
-                <div className="mb-8">
-                    <div className="bg-slate-50 rounded-2xl p-6 border border-slate-200 shadow-sm">
-                        <div className="flex items-start gap-3">
+                <div className="mb-6">
+                    <div className="bg-slate-50/80 rounded-2xl p-5 border border-slate-100">
+                        <div className="flex items-start gap-4">
                             {avatarUrl ? (
-                                <div className="w-10 h-10 rounded-full border border-slate-200 overflow-hidden bg-white flex-shrink-0">
+                                <div className="w-12 h-12 rounded-full border-2 border-white overflow-hidden bg-white flex-shrink-0 shadow-sm">
                                     <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
                                 </div>
                             ) : (
-                                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-teal-500 to-teal-600 flex items-center justify-center flex-shrink-0">
-                                    <Bot className="w-6 h-6 text-white" />
+                                <div className="w-12 h-12 rounded-full bg-teal-600 flex items-center justify-center flex-shrink-0 shadow-inner">
+                                    <Bot className="w-7 h-7 text-white" />
                                 </div>
                             )}
-                            <div className="flex-1">
-                                <p className="text-slate-700 leading-relaxed">
+                            <div className="flex-1 pt-1">
+                                <p className="text-slate-600 leading-relaxed text-sm font-medium">
                                     {isTyping ? (
-                                        <span className="inline-flex items-center gap-1">
-                                            <span className="animate-pulse">Typing</span>
+                                        <span className="inline-flex items-center gap-1 opacity-50">
+                                            <span>Typing</span>
                                             <span className="animate-bounce">.</span>
                                             <span className="animate-bounce delay-100">.</span>
                                             <span className="animate-bounce delay-200">.</span>
                                         </span>
                                     ) : (
-                                        welcomeMessage
+                                        `Welcome! I'm your ${businessName} assistant. Before we begin, I'd like to get to know you better.`
                                     )}
                                 </p>
                             </div>
@@ -125,100 +125,87 @@ export const WelcomeForm: React.FC<WelcomeFormProps> = ({ onSubmit, businessName
                 </div>
 
                 {/* Form */}
-                {!isTyping && (
-                    <form onSubmit={handleSubmit} className="space-y-4 animate-fade-in">
-                        {/* Name Field */}
-                        <div>
-                            <label className="block text-sm font-medium text-slate-700 mb-2">
-                                Your Name <span className="text-red-500">*</span>
-                            </label>
-                            <div className="relative">
-                                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-                                <input
-                                    type="text"
-                                    value={name}
-                                    onChange={(e) => {
-                                        setName(e.target.value);
-                                        setErrors((prev) => ({ ...prev, name: undefined }));
-                                    }}
-                                    className={`w-full pl-11 pr-4 py-3 bg-white border ${errors.name ? 'border-red-500' : 'border-slate-300'
-                                        } rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all`}
-                                    placeholder="Enter your name"
-                                />
-                            </div>
-                            {errors.name && <p className="mt-1 text-sm text-red-500">{errors.name}</p>}
+                <form onSubmit={handleSubmit} className="space-y-5">
+                    {/* Name Field */}
+                    <div>
+                        <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1">
+                            Your Name <span className="text-red-500">*</span>
+                        </label>
+                        <div className="relative group transition-all">
+                            <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300 group-focus-within:text-teal-600 transition-colors" />
+                            <input
+                                type="text"
+                                value={name}
+                                onChange={(e) => {
+                                    setName(e.target.value);
+                                    setErrors((prev) => ({ ...prev, name: undefined }));
+                                }}
+                                className={`w-full pl-12 pr-4 py-3.5 bg-slate-50/50 border ${errors.name ? 'border-red-400 bg-red-50/30' : 'border-slate-100 group-hover:border-slate-200'
+                                    } rounded-2xl text-slate-800 placeholder-slate-300 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 focus:bg-white transition-all`}
+                                placeholder="Enter your name"
+                            />
                         </div>
+                        {errors.name && <p className="mt-1.5 ml-1 text-[10px] font-medium text-red-500 uppercase tracking-wide">{errors.name}</p>}
+                    </div>
 
-                        {/* Phone Field */}
-                        <div>
-                            <label className="block text-sm font-medium text-slate-700 mb-2">
-                                Phone Number <span className="text-red-500">*</span>
-                            </label>
-                            <div className={`relative flex items-center bg-white border ${errors.phone ? 'border-red-500' : 'border-slate-300'} rounded-xl transition-all focus-within:ring-2 focus-within:ring-teal-500 focus-within:border-transparent overflow-hidden`}>
-                                <div className="pl-3 pr-2 py-3 flex items-center h-full border-r border-slate-200 bg-slate-50">
-                                    <Phone className="w-4 h-4 text-slate-400 mr-2 flex-shrink-0" />
-                                    <select
-                                        value={countryCode}
-                                        onChange={(e) => setCountryCode(e.target.value)}
-                                        className="bg-transparent text-slate-700 text-sm focus:outline-none cursor-pointer font-medium appearance-none pr-4 relative z-10"
-                                        style={{ backgroundImage: 'url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%2394A3B8%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right center', backgroundSize: '8px auto' }}
-                                    >
-                                        <option value="+1">US/CA (+1)</option>
-                                        <option value="+44">UK (+44)</option>
-                                        <option value="+61">AU (+61)</option>
-                                        <option value="+65">SG (+65)</option>
-                                        <option value="+91">IN (+91)</option>
-                                        <option value="+966">SA (+966)</option>
-                                        <option value="+971">AE (+971)</option>
-                                    </select>
-                                </div>
-                                <input
-                                    type="tel"
-                                    value={phone}
-                                    onChange={(e) => {
-                                        // Allow digits and basic spacing helpers
-                                        const val = e.target.value.replace(/[^\d\s-]/g, '');
-                                        setPhone(val);
-                                        setErrors((prev) => ({ ...prev, phone: undefined }));
-                                    }}
-                                    className="flex-1 w-full pl-3 pr-4 py-3 bg-transparent text-slate-900 placeholder-slate-400 focus:outline-none"
-                                    placeholder="202-555-1234"
-                                />
+                    {/* Phone Field */}
+                    <div>
+                        <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1">
+                            Phone Number <span className="text-red-500">*</span>
+                        </label>
+                        <div className={`relative flex items-center bg-slate-50/50 border ${errors.phone ? 'border-red-400 bg-red-50/30' : 'border-slate-100'} rounded-2xl transition-all focus-within:ring-2 focus-within:ring-teal-500/20 focus-within:border-teal-500 focus-within:bg-white overflow-hidden`}>
+                            <div className="pl-4 pr-2 py-3.5 flex items-center h-full border-r border-slate-100">
+                                <span className="text-xs font-bold text-slate-400 mr-2">IN (+91)</span>
+                                <ChevronDown className="w-3 h-3 text-slate-300" />
                             </div>
-                            {errors.phone && <p className="mt-1 text-sm text-red-500">{errors.phone}</p>}
+                            <input
+                                type="tel"
+                                value={phone}
+                                onChange={(e) => {
+                                    const val = e.target.value.replace(/[^\d\s-]/g, '');
+                                    setPhone(val);
+                                    setErrors((prev) => ({ ...prev, phone: undefined }));
+                                }}
+                                className="flex-1 w-full pl-4 pr-4 py-3.5 bg-transparent text-slate-800 placeholder-slate-300 focus:outline-none"
+                                placeholder="202-555-1234"
+                            />
                         </div>
+                        {errors.phone && <p className="mt-1.5 ml-1 text-[10px] font-medium text-red-500 uppercase tracking-wide">{errors.phone}</p>}
+                    </div>
 
-                        {/* Email Field */}
-                        <div>
-                            <label className="block text-sm font-medium text-slate-700 mb-2">
-                                Your Email <span className="text-red-500">*</span>
-                            </label>
-                            <div className="relative">
-                                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-                                <input
-                                    type="email"
-                                    value={email}
-                                    onChange={(e) => {
-                                        setEmail(e.target.value);
-                                        setErrors((prev) => ({ ...prev, email: undefined }));
-                                    }}
-                                    className={`w-full pl-11 pr-4 py-3 bg-white border ${errors.email ? 'border-red-500' : 'border-slate-300'
-                                        } rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all`}
-                                    placeholder="your.email@example.com"
-                                />
-                            </div>
-                            {errors.email && <p className="mt-1 text-sm text-red-500">{errors.email}</p>}
+                    {/* Email Field */}
+                    <div>
+                        <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1">
+                            Your Email <span className="text-red-500">*</span>
+                        </label>
+                        <div className="relative group transition-all">
+                            <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300 group-focus-within:text-teal-600 transition-colors" />
+                            <input
+                                type="email"
+                                value={email}
+                                onChange={(e) => {
+                                    setEmail(e.target.value);
+                                    setErrors((prev) => ({ ...prev, email: undefined }));
+                                }}
+                                className={`w-full pl-12 pr-4 py-3.5 bg-slate-50/50 border ${errors.email ? 'border-red-400 bg-red-50/30' : 'border-slate-100 group-hover:border-slate-200'
+                                    } rounded-2xl text-slate-800 placeholder-slate-300 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 focus:bg-white transition-all`}
+                                placeholder="your.email@example.com"
+                            />
                         </div>
-                        {/* Submit Button */}
+                        {errors.email && <p className="mt-1.5 ml-1 text-[10px] font-medium text-red-500 uppercase tracking-wide">{errors.email}</p>}
+                    </div>
+
+                    {/* Submit Button */}
+                    <div className="pt-2">
                         <button
                             type="submit"
-                            className="w-full bg-gradient-to-r from-teal-600 to-teal-700 hover:from-teal-700 hover:to-teal-800 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200 flex items-center justify-center gap-2 shadow-lg hover:shadow-xl active:scale-95"
+                            className="w-full bg-teal-600 hover:bg-teal-700 text-white font-bold py-4 px-6 rounded-2xl transition-all duration-300 flex items-center justify-center gap-3 shadow-xl shadow-teal-500/20 active:scale-[0.98]"
                         >
                             Start Conversation
                             <ArrowRight className="w-5 h-5" />
                         </button>
-                    </form>
-                )}
+                    </div>
+                </form>
             </div>
         </div>
     );

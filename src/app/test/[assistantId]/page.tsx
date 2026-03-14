@@ -142,16 +142,25 @@ export default function TestAssistantPage() {
                 </div>
 
                 {/* Live Transcript Box */}
-                <div className="w-full bg-white/5 border border-white/10 rounded-2xl p-6 backdrop-blur-md min-h-[200px] max-h-[300px] overflow-y-auto no-scrollbar shadow-xl">
-                    <h3 className="text-sm font-semibold text-indigo-300 uppercase tracking-wider mb-4 border-b border-white/10 pb-2">Live Transcript</h3>
+                <div className="w-full bg-white/5 border border-white/10 rounded-2xl p-6 backdrop-blur-md min-h-[200px] max-h-[400px] overflow-y-auto no-scrollbar shadow-xl">
+                    <h3 className="text-xs font-bold text-indigo-300 uppercase tracking-[0.2em] mb-6 border-b border-white/10 pb-3">LIVE TRANSCRIPT</h3>
                     {transcript.length === 0 ? (
                         <p className="text-slate-500 text-sm italic text-center mt-8">Your conversation will appear here...</p>
                     ) : (
-                        <div className="space-y-4">
+                        <div className="space-y-6">
                             {transcript.map((msg, idx) => (
-                                <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                                    <div className={`max-w-[80%] rounded-xl px-4 py-2 text-sm ${msg.role === 'user' ? 'bg-indigo-600 text-white rounded-tr-none' : 'bg-slate-800 text-slate-200 border border-white/10 rounded-tl-none'}`}>
-                                        <p className="text-xs opacity-50 mb-1 capitalize">{msg.role === 'assistant' ? 'AI Agent' : 'You'}</p>
+                                <div key={idx} className={`flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
+                                    {/* Label Box */}
+                                    <div className={`px-2 py-0.5 mb-1 text-[10px] font-bold uppercase tracking-wider rounded ${
+                                        msg.role === 'user' ? 'bg-indigo-600/30 text-indigo-200' : 'bg-slate-800 text-slate-400 border border-white/10'
+                                    }`}>
+                                        {msg.role === 'assistant' ? 'AI Agent' : 'You'}
+                                    </div>
+                                    <div className={`max-w-[85%] rounded-xl px-4 py-2.5 text-sm ${
+                                        msg.role === 'user' 
+                                            ? 'bg-indigo-600 text-white rounded-tr-none shadow-lg shadow-indigo-500/10' 
+                                            : 'bg-slate-800/80 text-slate-200 border border-white/10 rounded-tl-none'
+                                    }`}>
                                         <p>{msg.text}</p>
                                     </div>
                                 </div>

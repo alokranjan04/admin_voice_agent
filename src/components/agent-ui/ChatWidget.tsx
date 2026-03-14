@@ -78,10 +78,13 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ config, status, volume, logs, o
                                         <Bot className="w-5 h-5 text-white" />
                                     </div>
                                     <div className="flex-1 min-w-0">
-                                        <h3 className="font-bold text-sm leading-tight truncate">{config.metadata.businessName} Assistant</h3>
-                                        <span className="text-[10px] text-slate-400 uppercase font-bold tracking-wider">
-                                            Online
-                                        </span>
+                                        <h3 className="font-bold text-sm leading-tight truncate text-white">{config.metadata.businessName} Assistant</h3>
+                                        <div className="flex items-center gap-1.5 mt-0.5">
+                                            <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span>
+                                            <span className="text-[9px] text-green-500 uppercase font-extrabold tracking-widest">
+                                                Online
+                                            </span>
+                                        </div>
                                     </div>
                                 </div>
                                 <button
@@ -92,7 +95,7 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ config, status, volume, logs, o
                                 </button>
                             </div>
                             {/* Welcome Form Content */}
-                            <div className="flex-1 overflow-y-auto bg-white">
+                            <div className="flex-1 overflow-y-auto bg-white no-scrollbar">
                                     <WelcomeForm
                                         onSubmit={handleWelcomeFormSubmit}
                                         businessName={config.metadata?.businessName}
@@ -115,10 +118,10 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ config, status, volume, logs, o
                                         </div>
                                     )}
                                     <div className="flex-1 min-w-0">
-                                        <h3 className="font-bold text-sm leading-tight truncate">{config.metadata.businessName} Assistant</h3>
-                                        <div className="flex items-center gap-1.5">
+                                        <h3 className="font-bold text-sm leading-tight truncate text-white">{config.metadata.businessName} Assistant</h3>
+                                        <div className="flex items-center gap-1.5 mt-0.5">
                                             <span className={`w-1.5 h-1.5 rounded-full ${status === 'connected' ? 'bg-green-500 animate-pulse' : 'bg-slate-400'}`}></span>
-                                            <span className="text-[10px] text-slate-400 uppercase font-bold tracking-wider">
+                                            <span className={`text-[9px] uppercase font-extrabold tracking-widest ${status === 'connected' ? 'text-green-500' : 'text-slate-400'}`}>
                                                 {status === 'connected' ? 'Live Now' : 'Online'}
                                             </span>
                                         </div>
@@ -133,28 +136,28 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ config, status, volume, logs, o
                             </div>
 
                             {/* Voice-Only Content */}
-                            <div className="flex-1 flex flex-col items-center p-8 bg-slate-50 relative overflow-hidden">
+                            <div className="flex-1 flex flex-col items-center p-6 bg-slate-50 relative overflow-hidden">
                                 {/* Decorative background element */}
                                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-teal-500/5 rounded-full blur-3xl pointer-events-none"></div>
 
                                 {config.vapi?.avatarUrl ? (
-                                    <div className={`w-32 h-32 rounded-full border-4 ${status === 'connected' ? 'border-teal-500' : 'border-slate-200'} overflow-hidden shadow-2xl mb-6 relative z-10 transition-all duration-300`}>
+                                    <div className={`w-24 h-24 rounded-full border-4 ${status === 'connected' ? 'border-teal-500 scale-105' : 'border-slate-200'} overflow-hidden shadow-2xl mb-4 relative z-10 transition-all duration-500`}>
                                         <img src={config.vapi.avatarUrl} alt="Bot Avatar" className="w-full h-full object-cover" />
                                         {status === 'connected' && (
                                             <div className="absolute inset-0 bg-teal-500/10 animate-pulse"></div>
                                         )}
                                     </div>
                                 ) : (
-                                    <div className={`w-32 h-32 rounded-full bg-gradient-to-br from-teal-500 to-teal-600 flex items-center justify-center shadow-2xl mb-6 relative z-10 transition-all duration-300 ${status === 'connected' ? 'ring-8 ring-teal-500/20' : ''}`}>
-                                        <Bot className="w-16 h-16 text-white" />
+                                    <div className={`w-24 h-24 rounded-full bg-gradient-to-br from-teal-500 to-teal-600 flex items-center justify-center shadow-2xl mb-4 relative z-10 transition-all duration-300 ${status === 'connected' ? 'ring-8 ring-teal-500/20 scale-105' : ''}`}>
+                                        <Bot className="w-12 h-12 text-white" />
                                     </div>
                                 )}
 
-                                <div className="text-center space-y-2 relative z-10">
-                                    <h2 className="text-xl font-bold text-slate-800">
+                                <div className="text-center space-y-1 relative z-10">
+                                    <h2 className="text-lg font-bold text-slate-800">
                                         {status === 'connected' ? "In Progress" : "Ready to start?"}
                                     </h2>
-                                    <p className="text-slate-500 text-sm max-w-[200px] mx-auto">
+                                    <p className="text-slate-500 text-[11px] max-w-[200px] mx-auto font-medium">
                                         {status === 'connected' 
                                             ? "I'm listening to your request." 
                                             : "Start a call to speak with our AI agent."}
@@ -162,17 +165,22 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ config, status, volume, logs, o
                                 </div>
 
                                 {/* Live Transcript Area */}
-                                <div className="w-full flex-1 mt-6 overflow-hidden flex flex-col min-h-0 bg-white/40 backdrop-blur-sm rounded-2xl border border-white/50 shadow-inner">
-                                    <div className="flex-1 overflow-y-auto p-4 space-y-3 scrollbar-hide">
+                                <div className="w-full flex-1 mt-6 overflow-hidden flex flex-col min-h-0 bg-white/60 backdrop-blur-sm rounded-2xl border border-white shadow-sm">
+                                    <div className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-hide no-scrollbar">
                                         {logs.length === 0 ? (
                                             <div className="h-full flex flex-col items-center justify-center opacity-30">
-                                                <Terminal className="w-8 h-8 mb-2" />
-                                                <p className="text-[10px] font-medium uppercase tracking-widest text-center px-4">Transcript Ready - Start speaking to see text</p>
+                                                <Terminal className="w-8 h-8 mb-2 text-teal-600" />
+                                                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-center px-4">Live Transcript</p>
                                             </div>
                                         ) : (
                                             logs.filter(l => l.type === 'user' || l.type === 'model').map((log, index) => (
                                                 <div key={index} className={`flex flex-col ${log.type === 'user' ? 'items-end' : 'items-start'}`}>
-                                                    <div className={`max-w-[85%] p-3 rounded-2xl text-xs font-medium shadow-sm leading-relaxed ${
+                                                    <div className={`px-2 py-0.5 mb-1 text-[9px] font-extrabold uppercase tracking-widest rounded ${
+                                                        log.type === 'user' ? 'bg-teal-600/10 text-teal-700' : 'bg-slate-100 text-slate-500 border border-slate-200'
+                                                    }`}>
+                                                        {log.type === 'model' ? 'AI Agent' : 'You'}
+                                                    </div>
+                                                    <div className={`max-w-[90%] p-3 rounded-2xl text-xs font-medium shadow-sm leading-relaxed ${
                                                         log.type === 'user' 
                                                         ? 'bg-teal-600 text-white rounded-tr-none' 
                                                         : 'bg-white text-slate-700 rounded-tl-none border border-slate-100'
