@@ -13,23 +13,26 @@ export default function BusinessLandingPage() {
     const [config, setConfig] = useState<AgentConfiguration | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(false);
+    const [errorDetails, setErrorDetails] = useState<any>(null);
 
     useEffect(() => {
         async function fetchConfig() {
             try {
                 const response = await fetch(`/api/agent/${orgId}/${agentId}`);
+                const data = await response.json();
 
                 if (!response.ok) {
                     setError(true);
+                    setErrorDetails(data);
                     setLoading(false);
                     return;
                 }
 
-                const data = await response.json();
                 setConfig(data as AgentConfiguration);
-            } catch (err) {
+            } catch (err: any) {
                 console.error('Error fetching config:', err);
                 setError(true);
+                setErrorDetails({ message: err.message });
             } finally {
                 setLoading(false);
             }
@@ -40,18 +43,39 @@ export default function BusinessLandingPage() {
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-gradient-to-br from-slate-900 via-indigo-900 to-slate-900 flex items-center justify-center">
-                <div className="text-white text-2xl">Loading...</div>
+            <div className="min-h-screen bg-gradient-to-br from-[#0a1628] to-[#1a2b4b] flex items-center justify-center">
+                <div className="flex flex-col items-center gap-4">
+                    <div className="w-12 h-12 border-4 border-[#CC0000] border-t-transparent rounded-full animate-spin"></div>
+                    <div className="text-white font-black uppercase tracking-widest text-xs">Synchronizing intelligence...</div>
+                </div>
             </div>
         );
     }
 
     if (error || !config) {
         return (
-            <div className="min-h-screen bg-gradient-to-br from-slate-900 via-indigo-900 to-slate-900 flex items-center justify-center">
-                <div className="text-center">
-                    <h1 className="text-4xl font-bold text-white mb-4">Business Not Found</h1>
-                    <p className="text-indigo-200">The requested business page could not be found.</p>
+            <div className="min-h-screen bg-[#0a1628] flex items-center justify-center p-6 text-center">
+                <div className="max-w-md w-full">
+                    <div className="bg-red-500/10 border border-red-500/20 p-8 rounded-[2rem] backdrop-blur-xl">
+                        <h1 className="text-4xl font-black text-white mb-2 uppercase tracking-tighter">Business Not Found</h1>
+                        <p className="text-gray-400 text-xs font-medium mb-6">The requested agent could not be synchronized.</p>
+                        
+                        {errorDetails && (
+                            <div className="bg-black/40 p-4 rounded-xl text-left border border-white/5 mb-6">
+                                <p className="text-[10px] font-black text-red-400 uppercase tracking-widest mb-2">Debug Info</p>
+                                <pre className="text-[9px] text-gray-500 overflow-auto max-h-32 leading-relaxed">
+                                    {JSON.stringify(errorDetails, null, 2)}
+                                </pre>
+                            </div>
+                        )}
+                        
+                        <button 
+                            onClick={() => window.location.reload()}
+                            className="w-full bg-white/5 hover:bg-white/10 text-white font-black py-4 rounded-xl border border-white/10 transition-all text-xs uppercase tracking-widest"
+                        >
+                            Retry Connection
+                        </button>
+                    </div>
                 </div>
             </div>
         );

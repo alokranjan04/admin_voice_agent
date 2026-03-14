@@ -8,23 +8,28 @@ export async function GET(
     try {
         const { orgId, agentId } = await params;
 
+        console.log(`[Agent API DEBUG] Request for orgId: ${orgId}, agentId: ${agentId}`);
+
         if (!adminDb) {
+            console.error('[Agent API DEBUG] adminDb is NULL');
             return NextResponse.json(
-                { error: 'Firebase Admin not initialized' },
+                { error: 'Firebase Admin not initialized', details: 'adminDb is null' },
                 { status: 500 }
             );
         }
 
-        console.log(`[Agent API] Fetching Agent: ${agentId} (Org: ${orgId})`);
-
-        // 1. ALWAYS try Lead Agents first (Temporary Assistants) - Highly likely for live interactions
+        // 1. Try Lead Agents first
+        console.log(`[Agent API DEBUG] Checking temporary_assistants/${agentId}`);
         const leadRef = adminDb.collection('temporary_assistants').doc(agentId);
         const leadSnap = await leadRef.get();
         
         if (leadSnap.exists) {
-            console.log(`[Agent API] Found in temporary_assistants: ${agentId}`);
+            console.log(`[Agent API DEBUG] Found in temporary_assistants: ${agentId}`);
             const leadData = leadSnap.data();
-            if (!leadData) throw new Error("Lead document exists but data is missing");
+            if (!leadData) {
+                console.error(`[Agent API DEBUG] Lead ${agentId} exists but data is EMPTY`);
+                throw new Error("Lead document exists but data is missing");
+            }
 
             return NextResponse.json({
                 id: agentId,
@@ -43,23 +48,25 @@ export async function GET(
             });
         }
 
-        // 2. Fallback to standard organizational agents
-        console.log(`[Agent API] Checking organizations/${orgId}/agents/${agentId}`);
+        // 2. Fallback to standard agents
+        console.log(`[Agent API DEBUG] Checking organizations/${orgId}/agents/${agentId}`);
         const docRef = adminDb.collection('organizations').doc(orgId).collection('agents').doc(agentId);
         const docSnap = await docRef.get();
 
         if (docSnap.exists) {
+            console.log(`[Agent API DEBUG] Found in organizations: ${agentId}`);
             return NextResponse.json(docSnap.data());
         }
 
+        console.warn(`[Agent API DEBUG] Agent ${agentId} NOT FOUND in any collection`);
         return NextResponse.json(
-            { error: 'Agent not found' },
+            { error: 'Agent not found', debug: { orgId, agentId, checked: ['temporary_assistants', 'organizations'] } },
             { status: 404 }
         );
-    } catch (error) {
-        console.error('Error fetching agent config:', error);
+    } catch (error: any) {
+        console.error('[Agent API DEBUG] ERROR:', error);
         return NextResponse.json(
-            { error: 'Failed to fetch agent configuration' },
+            { error: 'Failed to fetch agent configuration', message: error.message },
             { status: 500 }
         );
     }
