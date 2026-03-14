@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/services/firebase';
-import { doc, getDoc } from 'firebase/firestore';
+import { adminDb } from '@/lib/firebase-admin';
 
 export async function GET(
     request: NextRequest,
@@ -9,23 +8,23 @@ export async function GET(
     try {
         const { orgId, agentId } = await params;
 
-        if (!db) {
+        if (!adminDb) {
             return NextResponse.json(
-                { error: 'Firebase not initialized' },
+                { error: 'Firebase Admin not initialized' },
                 { status: 500 }
             );
         }
 
-        const docRef = doc(db, 'organizations', orgId, 'agents', agentId);
-        let docSnap = await getDoc(docRef);
+        const docRef = adminDb.collection('organizations').doc(orgId).collection('agents').doc(agentId);
+        let docSnap = await docRef.get();
 
-        if (!docSnap.exists()) {
+        if (!docSnap.exists) {
             // Fallback for Lead Agents (Temporary Assistants)
             console.log(`[Agent API] Agent ${agentId} not found in org ${orgId}. Checking temporary_assistants...`);
-            const leadRef = doc(db, 'temporary_assistants', agentId);
-            docSnap = await getDoc(leadRef);
+            const leadRef = adminDb.collection('temporary_assistants').doc(agentId);
+            docSnap = await leadRef.get();
             
-            if (!docSnap.exists()) {
+            if (!docSnap.exists) {
                 return NextResponse.json(
                     { error: 'Agent not found' },
                     { status: 404 }
@@ -34,6 +33,8 @@ export async function GET(
             
             // Transform temporary lead data into AgentConfiguration format
             const leadData = docSnap.data();
+            if (!leadData) throw new Error("Document exists but data is missing");
+
             return NextResponse.json({
                 id: agentId,
                 metadata: {
