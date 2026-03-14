@@ -482,6 +482,8 @@ export class VapiService {
                         ...companyName.split(/\s+/),
                         "Youhe",
                         "Amrita",
+                        "Book a Demo",
+                        "Demo Booking",
                         ...(this.sessionMetadata.name || "").split(/\s+/),
                         ...(this.sessionMetadata.userName || "").split(/\s+/),
                     ]
@@ -564,6 +566,7 @@ Additional Instruction:
     2. Never claim "technical difficulty" or "unable to retrieve" if the tool returns a result.
     3. Trust the 'slots' array in findAvailableSlots. If it has items, offer them to the user.
 - FEEDBACK: Inform booking confirmation. ${userContext}
+- BOOKING INTENT: If the user mentions "Book a Demo" or "Schedule a Demo", immediately initiate the booking process.
 ${dateNote}
 
 Business Context:

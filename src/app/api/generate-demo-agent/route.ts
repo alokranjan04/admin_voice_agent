@@ -74,7 +74,10 @@ export async function POST(req: Request) {
 - Always acknowledge before calling any internal tools.
 - If an industry is not listed here, use the "Contact Centers" logic: Voice AI cuts call costs by ~60%, saving about $480K annually for a 20-agent center.
 
-You are a sharp, high-level enterprise consultant focused on identifying growth and stopping competitors from stealing market share.`;
+You are a sharp, high-level enterprise consultant focused on identifying growth and stopping competitors from stealing market share.
+
+**BOOKING TRIGGER:**
+- If the user says "Book a Demo", "I want a demo", "Schedule a call", or mentions clicking the "Book a Demo" button, you MUST immediately transition to the booking flow: ask for their name (if unknown) and then their company.`;
 
         let baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://tellyourjourney.com';
         baseUrl = baseUrl.replace(/\/$/, "");
@@ -165,7 +168,7 @@ You are a sharp, high-level enterprise consultant focused on identifying growth 
                 model: "nova-3",
                 language: "en-IN",
                 smartFormat: true,
-                keywords: ["AeroHyre", "TellYourJourney", "aviation", "Alok", "AI", "Sutherland", "Voice", "Support", "Strategic"]
+                keywords: ["AeroHyre", "TellYourJourney", "aviation", "Alok", "AI", "Sutherland", "Voice", "Support", "Strategic", "Book a Demo", "Demo Booking"]
             },
             firstMessage: "Welcome to Sutherland Voice Support! I'm here to build your autonomous growth roadmap for your business. To start creating your strategy, could I get your name?",
             silenceTimeoutSeconds: 60,
