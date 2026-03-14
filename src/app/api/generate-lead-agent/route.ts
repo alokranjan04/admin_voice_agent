@@ -349,9 +349,13 @@ Be helpful, concise, and professional. Greet ${name} by name and start serving $
 
         // 2. Determine the host URL for the Test Drive link
         const emailAssistantId = assistantId;
-        const testLink = isSutherland 
-            ? `${protocol}://${host}/business/sutherland/${emailAssistantId}`
-            : `${protocol}://${host}/test/${emailAssistantId}`;
+        
+        // Sanitize company name for the URL slug (e.g., "Alok Tech" -> "alok-tech")
+        const orgSlug = isSutherland 
+            ? 'sutherland' 
+            : company.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+            
+        const testLink = `${protocol}://${host}/business/${orgSlug || 'agent'}/${emailAssistantId}`;
 
         // 3. Handle Delivery Mode — Call directly via VAPI API (no internal fetch)
         // 3. Handle Delivery Mode — Call directly via VAPI API
