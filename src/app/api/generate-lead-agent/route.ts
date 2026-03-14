@@ -94,7 +94,7 @@ export async function POST(req: Request) {
 
         // Language → locale code map (used for VAPI's language hint)
         const languageCodeMap: Record<string, string> = {
-            'English': 'en-IN',
+            'English': 'en',
             'Hindi': 'hi',
             'French': 'fr',
             'German': 'de',
