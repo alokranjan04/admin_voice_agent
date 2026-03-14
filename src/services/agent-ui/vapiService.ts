@@ -489,7 +489,6 @@ export class VapiService {
                         .filter(k => k && k.length > 2)
                         .filter((v, i, a) => a.indexOf(v) === i)
                 },
-                backgroundDenoising: true,
                 clientMessages: ["transcript", "hang", "function-call", "tool-calls", "speech-update", "metadata", "conversation-update"],
                 // Enable Server URL for Backend Tool Handling (if configured)
                 serverUrl: process.env.NEXT_PUBLIC_APP_URL
