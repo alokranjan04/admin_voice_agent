@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useSearchParams, useParams, useRouter } from 'next/navigation';
 import InfoPanel from '@/components/agent-ui/InfoPanel';
 import LiveVisualizer from '@/components/agent-ui/LiveVisualizer';
@@ -489,7 +489,6 @@ const AgentInterface: React.FC<AgentInterfaceProps> = ({ initialOrgId, initialAg
                                     </div>
                                 )}
                             </div>
-                            </div>
                         </div>
                     </main>
                 </div>
@@ -532,7 +531,6 @@ const AgentInterface: React.FC<AgentInterfaceProps> = ({ initialOrgId, initialAg
                         <div ref={logsEndRef} />
                     </div>
                 </div>
-            </div>
         </div>
     </ErrorBoundary>
 );
