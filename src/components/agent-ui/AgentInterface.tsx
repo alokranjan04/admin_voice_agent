@@ -264,24 +264,14 @@ const AgentInterface: React.FC<AgentInterfaceProps> = ({ initialOrgId, initialAg
 
         const loadLeadConfig = async () => {
             if (initialAssistantId) {
-                try {
-                    const leadConfig = await firebaseService.getLeadAgentConfig(initialAssistantId);
-                    if (leadConfig) {
-                        setLogs(prev => [...prev, {
-                            type: 'system',
-                            text: `[LEAD-DEMO] Demo Configuration active: ${leadConfig.metadata.businessName}`,
-                            timestamp: new Date()
-                        }]);
-                        setConfig(leadConfig);
-                        setError(null);
-                    } else {
-                        console.error("Lead configuration not found for ID:", initialAssistantId);
-                        setError("Agent configuration not found. It may have been deleted or the link is invalid.");
-                    }
-                } catch (err: any) {
-                    console.error("Failed to load lead config:", err);
-                    setError(`Error loading configuration: ${err.message}`);
-                } finally {
+                const leadConfig = await firebaseService.getLeadAgentConfig(initialAssistantId);
+                if (leadConfig) {
+                    setLogs(prev => [...prev, {
+                        type: 'system',
+                        text: `[LEAD-DEMO] Demo Configuration active: ${leadConfig.metadata.businessName}`,
+                        timestamp: new Date()
+                    }]);
+                    setConfig(leadConfig);
                     setIsLoadingConfig(false);
                 }
             }
@@ -344,34 +334,9 @@ const AgentInterface: React.FC<AgentInterfaceProps> = ({ initialOrgId, initialAg
     // Renders
     if (isLoadingConfig) {
         return (
-            <div className={`flex h-screen w-full flex-col items-center justify-center ${isWidget ? 'bg-transparent' : 'bg-slate-50'} text-slate-500`}>
-                <div className="w-8 h-8 border-4 border-teal-500 border-t-transparent rounded-full animate-spin mb-4"></div>
-                <span className="text-sm font-medium tracking-wide">Loading Agent Configuration...</span>
-            </div>
-        );
-    }
-
-    if (error && !config.metadata?.businessName) {
-        return (
-            <div className="flex h-screen w-full items-center justify-center bg-slate-100 p-4">
-                <div className="max-w-md w-full bg-white rounded-3xl p-8 border border-rose-100 shadow-2xl shadow-rose-900/5 text-center">
-                    <div className="w-16 h-16 bg-rose-50 rounded-2xl flex items-center justify-center mx-auto mb-6 text-rose-500">
-                        <AlertCircle className="w-8 h-8" />
-                    </div>
-                    <h2 className="text-xl font-bold text-slate-900 mb-2">Configuration Error</h2>
-                    <p className="text-slate-500 text-sm leading-relaxed mb-6">
-                        {error}
-                    </p>
-                    <button 
-                        onClick={() => window.location.reload()}
-                        className="w-full py-3 bg-slate-900 text-white rounded-xl font-bold hover:bg-slate-800 transition-colors"
-                    >
-                        Try Refreshing
-                    </button>
-                    <p className="mt-6 text-[10px] text-slate-400 uppercase font-black tracking-widest">
-                        Status Code: CONFIG_NOT_FOUND
-                    </p>
-                </div>
+            <div className={`flex h-screen w-full items-center justify-center ${isWidget ? 'bg-transparent' : 'bg-slate-50'} text-slate-500`}>
+                <div className="w-8 h-8 border-4 border-teal-500 border-t-transparent rounded-full animate-spin mr-3"></div>
+                <span>Loading Agent Configuration...</span>
             </div>
         );
     }
