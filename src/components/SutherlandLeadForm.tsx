@@ -87,6 +87,7 @@ export default function SutherlandLeadForm() {
                 body: JSON.stringify({
                     ...formData,
                     deliveryOption: 'call',
+                    isSutherland: true
                 }),
             });
 

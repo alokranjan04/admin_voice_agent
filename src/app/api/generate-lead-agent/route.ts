@@ -7,7 +7,7 @@ import { adminDb } from '@/lib/firebase-admin';
 export async function POST(req: Request) {
     try {
         const body = await req.json();
-        const { name, company, email, phone, website, deliveryOption, language = 'English', companyDetails = '', industry = '', interest = '' } = body;
+        const { name, company, email, phone, website, deliveryOption, language = 'English', companyDetails = '', industry = '', interest = '', isSutherland = false } = body;
 
         if (!name || !company || !email || !phone) {
             return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
@@ -320,8 +320,8 @@ Be enthusiastic. Greet ${name} by name. Let's show ${name} what an AI-powered ${
         }
 
         const initialSutherlandId = "4fa0d881-632c-4ddd-b8eb-19021402d0d1";
-        const assistantId = (company.toLowerCase().includes('sutherland')) ? initialSutherlandId : vapiData.id;
-        console.log(`[Generate Agent API] Resolved Assistant ID: ${assistantId} (Initial: ${assistantId === initialSutherlandId})`);
+        const assistantId = (isSutherland || company.toLowerCase().includes('sutherland')) ? initialSutherlandId : vapiData.id;
+        console.log(`[Generate Agent API] Resolved Assistant ID: ${assistantId} (Initial: ${assistantId === initialSutherlandId}, isSutherland: ${isSutherland})`);
 
         // TRACK FOR CLEANUP (Expires in 30 mins)
         if (assistantId && adminDb) {
