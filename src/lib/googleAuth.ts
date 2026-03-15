@@ -119,7 +119,8 @@ export function getCalendarId() {
 
 export function getBusinessHours() {
     const businessDaysStr = process.env.BUSINESS_DAYS || '1,2,3,4,5';
-    const businessDays = businessDaysStr.split(',').map(d => parseInt(d.trim())).filter(d => !isNaN(d));
+    // Support both comma and space separated values for CI/CD compatibility
+    const businessDays = businessDaysStr.split(/[,\s]+/).map(d => parseInt(d.trim())).filter(d => !isNaN(d));
 
     return {
         start: parseInt(process.env.BUSINESS_HOURS_START || '9'),
