@@ -253,15 +253,33 @@ export async function findAvailableSlots(date: string, service?: string, duratio
             currentDate.setMinutes(currentDate.getMinutes() + Math.min(30, slotDuration));
         }
 
-        // Limit to 2 slots and prioritize 10:00 AM and 01:00 PM
-        const preferredTimes = ['10:00 AM', '1:00 PM'];
-        
-        // Split available slots into preferred and others
-        const preferredSlots = slots.filter(s => preferredTimes.includes(s.time));
-        const otherSlots = slots.filter(s => !preferredTimes.includes(s.time));
+        // Always return one morning slot and one afternoon slot for better spread
+        // Morning = before 12:00, Afternoon = 12:00 PM or later
+        const morningSlots = slots.filter(s => {
+            const h = parseInt(s.time.split(':')[0]);
+            const isPM = s.time.includes('PM');
+            const hour24 = isPM && h !== 12 ? h + 12 : (!isPM && h === 12 ? 0 : h);
+            return hour24 < 12;
+        });
+        const afternoonSlots = slots.filter(s => {
+            const h = parseInt(s.time.split(':')[0]);
+            const isPM = s.time.includes('PM');
+            const hour24 = isPM && h !== 12 ? h + 12 : (!isPM && h === 12 ? 0 : h);
+            return hour24 >= 12;
+        });
 
-        // Combine: Preferred first, then others to fill up to 2 slots
-        const finalSlots = [...preferredSlots, ...otherSlots].slice(0, 2);
+        // Pick preferred morning: 10 AM first, else first available morning
+        const preferredMorning = morningSlots.find(s => s.time === '10:00 AM') || morningSlots[0];
+        // Pick preferred afternoon: 1 PM first, else first available afternoon
+        const preferredAfternoon = afternoonSlots.find(s => s.time === '1:00 PM') || afternoonSlots[0];
+
+        // Build final slots: always try to show morning + afternoon
+        const finalSlots = [preferredMorning, preferredAfternoon].filter(Boolean).slice(0, 2) as typeof slots;
+        // If only one half of day is available, fill with any remaining slots
+        if (finalSlots.length < 2) {
+            const remaining = slots.filter(s => !finalSlots.includes(s));
+            finalSlots.push(...remaining.slice(0, 2 - finalSlots.length));
+        }
 
         if (finalSlots.length === 0) {
             return {
