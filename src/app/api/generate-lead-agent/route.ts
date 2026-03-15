@@ -215,7 +215,13 @@ ${businessContext}
 3. **SCHEDULING:** If ${name} asks to coordinate a meet, use your tools to find a slot, but do not initiate this yourself unless prompted by ${name}.
 4. **LANGUAGE:** Respond EXCLUSIVELY in ${language === 'Hindi' ? 'Hinglish' : language}.
 
-Be helpful, concise, and professional. Greet ${name} by name and start serving ${company}!`;
+Be helpful, concise, and professional. Greet ${name} by name and start serving ${company}!
+
+**DATE AWARENESS:**
+- Today is ${nowIST}. Use this absolute date to resolve relative dates like "tomorrow" or "next Monday" before calling tools.
+
+**EMAIL CAPTURE BEST PRACTICE:**
+- When the user provides their email, **immediately repeat it back to them character-by-character** (e.g., "n-e-h-a dot h-i-zero-seven at gmail dot com") to verify you captured it perfectly before proceeding to scheduling. If they correct you, apologize and update it immediately.`;
 
         const vapiRes = await fetch('https://api.vapi.ai/assistant', {
             method: 'POST',
@@ -330,7 +336,9 @@ Be helpful, concise, and professional. Greet ${name} by name and start serving $
                 transcriber: {
                     provider: "deepgram",
                     model: "nova-3",
-                    language: langCode
+                    language: langCode,
+                    smartFormat: true,
+                    keywords: ["AeroHyre", "TellYourJourney", "aviation", "Alok", "AI", "Sutherland", "Voice", "Support", "Strategic", "Book", "Demo", "Booking", "gmail", "outlook", "yahoo", "hotmail", "icloud"]
                 },
                 firstMessage,
             })

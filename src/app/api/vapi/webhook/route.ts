@@ -169,7 +169,13 @@ export async function POST(req: NextRequest) {
                     }
                 }
 
-                console.log(`[Vapi Tools] Processing tool: ${name}`, args);
+                // Defensive check: Ensure args is an object
+                if (!args || typeof args !== 'object') {
+                    console.warn(`[Vapi Tools] arguments for ${name} is not an object, defaulting to {}. Received:`, args);
+                    args = {};
+                }
+
+                console.log(`[Vapi Tools] Processing tool: ${name}`, JSON.stringify(args, null, 2));
 
                 try {
                     console.log(`[Vapi Tools] Executing ${name} with args:`, JSON.stringify(args, null, 2));

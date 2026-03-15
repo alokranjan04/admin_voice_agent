@@ -83,12 +83,20 @@ export async function checkAvailability(date: string, time?: string, service?: s
         const businessHours = getBusinessHours();
 
         // Parse the date and time
+        if (!date) {
+            return {
+                available: false,
+                reason: 'Missing date',
+                message: 'I need a date to check availability. Could you please specify when you would like to meet?'
+            };
+        }
+
         const requestedDate = parseDateSafe(date);
         if (isNaN(requestedDate.getTime())) {
             return {
                 available: false,
                 reason: 'Invalid date',
-                message: 'I could not understand the date. Could you please provide a specific date, like March 3rd or Tomorrow?'
+                message: 'I could not understand that date. Could you please specify a day like "tomorrow" or "Monday"?'
             };
         }
 
