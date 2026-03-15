@@ -567,48 +567,50 @@ Be helpful, concise, and professional. Greet ${name} by name and start serving $
             }
         }
 
-        // 4. Send the Email Confirmation / Link
-        const transporter = nodemailer.createTransport({
-            service: 'gmail',
-            auth: { user: gmailUser, pass: gmailPass }
-        });
+        // 4. Send the Email Confirmation / Link (ONLY if we actually have an email and it's not JUST a call trigger)
+        // If they click "Call Me Now" on the success screen, the form might send empty email or we may not want to spam.
+        if (email && email.includes('@') && deliveryOption !== 'call') {
+            const transporter = nodemailer.createTransport({
+                service: 'gmail',
+                auth: { user: gmailUser, pass: gmailPass }
+            });
 
-        const deliveryMessage = deliveryOption === 'call'
-            ? `Your phone (${phone}) should be ringing in a few seconds with a live call from your new AI agent!`
-            : `Click the secure link below to interact with your new digital employee!`;
+            const deliveryMessage = `Click the secure link below to interact with your new digital employee!`;
 
-        const mailOptions = {
-            from: `"${company} AI Voice Agent" <${gmailUser}>`,
-            to: email, // Bcc ourselves to track leads
-            bcc: gmailUser,
-            subject: `Your Custom Voice AI Agent for ${company} is Ready! 🚀`,
-            html: `
-                <div style="font-family: 'Inter', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 40px 20px; background-color: #ffffff; color: #1a1a1a;">
-                    <div style="text-align: center; margin-bottom: 30px;">
-                        <h1 style="color: #4f46e5; margin: 0; font-size: 28px;">Your Real AI is Alive, ${name}!</h1>
+            const mailOptions = {
+                from: `"${company} AI Voice Agent" <${gmailUser}>`,
+                to: email, // Bcc ourselves to track leads
+                bcc: gmailUser,
+                subject: `Your Custom Voice AI Agent for ${company} is Ready! 🚀`,
+                html: `
+                    <div style="font-family: 'Inter', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 40px 20px; background-color: #ffffff; color: #1a1a1a;">
+                        <div style="text-align: center; margin-bottom: 30px;">
+                            <h1 style="color: #4f46e5; margin: 0; font-size: 28px;">Your Real AI is Alive, ${name || 'there'}!</h1>
+                        </div>
+                        <p style="font-size: 16px; line-height: 1.6; color: #4b5563;">
+                            Hi ${name || 'there'},<br><br>
+                            We have prepared your personalized AI strategy for <strong>${company || 'your business'}</strong>.
+                            <br><br>
+                            <strong>${deliveryMessage}</strong>
+                        </p>
+                        <div style="background-color: #f8fafc; border-left: 4px solid #4f46e5; padding: 20px; margin: 30px 0; border-radius: 0 8px 8px 0;">
+                            <h3 style="margin-top: 0; color: #1e293b; font-size: 18px;">Talk to your Agent online anytime:</h3>
+                            <a href="${testLink}" style="display: inline-block; background-color: #4f46e5; color: #ffffff; padding: 14px 28px; text-decoration: none; font-weight: bold; border-radius: 6px; font-size: 16px; margin-top: 10px;">
+                                Open My Voice Agent →
+                            </a>
+                        </div>
+                        <p style="font-size: 14px; color: #6b7280; text-align: center; margin-top: 40px;">
+                            If you have any questions, simply reply to this email.<br>— The Voice AI Team
+                        </p>
                     </div>
-                    <p style="font-size: 16px; line-height: 1.6; color: #4b5563;">
-                        Hi ${name},<br><br>
-                        We have prepared your personalized AI strategy for <strong>${company}</strong>.
-                        <br><br>
-                        <strong>${deliveryMessage}</strong>
-                    </p>
-                    <div style="background-color: #f8fafc; border-left: 4px solid #4f46e5; padding: 20px; margin: 30px 0; border-radius: 0 8px 8px 0;">
-                        <h3 style="margin-top: 0; color: #1e293b; font-size: 18px;">Or talk to your Agent online anytime:</h3>
-                        <a href="${testLink}" style="display: inline-block; background-color: #4f46e5; color: #ffffff; padding: 14px 28px; text-decoration: none; font-weight: bold; border-radius: 6px; font-size: 16px; margin-top: 10px;">
-                            Open My Voice Agent →
-                        </a>
-                    </div>
-                    <p style="font-size: 14px; color: #6b7280; text-align: center; margin-top: 40px;">
-                        If you have any questions, simply reply to this email.<br>— The Voice AI Team
-                    </p>
-                </div>
-            `
-        };
+                `
+            };
 
-        const info = await transporter.sendMail(mailOptions);
-        console.log('[Generate Agent API] Email sent:', info.messageId);
-
+            const info = await transporter.sendMail(mailOptions);
+            console.log('[Generate Agent API] Email sent:', info.messageId);
+        } else {
+            console.log('[Generate Agent API] Skipping email: either no valid email provided or this is just a call trigger.');
+        }
         return NextResponse.json({
             success: true,
             assistantId,
