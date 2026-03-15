@@ -322,7 +322,7 @@ export async function createEvent(details: {
     try {
         const calendar = getCalendarClient();
         const calendarId = getCalendarId();
-        const slotDuration = details.duration || getAppointmentDuration();
+        const slotDuration = getAppointmentDuration(); // Always use env setting (30 min), ignore agent-provided duration
 
         // Parse date and time
         if (!details.time) {
