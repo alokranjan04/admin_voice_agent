@@ -45,8 +45,15 @@ async function testInit() {
             }
             const serviceAccount = JSON.parse(keyString);
             if (serviceAccount.private_key) {
+                console.log('[Test] Raw private_key length:', serviceAccount.private_key.length);
                 serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n');
+                console.log('[Test] Processed private_key length:', serviceAccount.private_key.length);
+                console.log('[Test] Newline count:', (serviceAccount.private_key.match(/\n/g) || []).length);
+                console.log('[Test] Key starts with:', serviceAccount.private_key.substring(0, 30));
+                console.log('[Test] Key ends with:', serviceAccount.private_key.slice(-30));
             }
+            console.log('[Test] Using Client Email:', serviceAccount.client_email);
+            console.log('[Test] Using Project ID:', serviceAccount.project_id || projectId);
             credential = admin.credential.cert(serviceAccount);
         } catch (e) {
             console.error("[Test] JSON Parse Failed:", e.message);

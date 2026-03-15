@@ -58,15 +58,13 @@ if (!admin.apps.length) {
 
         if (credential) {
             admin.initializeApp({
-                projectId: projectId,
-                credential: credential
+                credential: credential,
+                projectId: projectId // Keep as fallback
             });
-            console.log('[Firebase Admin] Initialized successfully with Project ID:', projectId);
+            console.log('[Firebase Admin] Initialized successfully.');
         } else {
             console.error("[Firebase Admin] CRITICAL: No credentials found.", {
                 hasProjectId: !!projectId,
-                hasClientEmail: !!clientEmail,
-                hasPrivateKey: !!privateKey,
                 hasServiceAccountKey: !!serviceAccountKey
             });
         }
@@ -76,9 +74,21 @@ if (!admin.apps.length) {
 }
 
 
-// Lazy-loaded getters to prevent build-time crashes
-export const adminDb = admin.apps.length ? admin.firestore() : null as unknown as ReturnType<typeof admin.firestore>;
-export const adminAuth = admin.apps.length ? admin.auth() : null as unknown as ReturnType<typeof admin.auth>;
+// Lazy-loaded getters to ensure initialization is complete before access
+export const getAdminDb = () => {
+    if (!admin.apps.length) return null;
+    return admin.firestore();
+};
+
+export const getAdminAuth = () => {
+    if (!admin.apps.length) return null;
+    return admin.auth();
+};
+
+// For backward compatibility while we refactor, but it's risky
+export const adminDb = getAdminDb() as unknown as ReturnType<typeof admin.firestore>;
+export const adminAuth = getAdminAuth() as unknown as ReturnType<typeof admin.auth>;
+
 export { admin };
 
 // Helper function to fetch agent configuration

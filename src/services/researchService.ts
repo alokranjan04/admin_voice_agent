@@ -20,7 +20,22 @@ export const researchBusiness = async (query: string): Promise<ResearchContext> 
     const apiKey = getSerperApiKey();
 
     if (!apiKey) {
-        console.warn("SERPER_API_KEY (NEXT_PUBLIC_ or VITE_) missing in .env. Falling back to AI only.");
+        console.warn("SERPER_API_KEY missing. Falling back to Jina Search.");
+        try {
+            const jinaSearchUrl = `https://s.jina.ai/${encodeURIComponent(query)}`;
+            console.log(`[Research] Trying Jina Search Fallback: ${jinaSearchUrl}`);
+            const res = await axios.get(jinaSearchUrl, { headers: { 'Accept': 'text/plain' } });
+            if (res.data) {
+                console.log(`[Research] Jina Search success. Received ${res.data.length} chars.`);
+                return { 
+                    searchQuery: query, 
+                    webResults: [{ snippet: res.data.substring(0, 5000) }],
+                    placesResults: [] 
+                };
+            }
+        } catch (jinaErr: any) {
+            console.error("[Research] Jina Search Fallback Failed:", jinaErr.message);
+        }
         return { searchQuery: query, webResults: [] };
     }
 

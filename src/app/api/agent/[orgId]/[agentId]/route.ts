@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { adminDb } from '@/lib/firebase-admin';
+import { getAdminDb } from '@/lib/firebase-admin';
 
 export const dynamic = 'force-dynamic';
 
@@ -9,20 +9,21 @@ export async function GET(
 ) {
     try {
         const { orgId, agentId } = await params;
+        const db = getAdminDb();
 
         console.log(`[Agent API DEBUG] Request for orgId: ${orgId}, agentId: ${agentId}`);
 
-        if (!adminDb) {
-            console.error('[Agent API DEBUG] adminDb is NULL');
+        if (!db) {
+            console.error('[Agent API DEBUG] Firebase Admin NOT INITIALIZED');
             return NextResponse.json(
-                { error: 'Firebase Admin not initialized', details: 'adminDb is null' },
+                { error: 'Firebase Admin not initialized', details: 'getAdminDb() returned null' },
                 { status: 500 }
             );
         }
 
         // 1. Try Lead Agents first
         console.log(`[Agent API DEBUG] Checking temporary_assistants/${agentId}`);
-        const leadRef = adminDb.collection('temporary_assistants').doc(agentId);
+        const leadRef = db.collection('temporary_assistants').doc(agentId);
         const leadSnap = await leadRef.get();
         
         if (leadSnap.exists) {
@@ -39,6 +40,9 @@ export async function GET(
                     businessName: leadData.company || "Your Business",
                     industry: leadData.industry || "Professional Services",
                     description: leadData.companyDetails || "Voice AI Solutions",
+                    researchSummary: leadData.researchSummary || "",
+                    industryFAQs: leadData.industryFAQs || "",
+                    questionnaire: leadData.questionnaire || "",
                 },
                 services: leadData.services || [],
                 locations: [],
@@ -52,7 +56,7 @@ export async function GET(
 
         // 2. Fallback to standard agents
         console.log(`[Agent API DEBUG] Checking organizations/${orgId}/agents/${agentId}`);
-        const docRef = adminDb.collection('organizations').doc(orgId).collection('agents').doc(agentId);
+        const docRef = db.collection('organizations').doc(orgId).collection('agents').doc(agentId);
         const docSnap = await docRef.get();
 
         if (docSnap.exists) {

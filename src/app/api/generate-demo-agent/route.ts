@@ -212,10 +212,42 @@ You are a sharp, high-level enterprise consultant focused on identifying growth 
             }
         });
 
-        console.log("[Demo Agent] Generated successfully:", response.data?.id);
+        const assistantId = response.data.id;
+        console.log("[Demo Agent] Generated successfully:", assistantId);
+
+        // Link the phone number to this new assistant for INBOUND calls
+        const vapiPhoneNumberId = process.env.VAPI_PHONE_NUMBER_ID || process.env.VITE_VAPI_PHONE_NUMBER_ID;
+        if (vapiPhoneNumberId && apiKey) {
+            try {
+                let uuid = vapiPhoneNumberId;
+                if (uuid.startsWith('+')) {
+                    const listRes = await fetch('https://api.vapi.ai/phone-number', {
+                        headers: { 'Authorization': `Bearer ${apiKey}` }
+                    });
+                    if (listRes.ok) {
+                        const numbers = await listRes.json() as any[];
+                        uuid = numbers?.find((n: any) => n.number === uuid)?.id || uuid;
+                    }
+                }
+
+                if (uuid && uuid.includes('-')) {
+                    await fetch(`https://api.vapi.ai/phone-number/${uuid}`, {
+                        method: 'PATCH',
+                        headers: {
+                            'Authorization': `Bearer ${apiKey}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ assistantId })
+                    });
+                    console.log(`[Demo Agent] Inbound number ${uuid} linked to ${assistantId}`);
+                }
+            } catch (err) {
+                console.warn("[Demo Agent] Failed to link inbound phone:", err);
+            }
+        }
 
         return NextResponse.json({
-            assistantId: response.data.id
+            assistantId: assistantId
         });
 
     } catch (error: any) {

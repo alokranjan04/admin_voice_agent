@@ -58,6 +58,9 @@ export interface BusinessMetadata {
   description: string;
   websiteUrl?: string;
   createdAt: string;
+  researchSummary?: string;
+  industryFAQs?: string;
+  questionnaire?: string;
 }
 
 export interface Service {

@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import nodemailer from 'nodemailer';
 import { researchBusiness } from '@/services/researchService';
-import { summarizeBusinessResearch, extractServicesFromResearch, generateIndustryFAQs } from '@/services/geminiService';
+import { summarizeBusinessResearch, extractServicesFromResearch, generateIndustryFAQs, generateCustomerIntentQuestionnaire } from '@/services/geminiService';
 import { adminDb } from '@/lib/firebase-admin';
 
 export const dynamic = 'force-dynamic';
@@ -77,7 +77,9 @@ export async function POST(req: Request) {
                     researchSummary = await summarizeBusinessResearch(company, companyDetails || industry, researchData);
                     // Extract structured services FOR THE UI
                     extractedServices = await extractServicesFromResearch(company, researchData);
-                    console.log(`[Generate Agent API] Research complete. Summary length: ${researchSummary.length}, Services: ${extractedServices.length}`);
+                    console.log(`[Generate Agent API] Research complete. Summary: ${researchSummary.substring(0, 50)}...`);
+                } else {
+                    console.log(`[Generate Agent API] No research results found for "${company}".`);
                 }
             } catch (researchErr) {
                 console.warn(`[Generate Agent API] Smart Research failed:`, researchErr);
@@ -98,10 +100,23 @@ export async function POST(req: Request) {
         // 0.8 Industry FAQ Step: Generate common questions for training
         let industryFAQs = '';
         try {
-            console.log(`[Generate Agent API] Generating Industry FAQs for ${company} (${industry}) - Focus: ${interest}`);
-            industryFAQs = await generateIndustryFAQs(company, industry || "General Business", interest || "Customer Support", companyDetails || researchSummary);
+            console.log(`[Generate Agent API] Generating Industry FAQs for ${company} (${industry})`);
+            const faqContext = companyDetails || researchSummary || websiteContent || "General industry knowledge";
+            industryFAQs = await generateIndustryFAQs(company, industry || "General Business", interest || "Customer Support", faqContext);
+            console.log(`[Generate Agent API] FAQ generated. Length: ${industryFAQs.length}`);
         } catch (faqErr) {
             console.warn(`[Generate Agent API] FAQ generation failed:`, faqErr);
+        }
+
+        // 0.9 Strategic Questionnaire Step: Deep training roadmap
+        let strategicQuestionnaire = '';
+        try {
+            console.log(`[Generate Agent API] Generating Strategic Questionnaire for ${company}`);
+            const questContext = companyDetails || researchSummary || websiteContent || "General industry knowledge";
+            strategicQuestionnaire = await generateCustomerIntentQuestionnaire(company, industry || "General Business", interest || "Customer Support", questContext);
+            console.log(`[Generate Agent API] Questionnaire generated. Length: ${strategicQuestionnaire.length}`);
+        } catch (questErr) {
+            console.warn(`[Generate Agent API] Questionnaire generation failed:`, questErr);
         }
 
         // Language → locale code map (used for VAPI's language hint)
@@ -151,12 +166,13 @@ export async function POST(req: Request) {
             industry ? `Industry: ${industry}` : '',
         ].filter(Boolean).join('\n');
 
-        if (manualContext || researchSummary || websiteContent || industryFAQs) {
+        if (manualContext || researchSummary || websiteContent || industryFAQs || strategicQuestionnaire) {
             businessContext = `\n\n== BUSINESS KNOWLEDGE BASE ==\n`;
             if (manualContext) businessContext += `${manualContext}\n\n`;
             if (websiteContent) businessContext += `### LIVE WEBSITE CONTENT (Direct from Source):\n${websiteContent.substring(0, 3000)}\n\n`;
             if (researchSummary) businessContext += `### VERIFIED BUSINESS DETAILS (External Research):\n${researchSummary}\n\n`;
             if (industryFAQs) businessContext += `### INDUSTRY SPECIFIC FAQS & GUIDELINES:\n${industryFAQs}\n\n`;
+            if (strategicQuestionnaire) businessContext += `### STRATEGIC CUSTOMER INTENTS & QUESTIONNAIRE:\n${strategicQuestionnaire}\n\n`;
             businessContext += `== END ==\n\nUse the above information to provide specific, high-fidelity answers about ${company}. Prioritize live website content for service details. If asked about something not in the knowledge base, state you'll find out, but prioritize using the verified details provided. Do NOT hallucinate.`;
         }
 
@@ -334,7 +350,7 @@ Be helpful, concise, and professional. Greet ${name} by name and start serving $
         if (assistantId && adminDb) {
             try {
                 const expiry = new Date(Date.now() + 30 * 60 * 1000);
-                await adminDb.collection('temporary_assistants').doc(assistantId).set({
+                const trackingData = {
                     assistantId,
                     company: company,
                     leadEmail: email,
@@ -342,12 +358,21 @@ Be helpful, concise, and professional. Greet ${name} by name and start serving $
                     industry: industry || '',
                     companyDetails: companyDetails || '',
                     services: extractedServices || [],
+                    researchSummary: researchSummary || '',
+                    industryFAQs: industryFAQs || '',
+                    questionnaire: strategicQuestionnaire || '',
                     expiresAt: expiry.toISOString(),
                     createdAt: new Date().toISOString()
+                };
+                console.log(`[Generate Agent API] SAVING to temporary_assistants/${assistantId}:`, {
+                    hasSummary: !!researchSummary,
+                    faqLen: industryFAQs.length,
+                    questLen: strategicQuestionnaire.length
                 });
-                console.log(`[Generate Agent API] Assistant ${assistantId} tracked for cleanup at ${expiry.toISOString()}`);
-            } catch (dbErr) {
-                console.warn('[Generate Agent API] Failed to log tracking info to Firebase:', dbErr);
+                await adminDb.collection('temporary_assistants').doc(assistantId).set(trackingData);
+                console.log(`[Generate Agent API] Assistant ${assistantId} tracked successfully.`);
+            } catch (dbErr: any) {
+                console.warn('[Generate Agent API] Failed to log tracking info to Firebase:', dbErr.message);
             }
         }
 
@@ -361,35 +386,52 @@ Be helpful, concise, and professional. Greet ${name} by name and start serving $
         let callStatus = 'not_requested';
         let callError = null;
 
+        // 3. Resolve Vapi Phone Number (Always resolve if configured, even if not calling out)
+        let vapiPhoneNumberId = process.env.VAPI_PHONE_NUMBER_ID || process.env.VITE_VAPI_PHONE_NUMBER_ID;
+        if (vapiPhoneNumberId && vapiPhoneNumberId.startsWith('+') && vapiApiKey) {
+            try {
+                console.log(`[Generate Agent API] Attempting to resolve number ${vapiPhoneNumberId} to Vapi UUID...`);
+                const listRes = await fetch('https://api.vapi.ai/phone-number', {
+                    headers: { 'Authorization': `Bearer ${vapiApiKey}` }
+                });
+                if (listRes.ok) {
+                    const numbers = await listRes.json() as any[];
+                    const match = numbers?.find((n: any) => n.number === vapiPhoneNumberId);
+                    if (match) {
+                        console.log(`[Generate Agent API] Resolved to UUID: ${match.id}`);
+                        vapiPhoneNumberId = match.id;
+                    }
+                }
+            } catch (resErr) {
+                console.warn(`[Generate Agent API] UUID Resolution failed:`, resErr);
+            }
+        }
+
+        // 3.5 LINK Phone to Assistant for INBOUND calls (Permanent Fix)
+        if (vapiPhoneNumberId && vapiPhoneNumberId.includes('-') && vapiApiKey) {
+            try {
+                console.log(`[Generate Agent API] Linking phone ${vapiPhoneNumberId} to assistant ${assistantId} for Inbound...`);
+                await fetch(`https://api.vapi.ai/phone-number/${vapiPhoneNumberId}`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Authorization': `Bearer ${vapiApiKey}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ assistantId })
+                });
+                console.log(`[Generate Agent API] ✅ Inbound calls now routed to ${assistantId}`);
+            } catch (linkErr) {
+                console.error(`[Generate Agent API] Failed to link inbound phone:`, linkErr);
+            }
+        }
+
+        // 4. Handle Outbound Delivery if requested
         if (deliveryOption === 'call') {
             try {
                 // Support both standard and VITE_ prefixed env vars for maximum compatibility
                 const twilioSid = process.env.TWILIO_ACCOUNT_SID || process.env.VITE_TWILIO_ACCOUNT_SID;
                 const twilioToken = process.env.TWILIO_AUTH_TOKEN || process.env.VITE_TWILIO_AUTH_TOKEN;
                 const twilioFrom = (process.env.TWILIO_PHONE_NUMBER || process.env.VITE_TWILIO_PHONE_NUMBER)?.replace(/\s/g, '');
-                let vapiPhoneNumberId = process.env.VAPI_PHONE_NUMBER_ID || process.env.VITE_VAPI_PHONE_NUMBER_ID;
-
-                console.log(`[Generate Agent API] Outbound Config Detection: VAPI_ID=${!!vapiPhoneNumberId}, TWILIO_SID=${!!twilioSid}`);
-
-                // Smart Resolution: If it's a raw number, try to find the Vapi UUID first
-                if (vapiPhoneNumberId && vapiPhoneNumberId.startsWith('+') && vapiApiKey) {
-                    try {
-                        console.log(`[Generate Agent API] Attempting to resolve number ${vapiPhoneNumberId} to Vapi UUID...`);
-                        const listRes = await fetch('https://api.vapi.ai/phone-number', {
-                            headers: { 'Authorization': `Bearer ${vapiApiKey}` }
-                        });
-                        if (listRes.ok) {
-                            const numbers = await listRes.json() as any[];
-                            const match = numbers?.find((n: any) => n.number === vapiPhoneNumberId);
-                            if (match) {
-                                console.log(`[Generate Agent API] Resolved to UUID: ${match.id}`);
-                                vapiPhoneNumberId = match.id;
-                            }
-                        }
-                    } catch (resErr) {
-                        console.warn(`[Generate Agent API] UUID Resolution failed:`, resErr);
-                    }
-                }
 
                 console.log(`[Generate Agent API] Starting Outbound Dispatch: phone=${phone}`);
                 console.log(`[Generate Agent API] Phone Config: VAPI_PHONE_ID=${vapiPhoneNumberId}, TWILIO_SID=${!!twilioSid}, TWILIO_NUM=${twilioFrom}`);

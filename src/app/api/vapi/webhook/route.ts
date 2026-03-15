@@ -131,6 +131,17 @@ export async function POST(req: NextRequest) {
 
             return NextResponse.json({ success: true });
         }
+
+        // --- Inbound Call Routing (Assistant Request) ---
+        if (body.message?.type === 'assistant-request') {
+            console.log('[Vapi Webhook] Handling assistant-request for inbound call');
+            const defaultAssistantId = process.env.DEFAULT_INBOUND_ASSISTANT_ID || '0cd3241d-f905-461a-b831-526a1405b4d5';
+            
+            return NextResponse.json({ 
+                assistantId: defaultAssistantId 
+            });
+        }
+        // ------------------------------------------------
         // -----------------------------------
 
         // Vapi sends tool calls in this format

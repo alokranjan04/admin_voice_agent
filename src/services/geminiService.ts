@@ -40,17 +40,10 @@ export async function generateConfigFromDescription(description: string, researc
     throw new Error("System configuration error: API Key is missing or undefined.");
   }
 
+  // Explicitly use v1 API for broader model support and stability
   const genAI = new GoogleGenerativeAI(apiKey);
-  // Comprehensive list of models to fallback through
-  const modelNames = [
-    "gemini-2.0-flash",
-    "gemini-2.0-flash-lite",
-    "gemini-1.5-flash",
-    "gemini-flash-latest",
-    "gemini-1.5-flash-8b",
-    "gemini-1.5-pro",
-    "gemini-pro-latest"
-  ];
+  // Current 2026 models: Gemini 2.0 is the stable standard
+  const modelNames = ["gemini-2.0-flash", "gemini-2.0-flash-lite", "gemini-1.5-flash", "gemini-1.5-pro"];
 
   const systemInstruction = `
     You are an expert Voice AI Configuration Admin.
@@ -235,7 +228,7 @@ export async function generateConfigFromDescription(description: string, researc
       const model = genAI.getGenerativeModel({
         model: modelName,
         systemInstruction: { role: "system", parts: [{ text: systemInstruction }] }
-      });
+      }, { apiVersion: 'v1' });
 
       const result = await model.generateContent({
         contents: [{ role: "user", parts: [{ text: userContent }] }],
@@ -249,8 +242,8 @@ export async function generateConfigFromDescription(description: string, researc
     } catch (e: any) {
       lastError = e;
       const status = e.status || (e.message?.match(/\[(\d+)\s*\]/) || [])[1];
-      if (status === '404') {
-        console.warn(`[Gemini Service] Model ${modelName} not found (404).`);
+      if (status === '404' || e.message?.includes('not supported')) {
+        console.warn(`[Gemini Service] Model ${modelName} not found or not supported, skipping...`);
         continue;
       }
       if (status === '429') {
@@ -280,7 +273,7 @@ export async function extractServicesFromResearch(companyName: string, researchD
 
   const genAI = new GoogleGenerativeAI(apiKey);
   const model = genAI.getGenerativeModel({
-    model: "gemini-1.5-flash",
+    model: "gemini-2.0-flash",
     generationConfig: {
       responseMimeType: "application/json",
       responseSchema: {
@@ -301,7 +294,7 @@ export async function extractServicesFromResearch(companyName: string, researchD
         required: ["services"]
       }
     }
-  });
+  }, { apiVersion: 'v1' });
 
   const prompt = `
     Based on the following research data for "${companyName}", identify exactly 3-4 key services or features that a Voice AI agent should handle.
@@ -334,7 +327,7 @@ export async function summarizeBusinessResearch(companyName: string, description
   if (!apiKey) return "";
 
   const genAI = new GoogleGenerativeAI(apiKey);
-  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+  const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" }, { apiVersion: 'v1' });
 
   const prompt = `
     You are a professional business analyst. I am providing you with raw search results (Google Search + Google Places) for a company called "${companyName}".
@@ -364,10 +357,12 @@ export async function summarizeBusinessResearch(companyName: string, description
 
   try {
     const result = await model.generateContent(prompt);
-    return result.response.text().trim();
-  } catch (err) {
-    console.error("[Gemini Service] Research summary failed:", err);
-    return "";
+    const text = result.response.text().trim();
+    if (text.length > 50) return text;
+    throw new Error("Summary too short");
+  } catch (err: any) {
+    console.warn("[Gemini Service] Research summary failed or empty. Using default industry profile.");
+    return `### Business Intelligence Profile: ${companyName}\n\n**Overview:** A professional service provider in the industry, focused on delivering high-quality client experiences. \n\n**Key Strengths:** Reliable service delivery, professional communication, and specialized industry expertise. \n\n**Operational Focus:** Streamlining customer interactions and providing efficient, automated support for common inquiries.`;
   }
 }
 
@@ -399,16 +394,17 @@ function processResult(result: any) {
 export async function generateIndustryFAQs(companyName: string, industry: string, focalArea: string, context?: string): Promise<string> {
   const apiKey = getGeminiApiKey();
   if (!apiKey) return "";
-
   const genAI = new GoogleGenerativeAI(apiKey);
-  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+  const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" }, { apiVersion: 'v1' });
+
+  const faqContext = context && context.length > 5 ? context : `A professional business in the ${industry} industry focusing on ${focalArea}. They provide high-quality services and value customer satisfaction.`;
 
   const prompt = `
     You are a professional business consultant. Generate 4-5 common questions and answers (FAQ) for a customer interacting with an AI assistant from a company called "${companyName}".
     
     Industry: ${industry}
     Focal Area (Support/Sales/Ops): ${focalArea}
-    Additional Context: ${context || 'N/A'}
+    Research Context: ${faqContext}
     
     The FAQs should be professional, helpful, and specific to the industry and focal area. 
     Format the output as a clean Markdown list with "Q:" and "A:".
@@ -419,11 +415,65 @@ export async function generateIndustryFAQs(companyName: string, industry: string
     **A: We typically process all requests within 24 business hours.**
   `;
 
+  console.log(`[Gemini FAQ] Starting FAQ generation for ${companyName}. Context length: ${faqContext.length}`);
   try {
     const result = await model.generateContent(prompt);
-    return result.response.text().trim();
-  } catch (err) {
-    console.error("[Gemini Service] FAQ generation failed:", err);
-    return "";
+    const text = result.response.text().trim();
+    if (text.length > 50) return text;
+    throw new Error("FAQ too short");
+  } catch (err: any) {
+    console.warn("[Gemini Service] FAQ generation failed or empty. Using industry defaults.");
+    return `### Common Questions\n\n**Q: How do I get more information about your services?**\n**A: You can speak with our AI assistant right now or leave your contact details for a follow-up.**\n\n**Q: What are your standard operating hours?**\n**A: We are available during standard business hours, and our AI assistant is here to help 24/7.**\n\n**Q: How can I book a consultation?**\n**A: Our AI assistant can guide you through the process of scheduling a time that works for you.**`;
+  }
+}
+
+/**
+ * Generates a comprehensive Markdown questionnaire focused on customer intents and business needs.
+ * This is used to deeply train the AI and provide a clear roadmap for the business.
+ */
+export async function generateCustomerIntentQuestionnaire(companyName: string, industry: string, focalArea: string, context?: string): Promise<string> {
+  const apiKey = getGeminiApiKey();
+  if (!apiKey) return "";
+  const genAI = new GoogleGenerativeAI(apiKey);
+  const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" }, { apiVersion: 'v1' });
+
+  const questContext = context && context.length > 5 ? context : `Standard business operations for ${companyName} in the ${industry} industry. Focus on high-value customer interactions and efficient troubleshooting.`;
+
+  const prompt = `
+    You are a Strategic Business Architect. I need you to generate a "Customer Intent Questionnaire" for a company called "${companyName}".
+    
+    Context:
+    - Industry: ${industry}
+    - Focal Area: ${focalArea}
+    - Business Knowledge Base: ${questContext}
+    
+    YOUR GOAL:
+    Create a deep, strategic questionnaire in Markdown format that identifies the 5 most critical customer "intents" or "reasons for calling" and how the AI should perfectly handle them.
+    
+    STRUCTURE:
+    ### 📋 Strategic Intent Questionnaire
+    
+    **Intent 1: [Specific Customer Need]**
+    *   **Common Question:** "[Example of what a user would say]"
+    *   **Strategic Response:** "[How the AI should handle this to drive ROI/Resolution]"
+    
+    (Repeat for 5 intents)
+    
+    **Strategic Guidelines for the Bot:**
+    - [Guideline 1]
+    - [Guideline 2]
+    
+    Make it professional, deeply relevant to the specific business, and highly functional.
+  `;
+
+  console.log(`[Gemini Quest] Starting Questionnaire generation for ${companyName}. Context length: ${questContext.length}`);
+  try {
+    const result = await model.generateContent(prompt);
+    const text = result.response.text().trim();
+    if (text.length > 100) return text;
+    throw new Error("Questionnaire too short");
+  } catch (err: any) {
+    console.warn("[Gemini Service] Questionnaire generation failed or empty. Using strategic defaults.");
+    return `### 📋 Strategic Intent Questionnaire\n\n**Intent 1: General Inquiry & Information**\n*   **Common Question:** "What do you guys do?"\n*   **Strategic Response:** Provide a concise overview of ${companyName}'s core value proposition and invite them to explore specific services.\n\n**Intent 2: Booking & Scheduling**\n*   **Common Question:** "I'd like to set up a meeting."\n*   **Strategic Response:** Efficiently gather their preferences and move them directly into the scheduling flow to maximize conversion.\n\n**Intent 3: Service Details**\n*   **Common Question:** "Can you help me with X?"\n*   **Strategic Response:** Identify the specific need and explain ${companyName}'s approach to solving it professionally.`;
   }
 }
