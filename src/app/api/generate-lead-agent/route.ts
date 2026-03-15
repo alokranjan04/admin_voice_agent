@@ -442,9 +442,15 @@ Be helpful, concise, and professional. Greet ${name} by name and start serving $
                 console.log(`[Generate Agent API] Starting Outbound Dispatch: phone=${phone}`);
                 console.log(`[Generate Agent API] Phone Config: VAPI_PHONE_ID=${vapiPhoneNumberId}, TWILIO_SID=${!!twilioSid}, TWILIO_NUM=${twilioFrom}`);
 
+                let destPhone = phone.replace(/\s/g, '');
+                if (!destPhone.startsWith('+')) {
+                    if (destPhone.length === 10) destPhone = '+91' + destPhone;
+                    else destPhone = '+' + destPhone;
+                }
+
                 const callPayload: any = {
                     assistantId,
-                    customer: { number: phone.replace(/\s/g, '') }, // Ensure customer number is clean
+                    customer: { number: destPhone }, // Ensure customer number is E.164 compliant
                 };
 
                 // Smart Resolution & Auto-Import: If it's a raw number, ensure it's registered with Vapi
@@ -507,10 +513,15 @@ Be helpful, concise, and professional. Greet ${name} by name and start serving $
                 else if (twilioSid && twilioToken && (twilioFrom || vapiPhoneNumberId)) {
                     // Scenario 2: Inline BYOD (Twilio)
                     // Use twilioFrom if set, or vapiPhoneNumberId if it looks like a number
-                    const rawNumber = (twilioFrom || vapiPhoneNumberId || "").replace(/\s/g, '');
+                    let rawNumber = (twilioFrom || vapiPhoneNumberId || "").replace(/\s/g, '');
 
+                    // Ensure E.164 format (must start with +). Default to +91 (India) if just 10 digits
                     if (!rawNumber.startsWith('+')) {
-                        throw new Error(`Invalid Twilio number format: ${rawNumber}. Must start with +`);
+                        if (rawNumber.length === 10) {
+                            rawNumber = '+91' + rawNumber;
+                        } else {
+                            rawNumber = '+' + rawNumber;
+                        }
                     }
 
                     callPayload.phoneNumber = {
@@ -519,7 +530,7 @@ Be helpful, concise, and professional. Greet ${name} by name and start serving $
                         twilioAccountSid: twilioSid,
                         twilioAuthToken: twilioToken,
                     };
-                    console.log(`[Generate Agent API] Using Twilio BYOD configuration with number: ${rawNumber}`);
+                    console.log(`[Generate Agent API] Using Twilio BYOD configuration with E.164 number: ${rawNumber}`);
                 }
                 else {
                     // Scenario 3: Failure — no UUID and no Twilio creds to handle the raw number
