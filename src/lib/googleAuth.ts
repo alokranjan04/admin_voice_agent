@@ -73,8 +73,7 @@ export function getAuth() {
         console.log('[GoogleAuth] Using OAuth Refresh Token auth flow');
         const oauth2Client = new google.auth.OAuth2(
             clientId,
-            clientSecret,
-            `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/auth/callback/google`
+            clientSecret
         );
         oauth2Client.setCredentials({ refresh_token: refreshToken });
         return oauth2Client;

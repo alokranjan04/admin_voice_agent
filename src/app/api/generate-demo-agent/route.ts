@@ -134,6 +134,23 @@ You are a sharp, high-level enterprise consultant focused on identifying growth 
                     {
                         type: "function",
                         function: {
+                            name: "cancelEvent",
+                            description: "Cancel or reschedule an existing appointment. Use the information you already have (Name, Email, Phone).",
+                            parameters: {
+                                type: "object",
+                                properties: {
+                                    date: { type: "string", description: "Date of the appointment to cancel" },
+                                    time: { type: "string", description: "Time of the appointment" },
+                                    name: { type: "string", description: "Customer name" },
+                                    email: { type: "string", description: "Customer email" }
+                                },
+                                required: ["date", "time"]
+                            }
+                        }
+                    },
+                    {
+                        type: "function",
+                        function: {
                             name: "createEvent",
                             description: "Create a 30-minute calendar appointment after confirming all details with the user. Duration MUST be 30 minutes.",
                             parameters: {
