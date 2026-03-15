@@ -4,10 +4,14 @@ import { researchBusiness } from '@/services/researchService';
 import { summarizeBusinessResearch, extractServicesFromResearch, generateIndustryFAQs } from '@/services/geminiService';
 import { adminDb } from '@/lib/firebase-admin';
 
+export const dynamic = 'force-dynamic';
+
 export async function POST(req: Request) {
     try {
         const body = await req.json();
         const { name, company, email, phone, website, deliveryOption, language = 'English', companyDetails = '', industry = '', interest = '', isSutherland = false } = body;
+
+        console.log(`[Generate Agent API DEBUG] Received Request: company=${company}, deliveryOption=${deliveryOption}, isSutherland=${isSutherland}`);
 
         if (!name || !company || !email || !phone) {
             return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
