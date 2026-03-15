@@ -100,3 +100,9 @@ jobs:
             VAPI_PRIVATE_API_KEY=${{ secrets.VAPI_PRIVATE_API_KEY }}
             STRIPE_SECRET_KEY=${{ secrets.STRIPE_SECRET_KEY }}
             STRIPE_WEBHOOK_SECRET=${{ secrets.STRIPE_WEBHOOK_SECRET }}
+            TZ=Asia/Kolkata
+            TIMEZONE=Asia/Kolkata
+            BUSINESS_DAYS=1,2,3,4,5
+            BUSINESS_HOURS_START=9
+            BUSINESS_HOURS_END=17
+            APPOINTMENT_DURATION=30
