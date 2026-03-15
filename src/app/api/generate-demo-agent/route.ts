@@ -82,7 +82,10 @@ You are a sharp, high-level enterprise consultant focused on identifying growth 
 **EMAIL CAPTURE BEST PRACTICE:**
 - When the user provides their email, **immediately repeat it back to them character-by-character** (e.g., "n-e-h-a dot h-i-zero-seven at gmail dot com") to verify you captured it perfectly before preceding to scheduling. If they correct you, apologize and update it immediately.`;
 
-        let baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://tellyourjourney.com';
+        // Derive base URL from the request host for webhook connectivity
+        const host = req.headers.get('host') || 'localhost:3000';
+        const protocol = (host.includes('localhost') || host.includes('127.0.0.1')) ? 'http' : 'https';
+        let baseUrl = `${protocol}://${host}`;
         baseUrl = baseUrl.replace(/\/$/, "");
 
         const payload: any = {

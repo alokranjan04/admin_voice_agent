@@ -64,6 +64,23 @@ function normalizeKey(key: string): string {
 }
 
 export function getAuth() {
+    // 1. Prioritize User/OAuth flow (verified more reliable in this environment)
+    const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
+    const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
+    const refreshToken = process.env.GOOGLE_REFRESH_TOKEN;
+
+    if (clientId && clientSecret && refreshToken) {
+        console.log('[GoogleAuth] Using OAuth Refresh Token auth flow');
+        const oauth2Client = new google.auth.OAuth2(
+            clientId,
+            clientSecret,
+            `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/auth/callback/google`
+        );
+        oauth2Client.setCredentials({ refresh_token: refreshToken });
+        return oauth2Client;
+    }
+
+    // 2. Service Account fallback
     const serviceAccountEmail = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
     let serviceAccountKey = process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY;
 
@@ -74,12 +91,11 @@ export function getAuth() {
     }
 
     if (serviceAccountEmail && serviceAccountKey) {
+        console.log('[GoogleAuth] Using Service Account auth flow');
         const privateKey = normalizeKey(serviceAccountKey);
 
         if (!privateKey.includes('-----BEGIN')) {
             console.warn('[GoogleAuth] Private key is missing PEM headers. Connection will likely fail.');
-        } else {
-            console.log('[GoogleAuth] Private key established (PEM detected). Length:', privateKey.length);
         }
 
         return new google.auth.JWT({
@@ -88,21 +104,6 @@ export function getAuth() {
             scopes: SCOPES,
             subject: process.env.GOOGLE_SERVICE_ACCOUNT_SUBJECT || undefined,
         });
-    }
-
-    // Local/User OAuth fallback
-    const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
-    const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
-    const refreshToken = process.env.GOOGLE_REFRESH_TOKEN;
-
-    if (clientId && clientSecret && refreshToken) {
-        const oauth2Client = new google.auth.OAuth2(
-            clientId,
-            clientSecret,
-            `${process.env.NEXT_PUBLIC_APP_URL}/api/auth/callback/google`
-        );
-        oauth2Client.setCredentials({ refresh_token: refreshToken });
-        return oauth2Client;
     }
 
     throw new Error('Google Calendar Authentication not configured. Please provide Service Account or OAuth credentials.');

@@ -30,15 +30,12 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: 'Server configuration error' }, { status: 500 });
         }
 
-        // resolved host for Webhook & Test Link URLs
+        // host for Webhook & Test Link URLs
         const host = req.headers.get('host') || 'localhost:3000';
-        const protocol = host.includes('localhost') ? 'http' : 'https';
+        const protocol = (host.includes('localhost') || host.includes('127.0.0.1')) ? 'http' : 'https';
 
-        // Robust Webhook URL: Priority to ENV_URL, fallback to host with WWW handling for tellyourjourney.com
-        let baseUrl = process.env.NEXT_PUBLIC_APP_URL || `${protocol}://${host}`;
-        if (baseUrl.includes('tellyourjourney.com') && !baseUrl.includes('www.')) {
-            baseUrl = baseUrl.replace('tellyourjourney.com', 'www.tellyourjourney.com');
-        }
+        // Use the current host to ensure the webhook reaches THIS specific instance (Cloud Run or Local)
+        let baseUrl = `${protocol}://${host}`;
         const serverUrl = `${baseUrl.replace(/\/$/, '')}/api/vapi/webhook`;
 
         // 0. Scrape website content using Jina AI Reader (handles JS-rendered sites)
