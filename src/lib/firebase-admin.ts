@@ -17,19 +17,32 @@ if (!admin.apps.length) {
                 privateKey: privateKey.replace(/\\n/g, '\n'),
             });
         } else if (serviceAccountKey) {
-            console.log('[Firebase Admin] Using service account JSON blob...');
+            console.log(`[Firebase Admin] Attempting JSON parse. String length: ${serviceAccountKey.length}`);
             try {
-                let keyString = serviceAccountKey;
-                if (keyString.startsWith("'") && keyString.endsWith("'")) {
+                let keyString = serviceAccountKey.trim();
+                
+                // Remove outer quotes if present (standard .env vs Vercel mismatch)
+                if ((keyString.startsWith("'") && keyString.endsWith("'")) || 
+                    (keyString.startsWith('"') && keyString.endsWith('"'))) {
+                    console.log('[Firebase Admin] Removing outer quotes from key string');
                     keyString = keyString.slice(1, -1);
                 }
+
+                // Log boundaries for truncation check (safely)
+                console.log(`[Firebase Admin] Key Start: ${keyString.substring(0, 20)}...`);
+                console.log(`[Firebase Admin] Key End: ...${keyString.substring(keyString.length - 20)}`);
+
                 const serviceAccount = JSON.parse(keyString);
                 if (serviceAccount.private_key) {
                     serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n');
                 }
                 credential = admin.credential.cert(serviceAccount);
-            } catch (e) {
-                console.error("[Firebase Admin] Failed to parse service account key", e);
+            } catch (e: any) {
+                console.error("[Firebase Admin] Failed to parse service account key.", {
+                    error: e.message,
+                    length: serviceAccountKey?.length,
+                    isJson: serviceAccountKey?.trim().startsWith('{')
+                });
             }
         }
 
