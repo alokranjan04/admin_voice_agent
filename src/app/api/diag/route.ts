@@ -17,17 +17,20 @@ export async function GET(req: Request) {
         SERVICE_ACCOUNT_KEY: {
             exists: !!process.env.FIREBASE_SERVICE_ACCOUNT_KEY,
             length: process.env.FIREBASE_SERVICE_ACCOUNT_KEY?.length || 0,
-            startsWith: process.env.FIREBASE_SERVICE_ACCOUNT_KEY?.trim().substring(0, 5),
-            endsWith: process.env.FIREBASE_SERVICE_ACCOUNT_KEY?.trim().slice(-5)
+            startsWith: process.env.FIREBASE_SERVICE_ACCOUNT_KEY?.trim().substring(0, 5)
+        },
+        SA_KEY_BASE64: {
+            exists: !!process.env.FIREBASE_SERVICE_ACCOUNT_KEY_BASE64,
+            length: process.env.FIREBASE_SERVICE_ACCOUNT_KEY_BASE64?.length || 0,
+            firstChars: process.env.FIREBASE_SERVICE_ACCOUNT_KEY_BASE64?.substring(0, 5)
+        },
+        PK_BASE64: {
+            exists: !!process.env.FIREBASE_PRIVATE_KEY_BASE64,
+            length: process.env.FIREBASE_PRIVATE_KEY_BASE64?.length || 0
         },
         CLIENT_EMAIL: {
             exists: !!process.env.FIREBASE_CLIENT_EMAIL,
             val: process.env.FIREBASE_CLIENT_EMAIL || 'MISSING'
-        },
-        PRIVATE_KEY: {
-            exists: !!process.env.FIREBASE_PRIVATE_KEY,
-            length: process.env.FIREBASE_PRIVATE_KEY?.length || 0,
-            hasNewlines: process.env.FIREBASE_PRIVATE_KEY?.includes('\\n')
         }
     };
 

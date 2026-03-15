@@ -49,16 +49,21 @@ jobs:
             -t us-central1-docker.pkg.dev/${{ env.PROJECT_ID }}/voice-ai-repo/voice-ai-admin:${{ github.sha }} .
           docker push us-central1-docker.pkg.dev/${{ env.PROJECT_ID }}/voice-ai-repo/voice-ai-admin:${{ github.sha }}
 
-      - name: Base64 Encode Key
-        id: encode_key
+      - name: Base64 Encode Secrets
+        id: encode_secrets
         uses: actions/github-script@v7.0.1
         with:
           script: |
-            const key = process.env.RAW_KEY;
-            const encoded = Buffer.from(key).toString('base64');
-            core.setOutput('encoded_key', encoded);
+            const sa_key = process.env.SA_KEY || '';
+            const encoded_sa = Buffer.from(sa_key).toString('base64');
+            core.setOutput('sa_base64', encoded_sa);
+            
+            const private_key = process.env.PRIVATE_KEY || '';
+            const encoded_pk = Buffer.from(private_key).toString('base64');
+            core.setOutput('pk_base64', encoded_pk);
         env:
-          RAW_KEY: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY }}
+          SA_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY }}
+          PRIVATE_KEY: ${{ secrets.FIREBASE_PRIVATE_KEY }}
 
       - name: Deploy to Cloud Run
         uses: 'google-github-actions/deploy-cloudrun@v2.7.0'
@@ -78,9 +83,9 @@ jobs:
             NEXT_PUBLIC_FIREBASE_API_KEY=${{ secrets.NEXT_PUBLIC_FIREBASE_API_KEY }}
             NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=${{ secrets.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN }}
             FIREBASE_PROJECT_ID=${{ secrets.NEXT_PUBLIC_FIREBASE_PROJECT_ID }}
-            FIREBASE_SERVICE_ACCOUNT_KEY='${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY }}'
+            FIREBASE_SERVICE_ACCOUNT_KEY_BASE64=${{ steps.encode_secrets.outputs.sa_base64 }}
+            FIREBASE_PRIVATE_KEY_BASE64=${{ steps.encode_secrets.outputs.pk_base64 }}
             FIREBASE_CLIENT_EMAIL=${{ secrets.FIREBASE_CLIENT_EMAIL }}
-            FIREBASE_PRIVATE_KEY=${{ secrets.FIREBASE_PRIVATE_KEY }}
             NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=${{ secrets.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET }}
             NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=${{ secrets.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID }}
             NEXT_PUBLIC_FIREBASE_APP_ID=${{ secrets.NEXT_PUBLIC_FIREBASE_APP_ID }}
