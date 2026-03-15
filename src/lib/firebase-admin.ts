@@ -9,29 +9,24 @@ if (!admin.apps.length) {
 
         let credential;
 
-        if (clientEmail && privateKey) {
-            // OPTION 1: Standard Vercel Env Vars (Preferred)
+        if (projectId && clientEmail && privateKey) {
+            console.log('[Firebase Admin] Using individual environment variables...');
             credential = admin.credential.cert({
                 projectId,
                 clientEmail,
-                // Replace literal \n with actual newlines for Vercel
                 privateKey: privateKey.replace(/\\n/g, '\n'),
             });
         } else if (serviceAccountKey) {
-            // OPTION 2: Full JSON Blob
+            console.log('[Firebase Admin] Using service account JSON blob...');
             try {
-                // Handle potential double-stringification or single quotes
                 let keyString = serviceAccountKey;
                 if (keyString.startsWith("'") && keyString.endsWith("'")) {
                     keyString = keyString.slice(1, -1);
                 }
                 const serviceAccount = JSON.parse(keyString);
-
-                // CRITICAL FIX: Sanitize private key in JSON
                 if (serviceAccount.private_key) {
                     serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n');
                 }
-
                 credential = admin.credential.cert(serviceAccount);
             } catch (e) {
                 console.error("[Firebase Admin] Failed to parse service account key", e);
@@ -43,9 +38,14 @@ if (!admin.apps.length) {
                 projectId: projectId,
                 credential: credential
             });
-            console.log('[Firebase Admin] Initialized with Project ID:', projectId);
+            console.log('[Firebase Admin] Initialized successfully with Project ID:', projectId);
         } else {
-            console.warn("[Firebase Admin] No credentials found. Admin features will fail.");
+            console.error("[Firebase Admin] CRITICAL: No credentials found.", {
+                hasProjectId: !!projectId,
+                hasClientEmail: !!clientEmail,
+                hasPrivateKey: !!privateKey,
+                hasServiceAccountKey: !!serviceAccountKey
+            });
         }
     } catch (error: any) {
         console.error('[Firebase Admin] Initialization failed:', error);
