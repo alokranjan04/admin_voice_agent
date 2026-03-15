@@ -151,13 +151,9 @@ export async function checkAvailability(date: string, time?: string, service?: s
             singleEvents: true,
         });
 
-        // Filter: only count events that have a specific time (dateTime) as conflicts.
-        // Skip all-day events (date-only), personal events (like flights, holidays) that
-        // don't have exact start times. Also skip transparent (free) events.
-        const events = (response.data.items || []).filter(event => 
-            event.transparency !== 'transparent' &&
-            event.start?.dateTime != null  // all-day events only have event.start.date, not dateTime
-        );
+        // Block any non-transparent event (including personal events like flights)
+        // to prevent double-booking the host's time.
+        const events = (response.data.items || []).filter(event => event.transparency !== 'transparent');
 
 
         if (events.length > 0) {
@@ -225,12 +221,9 @@ export async function findAvailableSlots(date: string, service?: string, duratio
             orderBy: 'startTime',
         });
 
-        // Filter: only count events that have a specific time (dateTime) as conflicts.
-        // Skip all-day events (date-only) and transparent/free events.
-        const bookedEvents = (response.data.items || []).filter(event => 
-            event.transparency !== 'transparent' &&
-            event.start?.dateTime != null  // all-day events only have event.start.date, not dateTime
-        );
+        // Block any non-transparent event (including personal events like flights)
+        // to prevent double-booking the host's time.
+        const bookedEvents = (response.data.items || []).filter(event => event.transparency !== 'transparent');
 
 
         // Generate all possible time slots
