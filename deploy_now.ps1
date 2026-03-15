@@ -29,6 +29,7 @@ $pk_base64 = [Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($pk
 # Create YAML content for environment variables
 $yamlContent = @(
     "NODE_ENV: `"production`"",
+    "TZ: `"Asia/Kolkata`"",
     "GMAIL_USER: `"$($vars['GMAIL_USER'])`"",
     "GMAIL_APP_PASSWORD: `"$($vars['GMAIL_APP_PASSWORD'])`"",
     "GOOGLE_CALENDAR_ID: `"$($vars['GOOGLE_CALENDAR_ID'])`"",
@@ -66,12 +67,7 @@ $Utf8NoBom = New-Object System.Text.UTF8Encoding $False
 [System.IO.File]::WriteAllLines("env.yaml", $yamlContent, $Utf8NoBom)
 
 Write-Host "--- 3. UPDATING CLOUD RUN SERVICE ---"
-gcloud run services update voice-ai-admin `
-    --image="us-central1-docker.pkg.dev/$projId/voice-ai-repo/voice-ai-admin:manual-fix" `
-    --region="us-central1" `
-    --project=$projId `
-    --env-vars-file="env.yaml" `
-    --quiet
+gcloud run services update voice-ai-admin --image="us-central1-docker.pkg.dev/$projId/voice-ai-repo/voice-ai-admin:manual-fix" --region="us-central1" --project=$projId --env-vars-file="env.yaml" --quiet
 
 Write-Host "--- 4. CLEANUP ---"
 Remove-Item "env.yaml"

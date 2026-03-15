@@ -120,12 +120,12 @@ You are a sharp, high-level enterprise consultant focused on identifying growth 
                         type: "function",
                         function: {
                             name: "findAvailableSlots",
-                            description: "Find all available appointment slots for a given date. Returns actual times that can be presented to the user. ALWAYS use this to show available times to the user.",
+                            description: "Find all available appointment slots for a given date. Returns maximum 2 slots (prioritizing 10 AM and 1 PM if free). ALWAYS use this to show available times to the user.",
                             parameters: {
                                 type: "object",
                                 properties: {
                                     date: { type: "string", description: "Date in YYYY-MM-DD format" },
-                                    duration: { type: "number", description: "Appointment duration in minutes (default: 60)" }
+                                    duration: { type: "number", description: "Appointment duration in minutes (default: 30)" }
                                 },
                                 required: ["date"]
                             }
@@ -135,7 +135,7 @@ You are a sharp, high-level enterprise consultant focused on identifying growth 
                         type: "function",
                         function: {
                             name: "createEvent",
-                            description: "Create a calendar appointment after confirming all details with the user",
+                            description: "Create a 30-minute calendar appointment after confirming all details with the user. Duration MUST be 30 minutes.",
                             parameters: {
                                 type: "object",
                                 properties: {

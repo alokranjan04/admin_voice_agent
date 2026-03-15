@@ -273,7 +273,7 @@ Be helpful, concise, and professional. Greet ${name} by name and start serving $
                             type: 'function',
                             function: {
                                 name: 'findAvailableSlots',
-                                description: 'Find available time slots on a given date',
+                                description: 'Find available time slots on a given date. Returns maximum 2 slots (prioritizing 10 AM and 1 PM if free).',
                                 parameters: {
                                     type: 'object',
                                     properties: {
@@ -289,7 +289,7 @@ Be helpful, concise, and professional. Greet ${name} by name and start serving $
                             type: 'function',
                             function: {
                                 name: 'createEvent',
-                                description: 'Book an appointment. You MUST use the pre-filled Name, Email, and Phone from the System Prompt. Do NOT ask the customer for these. After booking, do NOT read out any URLs, just say the meeting is scheduled and mailed.',
+                                description: 'Book an appointment. You MUST use the pre-filled Name, Email, and Phone from the System Prompt. Do NOT ask the customer for these. Duration MUST be 30 minutes. After booking, do NOT read out any URLs, just say the meeting is scheduled and mailed.',
                                 parameters: {
                                     type: 'object',
                                     properties: {

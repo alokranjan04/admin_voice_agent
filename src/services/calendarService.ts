@@ -253,7 +253,17 @@ export async function findAvailableSlots(date: string, service?: string, duratio
             currentDate.setMinutes(currentDate.getMinutes() + Math.min(30, slotDuration));
         }
 
-        if (slots.length === 0) {
+        // Limit to 2 slots and prioritize 10:00 AM and 01:00 PM
+        const preferredTimes = ['10:00 AM', '1:00 PM'];
+        
+        // Split available slots into preferred and others
+        const preferredSlots = slots.filter(s => preferredTimes.includes(s.time));
+        const otherSlots = slots.filter(s => !preferredTimes.includes(s.time));
+
+        // Combine: Preferred first, then others to fill up to 2 slots
+        const finalSlots = [...preferredSlots, ...otherSlots].slice(0, 2);
+
+        if (finalSlots.length === 0) {
             return {
                 success: false,
                 availableSlots: [],
@@ -261,15 +271,13 @@ export async function findAvailableSlots(date: string, service?: string, duratio
             };
         }
 
-        // Limit to first 5 slots to avoid overwhelming the user
-        const limitedSlots = slots.slice(0, 5);
-        const times = limitedSlots.map(s => s.time).join(', ');
+        const times = finalSlots.map(s => s.time).join(', ');
         const dateStr = formatDate(requestedDate);
 
         return {
             success: true,
-            availableSlots: limitedSlots,
-            message: `I found ${limitedSlots.length} available time slot${limitedSlots.length > 1 ? 's' : ''} on ${dateStr}: ${times}. Which time works best for you?`
+            availableSlots: finalSlots,
+            message: `I found ${finalSlots.length} available time slot${finalSlots.length > 1 ? 's' : ''} on ${dateStr}: ${times}. Which time works best for you?`
         };
     } catch (error: any) {
         console.error('Error finding available slots:', error);
@@ -420,8 +428,9 @@ export async function createEvent(details: {
                 });
 
                 console.log(`[Calendar ICS] Attempting to send manual invite to ${details.customerEmail} using SMTP...`);
+                console.log(`[Calendar ICS] Details: Subject="Invitation: ${eventTitle}", From="${gmailUser}", To="${details.customerEmail}"`);
 
-                await transporter.sendMail({
+                const info = await transporter.sendMail({
                     from: `"TellYourJourney AI" <${gmailUser}>`,
                     to: details.customerEmail,
                     subject: `Invitation: ${eventTitle}`,
@@ -434,9 +443,18 @@ export async function createEvent(details: {
                         }
                     ]
                 });
-                console.log(`[Calendar ICS] Manual calendar invite successfully sent to ${details.customerEmail}`);
+                console.log(`[Calendar ICS] Manual calendar invite successfully sent to ${details.customerEmail}. MessageId: ${info.messageId}`);
+                if (info.accepted && info.accepted.length > 0) {
+                    console.log(`[Calendar ICS] Email accepted by SMTP for: ${info.accepted.join(', ')}`);
+                }
+                if (info.rejected && info.rejected.length > 0) {
+                    console.warn(`[Calendar ICS] Email REJECTED by SMTP for: ${info.rejected.join(', ')}`);
+                }
             } catch (err: any) {
                 console.error(`[Calendar ICS] Failed to send manual invite:`, err.message);
+                if (err.response) {
+                    console.error(`[Calendar ICS] SMTP Response:`, err.response);
+                }
             }
         };
 
@@ -501,12 +519,11 @@ ${details.problem ? `Problem to solve: ${details.problem}` : ''}
         }
 
         try {
-            // TIER 1: Main booking. We set sendUpdates: none to avoid unreliable/broken Google native emails.
-            // We strictly rely on our own sendManualIcsInvite below which uses SMTP.
+            // TIER 1: Main booking. We set sendUpdates: 'all' to ensure native Google emails are sent.
             const response = await calendar.events.insert({
                 calendarId,
                 requestBody: FinalEvent,
-                sendUpdates: 'none' 
+                sendUpdates: 'all' 
             });
 
             console.log(`[Calendar] Event created: ${response.data.id}. Proceeding with manual notifications...`);
@@ -538,7 +555,7 @@ ${details.problem ? `Problem to solve: ${details.problem}` : ''}
                 const tier2Response = await calendar.events.insert({
                     calendarId,
                     requestBody: FinalEvent,
-                    sendUpdates: 'none'
+                    sendUpdates: 'all'
                 });
 
                 await sendManualIcsInvite();
