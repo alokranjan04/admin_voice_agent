@@ -25,6 +25,34 @@ function parseDateSafe(dateStr: string): Date {
 }
 
 /**
+ * Helper to get the ISO-8601 offset string for a given timezone and date.
+ * Example: getTimezoneOffset("Asia/Kolkata") -> "+05:30"
+ */
+function getTimezoneOffset(timezone: string, date: Date = new Date()): string {
+    try {
+        const parts = new Intl.DateTimeFormat('en-US', {
+            timeZone: timezone,
+            timeZoneName: 'shortOffset'
+        }).formatToParts(date);
+        const offsetPart = parts.find(p => p.type === 'timeZoneName');
+        if (offsetPart) {
+            const offset = offsetPart.value.replace('GMT', '');
+            if (offset === '') return '+00:00';
+            const match = offset.match(/^([+-])(\d+)(?::(\d+))?$/);
+            if (match) {
+                const sign = match[1];
+                const hours = match[2].padStart(2, '0');
+                const minutes = (match[3] || '00').padStart(2, '0');
+                return `${sign}${hours}:${minutes}`;
+            }
+        }
+    } catch (e) {
+        console.warn(`[Calendar] Failed to calculate offset for ${timezone}, using fallback +05:30`, e);
+    }
+    return '+05:30';
+}
+
+/**
  * Helper to ensure local Date objects from UTC servers securely format into absolute ISO strings with exact timezone offsets.
  */
 function buildTargetTzString(date: Date, tzOffset: string): string {
@@ -102,7 +130,7 @@ export async function checkAvailability(date: string, time?: string, service?: s
 
         // Check Google Calendar for conflicts
         const duration = getAppointmentDuration();
-        const tzOffset = '+05:30'; // Hardcoded for IST, can be dynamic later
+        const tzOffset = getTimezoneOffset(businessHours.timezone, requestedDate);
 
         const startTime = buildTargetTzString(requestedDate, tzOffset);
         const endTimeDate = new Date(requestedDate.getTime() + duration * 60000);
@@ -166,7 +194,7 @@ export async function findAvailableSlots(date: string, service?: string, duratio
         }
 
         // Get all events for the day (Manually construct the ISO strings in the given timezone)
-        const tzOffset = '+05:30'; // Hardcoded fallback or use process.env.TIMEZONE logic
+        const tzOffset = getTimezoneOffset(businessHours.timezone, requestedDate); 
         const yyyy = requestedDate.getFullYear();
         const mm = String(requestedDate.getMonth() + 1).padStart(2, '0');
         const dd = String(requestedDate.getDate()).padStart(2, '0');
@@ -300,7 +328,7 @@ export async function createEvent(details: {
         startDateTime.setHours(hours, minutes, 0, 0);
 
         const endDateTime = new Date(startDateTime.getTime() + slotDuration * 60000);
-        const tzOffset = '+05:30'; 
+        const tzOffset = getTimezoneOffset(getBusinessHours().timezone, startDateTime); 
         const startString = buildTargetTzString(startDateTime, tzOffset);
         const endString = buildTargetTzString(endDateTime, tzOffset);
 

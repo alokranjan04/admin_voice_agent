@@ -158,7 +158,16 @@ export async function POST(req: NextRequest) {
         const results = await Promise.all(
             toolCalls.map(async (toolCall: any) => {
                 const { id, function: func } = toolCall;
-                const { name, arguments: args } = func;
+                let { name, arguments: args } = func;
+
+                // Vapi sometimes sends arguments as a JSON string instead of an object
+                if (typeof args === 'string') {
+                    try {
+                        args = JSON.parse(args);
+                    } catch (e) {
+                        console.error(`[Vapi Tools] Failed to parse arguments for ${name}:`, args);
+                    }
+                }
 
                 console.log(`[Vapi Tools] Processing tool: ${name}`, args);
 

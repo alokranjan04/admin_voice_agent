@@ -77,7 +77,10 @@ export async function POST(req: Request) {
 You are a sharp, high-level enterprise consultant focused on identifying growth and stopping competitors from stealing market share.
 
 **BOOKING TRIGGER:**
-- If the user says "Book a Demo", "I want a demo", "Schedule a call", or mentions clicking the "Book a Demo" button, you MUST immediately transition to the booking flow: ask for their name (if unknown) and then their company.`;
+- If the user says "Book a Demo", "I want a demo", "Schedule a call", or mentions clicking the "Book a Demo" button, you MUST immediately transition to the booking flow: ask for their name (if unknown) and then their company.
+
+**EMAIL CAPTURE BEST PRACTICE:**
+- When the user provides their email, **immediately repeat it back to them character-by-character** (e.g., "n-e-h-a dot h-i-zero-seven at gmail dot com") to verify you captured it perfectly before preceding to scheduling. If they correct you, apologize and update it immediately.`;
 
         let baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://tellyourjourney.com';
         baseUrl = baseUrl.replace(/\/$/, "");
@@ -168,7 +171,7 @@ You are a sharp, high-level enterprise consultant focused on identifying growth 
                 model: "nova-3",
                 language: "en-IN",
                 smartFormat: true,
-                keywords: ["AeroHyre", "TellYourJourney", "aviation", "Alok", "AI", "Sutherland", "Voice", "Support", "Strategic", "Book", "Demo", "Booking"]
+                keywords: ["AeroHyre", "TellYourJourney", "aviation", "Alok", "AI", "Sutherland", "Voice", "Support", "Strategic", "Book", "Demo", "Booking", "gmail.com", "outlook.com", "yahoo.com", "hotmail.com", "icloud.com", ".com", "@", "dot", "at", "underscore", "dash"]
             },
             firstMessage: "Welcome to Sutherland Voice Support! I'm here to build your autonomous growth roadmap for your business. To start creating your strategy, could I get your name?",
             silenceTimeoutSeconds: 60,

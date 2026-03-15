@@ -65,7 +65,13 @@ function normalizeKey(key: string): string {
 
 export function getAuth() {
     const serviceAccountEmail = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
-    const serviceAccountKey = process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY;
+    let serviceAccountKey = process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY;
+
+    // Base64 decoding fallback for production CLI environments
+    if (!serviceAccountKey && process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY_BASE64) {
+        console.log('[GoogleAuth] Decoding service account key from Base64...');
+        serviceAccountKey = Buffer.from(process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY_BASE64, 'base64').toString('utf8');
+    }
 
     if (serviceAccountEmail && serviceAccountKey) {
         const privateKey = normalizeKey(serviceAccountKey);
@@ -112,10 +118,13 @@ export function getCalendarId() {
 }
 
 export function getBusinessHours() {
+    const businessDaysStr = process.env.BUSINESS_DAYS || '1,2,3,4,5';
+    const businessDays = businessDaysStr.split(',').map(d => parseInt(d.trim())).filter(d => !isNaN(d));
+
     return {
         start: parseInt(process.env.BUSINESS_HOURS_START || '9'),
         end: parseInt(process.env.BUSINESS_HOURS_END || '17'),
-        days: [1, 2, 3, 4, 5], // Monday - Friday
+        days: businessDays,
         timezone: process.env.TIMEZONE || 'Asia/Kolkata',
     };
 }
