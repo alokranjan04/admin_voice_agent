@@ -115,7 +115,7 @@ export async function checkAvailability(date: string, time?: string, service?: s
             singleEvents: true,
         });
 
-        const events = response.data.items || [];
+        const events = (response.data.items || []).filter(event => event.transparency !== 'transparent');
 
         if (events.length > 0) {
             return {
@@ -182,7 +182,7 @@ export async function findAvailableSlots(date: string, service?: string, duratio
             orderBy: 'startTime',
         });
 
-        const bookedEvents = response.data.items || [];
+        const bookedEvents = (response.data.items || []).filter(event => event.transparency !== 'transparent');
 
         // Generate all possible time slots
         const slots = [];
