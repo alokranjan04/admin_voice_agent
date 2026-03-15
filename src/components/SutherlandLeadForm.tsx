@@ -67,6 +67,8 @@ export default function SutherlandLeadForm() {
     const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
     const [errorMessage, setErrorMessage] = useState('');
     const [generatedAgent, setGeneratedAgent] = useState<{ id: string, link: string } | null>(null);
+    const [isCalling, setIsCalling] = useState(false);
+
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -108,8 +110,8 @@ export default function SutherlandLeadForm() {
     };
 
     const handleCallMeNow = async () => {
-        if (!formData.phone) return;
-        
+        if (!formData.phone || isCalling) return;
+        setIsCalling(true);
         try {
             await fetch('/api/generate-lead-agent', {
                 method: 'POST',
@@ -119,11 +121,14 @@ export default function SutherlandLeadForm() {
                     deliveryOption: 'call',
                 }),
             });
-            alert("Call initiated! Your phone should ring shortly.");
         } catch (err) {
             console.error("Call trigger failed", err);
+        } finally {
+            // Keep loading for 5 seconds to give bot time to start ringing
+            setTimeout(() => setIsCalling(false), 5000);
         }
     };
+
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
@@ -150,11 +155,25 @@ export default function SutherlandLeadForm() {
                         <div className="space-y-3 mb-6">
                             <button
                                 onClick={handleCallMeNow}
-                                className="w-full bg-[#CC0000] hover:bg-[#AA0000] text-white font-black py-3.5 px-6 rounded-xl flex items-center justify-center gap-3 transition-all animate-pulse-red group text-xs uppercase tracking-widest"
+                                disabled={isCalling}
+                                className="w-full bg-[#CC0000] hover:bg-[#AA0000] disabled:opacity-70 disabled:cursor-not-allowed text-white font-black py-3.5 px-6 rounded-xl flex items-center justify-center gap-3 transition-all animate-pulse-red group text-xs uppercase tracking-widest"
                             >
-                                <PhoneCall className="w-4 h-4 group-hover:scale-110 transition-transform" />
-                                <span>Call Me Now</span>
+                                {isCalling ? (
+                                    <>
+                                        <svg className="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+                                        </svg>
+                                        <span>Connecting...</span>
+                                    </>
+                                ) : (
+                                    <>
+                                        <PhoneCall className="w-4 h-4 group-hover:scale-110 transition-transform" />
+                                        <span>Call Me Now</span>
+                                    </>
+                                )}
                             </button>
+
                             <a
                                 href={generatedAgent?.link}
                                 target="_blank"

@@ -273,7 +273,8 @@ Be helpful, concise, and professional. Greet ${name} by name and start serving $
                             type: 'function',
                             function: {
                                 name: 'findAvailableSlots',
-                                description: 'Find available time slots on a given date. Returns maximum 2 slots (prioritizing 10 AM and 1 PM if free).',
+                                description: 'Find available time slots on a given date. Suggests 10 AM and 1 PM first but returns any available slot. If the user requests a specific time, use checkAvailability for that exact time instead.',
+
                                 parameters: {
                                     type: 'object',
                                     properties: {

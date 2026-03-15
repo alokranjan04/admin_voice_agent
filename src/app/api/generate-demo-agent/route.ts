@@ -120,7 +120,8 @@ You are a sharp, high-level enterprise consultant focused on identifying growth 
                         type: "function",
                         function: {
                             name: "findAvailableSlots",
-                            description: "Find all available appointment slots for a given date. Returns maximum 2 slots (prioritizing 10 AM and 1 PM if free). ALWAYS use this to show available times to the user.",
+                            description: "Find available appointment slots for a given date. Suggests 10 AM and 1 PM first as preferred times, but returns any available slots. If the user requests a different specific time, use checkAvailability for that exact time instead.",
+
                             parameters: {
                                 type: "object",
                                 properties: {
