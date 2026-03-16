@@ -227,7 +227,7 @@ Be helpful, concise, and professional. Greet ${name} by name and start serving $
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                name: `${company} ${interest || 'AI'} Assistant`,
+                name: `${company} ${interest || 'AI'} Assistant`.substring(0, 40).trim(),
                 serverUrl,
 
                 language: langCode,
