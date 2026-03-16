@@ -295,13 +295,15 @@ export async function findAvailableSlots(date: string, service?: string, duratio
             };
         }
 
-        const times = finalSlots.map(s => s.time).join(', ');
         const dateStr = formatDate(requestedDate);
-
+        const suggestedTimes = finalSlots.map(s => s.time).join(', ');
+        
+        // Let the AI know there are many slots, but it should only verbally suggest 2
         return {
             success: true,
-            availableSlots: finalSlots,
-            message: `I found ${finalSlots.length} available time slot${finalSlots.length > 1 ? 's' : ''} on ${dateStr}: ${times}. Which time works best for you?`
+            availableSlots: slots, // Provide ALL slots to the AI internally so it knows they exist
+            suggestedSlots: finalSlots, // Highlight the two to read out loud
+            message: `There are ${slots.length} slots available on ${dateStr}. Out loud, ONLY suggest these two times: ${suggestedTimes}. Tell the user they can also ask for any other time.`
         };
     } catch (error: any) {
         console.error('Error finding available slots:', error);
