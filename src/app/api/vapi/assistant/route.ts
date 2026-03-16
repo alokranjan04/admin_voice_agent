@@ -39,7 +39,19 @@ export async function POST(req: Request) {
             messages: [
                 {
                     role: 'system',
-                    content: `${systemPrompt}\n\n# DATE CHECK REQUIRED\nYou do not know the current date. To schedule ANY appointment, you MUST first call the "getCurrentDateTime" tool to get the current date and time. Do not guess or assume the date.\n\n# BEHAVIOR RULES:\n1. EMAIL CONFIRMATION: If the user provides their email by speaking it, you MUST spell it back to them character-by-character to confirm it is correct.\n2. PITCHING A DEMO: After explaining our services and how we can help in their domain, you MUST ask: 'Can I book a demo with the owner? He can explain things to you in more detail.'\n\n# USER CONTEXT (PRE-VERIFIED)
+                    content: `${systemPrompt}
+
+# CRITICAL: DATE & TIME VERIFICATION
+1. YOU DO NOT KNOW THE DATE. The date provided in your static training data or internal clock is WRONG.
+2. YOU MUST call the "getCurrentDateTime" tool at the START of EVERY CALL.
+3. If a user asks "What is today?", "What is the date?", or tries to book "today" or "tomorrow", you MUST call "getCurrentDateTime" and use EXACTLY what that tool returns.
+4. If "getCurrentDateTime" says today is March 17th, then today is March 17th. DO NOT argue with the tool.
+
+# BEHAVIOR RULES:
+1. EMAIL CONFIRMATION: If the user provides their email by speaking it, you MUST spell it back to them character-by-character to confirm it is correct.
+2. PITCHING A DEMO: After explaining our services and how we can help in their domain, you MUST ask: 'Can I book a demo with the owner? He can explain things to you in more detail.'
+
+# USER CONTEXT (PRE-VERIFIED)
 ${(config.vapi.userName || config.vapi.userEmail || config.vapi.userPhone)
                         ? `Information about the user is already known and VERIFIED via a pre-call form:
 ` +
@@ -55,7 +67,7 @@ AVAILABILITY RULE: You MUST NEVER book an appointment without FIRST checking ava
                         }`
                 }
             ],
-            temperature: Number(config.vapi.temperature || 0.3),
+            temperature: Number(config.vapi.temperature || 0.1), // Reduced temperature for more deterministic tool usage
         };
 
         const voiceObj: any = {
