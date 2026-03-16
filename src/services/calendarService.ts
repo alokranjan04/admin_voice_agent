@@ -13,6 +13,8 @@ const twilioClient = twilio(
  * rolls back a day in IST +05:30). This helper avoids that shift.
  */
 function parseDateSafe(dateStr: string): Date {
+    if (!dateStr) return new Date();
+    
     // Match YYYY-MM-DD pattern
     const isoMatch = dateStr.match(/^(\d{4})-(\d{2})-(\d{2})/);
     if (isoMatch) {
@@ -20,6 +22,12 @@ function parseDateSafe(dateStr: string): Date {
         // Create in local time (no UTC shift)
         return new Date(parseInt(y), parseInt(m) - 1, parseInt(d));
     }
+    
+    // If it's already an ISO string with T, parse it but handle the shift
+    if (dateStr.includes('T')) {
+        return new Date(dateStr);
+    }
+
     // For natural language strings like "March 8 2026", `new Date` is fine
     return new Date(dateStr);
 }
@@ -238,6 +246,11 @@ export async function findAvailableSlots(date: string, service?: string, duratio
             const absoluteSlotStartTime = new Date(buildTargetTzString(slotStart, tzOffset)).getTime();
             const absoluteSlotEndTime = new Date(buildTargetTzString(slotEnd, tzOffset)).getTime();
 
+            // 🚨 FIX: Filter out slots that are in the past if the requested date is today
+            const now = new Date();
+            const slotStartTime = slotStart.getTime();
+            const isPastSlot = slotStartTime < now.getTime();
+
             // Check if this slot conflicts with any booked event
             const hasConflict = bookedEvents.some(event => {
                 const eventStart = new Date(event.start?.dateTime || event.start?.date || '').getTime();
@@ -246,7 +259,7 @@ export async function findAvailableSlots(date: string, service?: string, duratio
                 return (absoluteSlotStartTime < eventEnd && absoluteSlotEndTime > eventStart);
             });
 
-            if (!hasConflict && slotEnd.getHours() <= businessHours.end) {
+            if (!hasConflict && !isPastSlot && slotEnd.getHours() <= businessHours.end) {
                 slots.push({
                     date: slotStart.toISOString().split('T')[0],
                     time: formatTime(slotStart),

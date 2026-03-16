@@ -1,442 +1,493 @@
-// Voice AI Widget - Embeddable Script
-// This script can be embedded on any website to add a floating voice assistant
+// Voice AI Widget - Premium Embeddable Script
+// Optimized for performance, low latency, and premium glassmorphism UI
 
 (function () {
     'use strict';
 
-    // Widget Configuration
+    // 1. Initial Configuration & Default Tokens
     const config = {
-        vapiPublicKey: window.VOICE_WIDGET_CONFIG?.vapiPublicKey || '',
+        vapiPublicKey: window.VOICE_WIDGET_CONFIG?.vapiPublicKey || '3413ee7b-c5f5-4dc3-93f1-a2185da2aa15',
         assistantId: window.VOICE_WIDGET_CONFIG?.assistantId || '',
-        orgId: window.VOICE_WIDGET_CONFIG?.orgId || null,
-        agentId: window.VOICE_WIDGET_CONFIG?.agentId || null,
-        position: window.VOICE_WIDGET_CONFIG?.position || 'bottom-right', // bottom-right, bottom-left, top-right, top-left
-        primaryColor: window.VOICE_WIDGET_CONFIG?.primaryColor || '#667eea',
-        secondaryColor: window.VOICE_WIDGET_CONFIG?.secondaryColor || '#764ba2'
+        orgId: window.VOICE_WIDGET_CONFIG?.orgId || '',
+        agentId: window.VOICE_WIDGET_CONFIG?.agentId || '',
+        position: window.VOICE_WIDGET_CONFIG?.position || 'bottom-right',
+        primaryColor: window.VOICE_WIDGET_CONFIG?.primaryColor || '#6366f1', // Indigo
+        secondaryColor: window.VOICE_WIDGET_CONFIG?.secondaryColor || '#a855f7', // Purple
+        businessName: window.VOICE_WIDGET_CONFIG?.businessName || 'Voice AI Assistant'
     };
 
-    // Inject CSS
+    // 2. Inject Premium CSS
     const styles = `
-        .voice-widget-container {
+        :root {
+            --vw-primary: ${config.primaryColor};
+            --vw-secondary: ${config.secondaryColor};
+            --vw-glass: rgba(255, 255, 255, 0.8);
+            --vw-glass-border: rgba(255, 255, 255, 0.4);
+            --vw-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.2);
+        }
+
+        .vw-container {
             position: fixed;
             ${config.position.includes('bottom') ? 'bottom: 24px;' : 'top: 24px;'}
             ${config.position.includes('right') ? 'right: 24px;' : 'left: 24px;'}
-            z-index: 9999;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            z-index: 2147483647;
+            font-family: 'Inter', -apple-system, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
         }
-        .voice-widget-button {
+
+        /* Floating Bubble */
+        .vw-bubble {
             width: 64px;
             height: 64px;
             border-radius: 50%;
-            background: linear-gradient(135deg, ${config.primaryColor} 0%, ${config.secondaryColor} 100%);
-            border: none;
+            background: linear-gradient(135deg, var(--vw-primary), var(--vw-secondary));
+            border: 4px solid white;
+            box-shadow: 0 8px 32px rgba(99, 102, 241, 0.4);
             cursor: pointer;
-            box-shadow: 0 8px 24px rgba(102, 126, 234, 0.4);
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: all 0.3s ease;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            outline: none;
+            padding: 0;
         }
-        .voice-widget-button:hover {
-            transform: scale(1.1);
-            box-shadow: 0 12px 32px rgba(102, 126, 234, 0.6);
+
+        .vw-bubble:hover {
+            transform: scale(1.1) rotate(5deg);
         }
-        .voice-widget-button.active {
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-            animation: voice-widget-pulse 2s infinite;
-        }
-        @keyframes voice-widget-pulse {
-            0%, 100% { box-shadow: 0 8px 24px rgba(245, 87, 108, 0.4); }
-            50% { box-shadow: 0 8px 32px rgba(245, 87, 108, 0.8); }
-        }
-        .voice-widget-icon {
-            width: 32px;
-            height: 32px;
+
+        .vw-bubble svg {
+            width: 28px;
+            height: 28px;
             color: white;
+            transition: transform 0.3s ease;
         }
-        .voice-widget-panel {
+
+        .vw-bubble.active {
+            animation: vw-pulse 2s infinite;
+        }
+
+        @keyframes vw-pulse {
+            0% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.7); }
+            70% { box-shadow: 0 0 0 15px rgba(99, 102, 241, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0); }
+        }
+
+        /* Widget Panel */
+        .vw-panel {
             position: absolute;
-            ${config.position.includes('bottom') ? 'bottom: 80px;' : 'top: 80px;'}
-            ${config.position.includes('right') ? 'right: 0;' : 'left: 0;'}
-            width: 360px;
+            ${config.position.includes('bottom') ? 'bottom: 84px;' : 'top: 84px;'}
+            width: 380px;
+            height: 480px;
             max-width: calc(100vw - 48px);
-            background: white;
-            border-radius: 16px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            background: var(--vw-glass);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--vw-glass-border);
+            border-radius: 24px;
+            box-shadow: var(--vw-shadow);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
             opacity: 0;
+            visibility: hidden;
             transform: translateY(20px) scale(0.95);
-            pointer-events: none;
-            transition: all 0.3s ease;
+            transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
         }
-        .voice-widget-panel.open {
+
+        .vw-panel.open {
             opacity: 1;
+            visibility: visible;
             transform: translateY(0) scale(1);
-            pointer-events: all;
         }
-        .voice-widget-header {
-            padding: 20px;
-            background: linear-gradient(135deg, ${config.primaryColor} 0%, ${config.secondaryColor} 100%);
-            border-radius: 16px 16px 0 0;
+
+        .vw-header {
+            padding: 24px;
+            background: linear-gradient(135deg, var(--vw-primary), var(--vw-secondary));
             color: white;
+            position: relative;
         }
-        .voice-widget-header h3 {
-            margin: 0 0 8px 0;
-            font-size: 18px;
-            font-weight: 600;
-        }
-        .voice-widget-header p {
+
+        .vw-header h2 {
             margin: 0;
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+        }
+
+        .vw-header p {
+            margin: 4px 0 0 0;
             font-size: 13px;
             opacity: 0.9;
         }
-        .voice-widget-body {
-            padding: 24px;
-        }
-        .voice-widget-status {
+
+        .vw-close-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
             display: flex;
             align-items: center;
-            gap: 12px;
-            padding: 16px;
-            background: #f8fafc;
-            border-radius: 12px;
-            margin-bottom: 16px;
+            justify-content: center;
+            color: white;
+            transition: all 0.2s;
         }
-        .voice-widget-status-indicator {
-            width: 12px;
-            height: 12px;
+
+        .vw-close-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: rotate(90deg);
+        }
+
+        .vw-body {
+            flex: 1;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .vw-status-bar {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.5);
+            padding: 12px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .vw-indicator {
+            width: 10px;
+            height: 10px;
             border-radius: 50%;
             background: #94a3b8;
         }
-        .voice-widget-status-indicator.active {
-            background: #22c55e;
-            animation: voice-widget-blink 1.5s infinite;
+
+        .vw-indicator.ready { background: #22c55e; }
+        .vw-indicator.active { 
+            background: #22c55e; 
+            box-shadow: 0 0 8px #22c55e;
+            animation: vw-blink 1.5s infinite;
         }
-        @keyframes voice-widget-blink {
-            0%, 100% { opacity: 1; }
+
+        @keyframes vw-blink {
+            0% { opacity: 1; }
             50% { opacity: 0.5; }
+            100% { opacity: 1; }
         }
-        .voice-widget-status-text {
+
+        .vw-status-text {
             font-size: 14px;
             color: #475569;
             font-weight: 500;
         }
-        .voice-widget-action {
+
+        .vw-visualizer-container {
+            flex: 1;
             width: 100%;
-            padding: 14px 24px;
-            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        canvas#vwVisualizer {
+            width: 100%;
+            height: 100%;
+            max-height: 200px;
+        }
+
+        .vw-controls {
+            width: 100%;
+            padding-top: 20px;
+        }
+
+        .vw-btn-main {
+            width: 100%;
+            padding: 16px;
+            border-radius: 16px;
             border: none;
-            font-size: 15px;
+            background: linear-gradient(135deg, var(--vw-primary), var(--vw-secondary));
+            color: white;
+            font-size: 16px;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.2s ease;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
+            gap: 10px;
+            box-shadow: 0 10px 20px -5px rgba(99, 102, 241, 0.4);
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
-        .voice-widget-action.primary {
-            background: linear-gradient(135deg, ${config.primaryColor} 0%, ${config.secondaryColor} 100%);
-            color: white;
-        }
-        .voice-widget-action.primary:hover {
+
+        .vw-btn-main:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 16px rgba(102, 126, 234, 0.3);
+            box-shadow: 0 15px 30px -10px rgba(99, 102, 241, 0.6);
         }
-        .voice-widget-action.danger {
-            background: #fee2e2;
-            color: #dc2626;
-            margin-top: 8px;
+
+        .vw-btn-main:active {
+            transform: scale(0.98);
         }
-        .voice-widget-action.danger:hover {
-            background: #fecaca;
+
+        .vw-btn-main.danger {
+            background: linear-gradient(135deg, #f43f5e, #e11d48);
+            box-shadow: 0 10px 20px -5px rgba(244, 63, 94, 0.4);
         }
-        .voice-widget-visualizer {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 4px;
-            height: 60px;
-            margin: 16px 0;
-        }
-        .voice-widget-bar {
-            width: 4px;
-            background: linear-gradient(to top, ${config.primaryColor}, ${config.secondaryColor});
-            border-radius: 2px;
-            transition: height 0.1s ease;
-        }
-        .voice-widget-close {
-            position: absolute;
-            top: 16px;
-            right: 16px;
-            background: rgba(255, 255, 255, 0.2);
-            border: none;
-            color: white;
-            width: 28px;
-            height: 28px;
-            border-radius: 50%;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: background 0.2s;
-        }
-        .voice-widget-close:hover {
-            background: rgba(255, 255, 255, 0.3);
-        }
+
+        .vw-hidden { display: none !important; }
+
         @media (max-width: 480px) {
-            .voice-widget-container {
-                bottom: 16px;
-                right: 16px;
+            .vw-panel {
+                bottom: 0px;
+                right: 0px;
+                width: 100vw;
+                height: 100vh;
+                max-width: none;
+                border-radius: 0;
+                top: 0;
+                left: 0;
             }
-            .voice-widget-button {
-                width: 56px;
-                height: 56px;
-            }
-            .voice-widget-icon {
-                width: 28px;
-                height: 28px;
-            }
+            .vw-container { bottom: 16px; right: 16px; }
         }
     `;
 
-    // Inject styles into page
-    const styleSheet = document.createElement('style');
-    styleSheet.textContent = styles;
-    document.head.appendChild(styleSheet);
-
-    // Create widget HTML
-    const widgetHTML = `
-        <div class="voice-widget-container" id="voiceWidget">
-            <button class="voice-widget-button" id="voiceWidgetBtn" aria-label="Voice Assistant">
-                <svg class="voice-widget-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"></path>
-                </svg>
-            </button>
-            <div class="voice-widget-panel" id="voiceWidgetPanel">
-                <div class="voice-widget-header">
-                    <button class="voice-widget-close" id="voiceWidgetClose" aria-label="Close">
-                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                        </svg>
-                    </button>
-                    <h3>Voice AI Assistant</h3>
-                    <p>Click to start a conversation</p>
-                </div>
-                <div class="voice-widget-body">
-                    <div class="voice-widget-status">
-                        <div class="voice-widget-status-indicator" id="voiceWidgetStatusIndicator"></div>
-                        <span class="voice-widget-status-text" id="voiceWidgetStatusText">Ready to assist you</span>
-                    </div>
-                    <div class="voice-widget-visualizer" id="voiceWidgetVisualizer" style="display: none;">
-                        <div class="voice-widget-bar" style="height: 20px;"></div>
-                        <div class="voice-widget-bar" style="height: 35px;"></div>
-                        <div class="voice-widget-bar" style="height: 25px;"></div>
-                        <div class="voice-widget-bar" style="height: 40px;"></div>
-                        <div class="voice-widget-bar" style="height: 30px;"></div>
-                        <div class="voice-widget-bar" style="height: 45px;"></div>
-                        <div class="voice-widget-bar" style="height: 25px;"></div>
-                    </div>
-                    <button class="voice-widget-action primary" id="voiceWidgetStartBtn">
-                        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path>
-                        </svg>
-                        Start Voice Call
-                    </button>
-                    <button class="voice-widget-action danger" id="voiceWidgetEndBtn" style="display: none;">
-                        <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M6.62 10.79a15.053 15.053 0 006.59 6.59l2.2-2.2a1 1 0 011.11-.27 11.36 11.36 0 004.25.86 1 1 0 011 1V20a1 1 0 01-1 1A17 17 0 013 4a1 1 0 011-1h3.5a1 1 0 011 1 11.36 11.36 0 00.86 4.25 1 1 0 01-.27 1.11l-2.2 2.2z"></path>
-                        </svg>
-                        End Call
-                    </button>
-                </div>
-            </div>
-        </div>
-    `;
-
-    // Wait for DOM to be ready
-    function initWidget() {
-        // Inject widget HTML
-        const container = document.createElement('div');
-        container.innerHTML = widgetHTML;
-        document.body.appendChild(container.firstElementChild);
-
-        // Initialize widget functionality
-        const widget = new VoiceWidgetController(config);
-        
-        // Listen for config updates
-        window.addEventListener('VOICE_WIDGET_UPDATE', (e) => {
-            console.log('Voice widget config updated', e.detail);
-            Object.assign(widget.config, e.detail);
-            widget.initVapi();
-        });
-    }
-
-    // Voice Widget Controller
-    class VoiceWidgetController {
-        constructor(config) {
-            this.config = config;
+    // 3. Controller Class
+    class VoiceWidget {
+        constructor() {
             this.isOpen = false;
-            this.isActive = false;
+            this.status = 'disconnected';
             this.vapi = null;
+            this.currentVolume = 0;
+            this.animationId = null;
 
-            this.initElements();
-            this.initVapi();
-            this.attachListeners();
+            this.init();
         }
 
-        initElements() {
-            this.btn = document.getElementById('voiceWidgetBtn');
-            this.panel = document.getElementById('voiceWidgetPanel');
-            this.closeBtn = document.getElementById('voiceWidgetClose');
-            this.startBtn = document.getElementById('voiceWidgetStartBtn');
-            this.endBtn = document.getElementById('voiceWidgetEndBtn');
-            this.statusIndicator = document.getElementById('voiceWidgetStatusIndicator');
-            this.statusText = document.getElementById('voiceWidgetStatusText');
-            this.visualizer = document.getElementById('voiceWidgetVisualizer');
+        async init() {
+            this.injectStyles();
+            this.render();
+            this.cacheElements();
+            this.bindEvents();
+            await this.loadSDK();
         }
 
-        async initVapi() {
+        injectStyles() {
+            const head = document.head || document.getElementsByTagName('head')[0];
+            const style = document.createElement('style');
+            style.appendChild(document.createTextNode(styles));
+            head.appendChild(style);
+        }
+
+        render() {
+            const container = document.createElement('div');
+            container.className = 'vw-container';
+            container.setAttribute('id', 'vwContainer');
+            
+            container.innerHTML = `
+                <div class="vw-panel" id="vwPanel">
+                    <div class="vw-header">
+                        <button class="vw-close-btn" id="vwCloseBtn">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                        </button>
+                        <h2>${config.businessName}</h2>
+                        <p id="vwHeaderSubtext">AI Voice Interaction</p>
+                    </div>
+                    <div class="vw-body">
+                        <div class="vw-status-bar">
+                            <div class="vw-indicator" id="vwIndicator"></div>
+                            <span class="vw-status-text" id="vwStatusText">Connecting...</span>
+                        </div>
+                        <div class="vw-visualizer-container">
+                            <canvas id="vwVisualizer"></canvas>
+                        </div>
+                        <div class="vw-controls">
+                            <button class="vw-btn-main" id="vwToggleBtn">
+                                <svg id="vwToggleIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+                                <span id="vwBtnText">Start Voice Call</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <button class="vw-bubble" id="vwBubble">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
+                </button>
+            `;
+            document.body.appendChild(container);
+        }
+
+        cacheElements() {
+            this.container = document.getElementById('vwContainer');
+            this.panel = document.getElementById('vwPanel');
+            this.bubble = document.getElementById('vwBubble');
+            this.closeBtn = document.getElementById('vwCloseBtn');
+            this.toggleBtn = document.getElementById('vwToggleBtn');
+            this.statusText = document.getElementById('vwStatusText');
+            this.indicator = document.getElementById('vwIndicator');
+            this.btnText = document.getElementById('vwBtnText');
+            this.toggleIcon = document.getElementById('vwToggleIcon');
+            this.canvas = document.getElementById('vwVisualizer');
+            this.ctx = this.canvas.getContext('2d');
+        }
+
+        bindEvents() {
+            this.bubble.addEventListener('click', () => this.togglePanel());
+            this.closeBtn.addEventListener('click', () => this.togglePanel());
+            this.toggleBtn.addEventListener('click', () => this.handleToggleCall());
+            
+            window.addEventListener('resize', () => this.setupCanvas());
+        }
+
+        setupCanvas() {
+            const rect = this.canvas.parentElement.getBoundingClientRect();
+            this.canvas.width = rect.width;
+            this.canvas.height = rect.height;
+        }
+
+        async loadSDK() {
             try {
-                if (!this.config.vapiPublicKey || !this.config.assistantId) {
-                    console.log('[Voice Widget] Waiting for full configuration...');
-                    return;
-                }
-
-                // If already initialized, just return
-                if (this.vapi) return;
-
-                console.log('[Voice Widget] Initializing Vapi SDK via ESM...');
+                const module = await import('https://esm.sh/@vapi-ai/web?bundle');
+                const VapiClass = module.default;
                 
-                // Use dynamic import from esm.sh to get a clean, browser-ready bundle
-                // This includes all dependencies like daily-js automatically
-                const vapiModule = await import('https://esm.sh/@vapi-ai/web?bundle');
-                const VapiClass = vapiModule.default;
-
-                if (VapiClass) {
-                    this.vapi = new VapiClass(this.config.vapiPublicKey);
-                    this.setupVapiListeners();
-                    console.log('[Voice Widget] VAPI SDK initialized successfully via ESM');
-                    this.updateStatus('ready', 'Ready to assist you');
-                } else {
-                    throw new Error('Vapi class not found in ESM module');
-                }
+                this.vapi = new VapiClass(config.vapiPublicKey);
+                this.setupVapiListeners();
+                this.updateUI('disconnected');
             } catch (err) {
-                console.error('[Voice Widget] Initialization error:', err);
-                this.updateStatus('error', 'Voice engine failed to load');
+                console.error('[VoiceWidget] SDK Load Failed:', err);
+                this.statusText.textContent = 'Service unavailable';
             }
         }
 
         setupVapiListeners() {
             if (!this.vapi) return;
-
-            this.vapi.on('call-start', () => {
-                this.updateStatus('active', 'Connected - Listening...');
-                this.isActive = true;
-                this.btn.classList.add('active');
-                this.startBtn.style.display = 'none';
-                this.endBtn.style.display = 'flex';
-                this.visualizer.style.display = 'flex';
-                this.animateVisualizer();
-            });
-
-            this.vapi.on('call-end', () => {
-                this.updateStatus('ready', 'Call ended');
-                this.isActive = false;
-                this.btn.classList.remove('active');
-                this.startBtn.style.display = 'flex';
-                this.endBtn.style.display = 'none';
-                this.visualizer.style.display = 'none';
-                setTimeout(() => {
-                    this.updateStatus('ready', 'Ready to assist you');
-                }, 2000);
-            });
-
-            this.vapi.on('speech-start', () => {
-                this.updateStatus('active', 'Listening to you...');
-            });
-
-            this.vapi.on('speech-end', () => {
-                this.updateStatus('active', 'Processing...');
-            });
-
-            this.vapi.on('error', (error) => {
-                console.error('VAPI Error:', error);
-                this.updateStatus('error', 'Connection error');
-            });
-        }
-
-        attachListeners() {
-            this.btn.addEventListener('click', () => this.togglePanel());
-            this.closeBtn.addEventListener('click', () => this.closePanel());
-            this.startBtn.addEventListener('click', () => this.startCall());
-            this.endBtn.addEventListener('click', () => this.endCall());
-
-            document.addEventListener('click', (e) => {
-                if (this.isOpen && !e.target.closest('.voice-widget-container')) {
-                    this.closePanel();
-                }
+            this.vapi.on('call-start', () => this.updateUI('connected'));
+            this.vapi.on('call-end', () => this.updateUI('disconnected'));
+            this.vapi.on('volume-level', (v) => { this.currentVolume = v; });
+            this.vapi.on('error', (e) => {
+                console.error('[VoiceWidget] Vapi Error:', e);
+                this.updateUI('disconnected');
             });
         }
 
         togglePanel() {
             this.isOpen = !this.isOpen;
             this.panel.classList.toggle('open', this.isOpen);
-        }
-
-        closePanel() {
-            this.isOpen = false;
-            this.panel.classList.remove('open');
-        }
-
-        async startCall() {
-            if (!this.vapi) {
-                alert('Voice assistant is not configured.');
-                return;
-            }
-
-            try {
-                this.updateStatus('connecting', 'Connecting...');
-                await this.vapi.start(this.config.assistantId);
-            } catch (error) {
-                console.error('Failed to start call:', error);
-                this.updateStatus('error', 'Failed to connect');
-                setTimeout(() => {
-                    this.updateStatus('ready', 'Ready to assist you');
-                }, 2000);
+            if (this.isOpen) {
+                setTimeout(() => this.setupCanvas(), 200);
+                this.startAnimation();
+            } else {
+                this.stopAnimation();
             }
         }
 
-        async endCall() {
-            if (this.vapi) {
+        async handleToggleCall() {
+            if (this.status === 'connected') {
                 this.vapi.stop();
+            } else {
+                this.updateUI('connecting');
+                try {
+                    await this.vapi.start(config.assistantId);
+                } catch (e) {
+                    console.error('[VoiceWidget] Start failed:', e);
+                    this.updateUI('disconnected');
+                }
             }
         }
 
-        updateStatus(state, text) {
-            this.statusText.textContent = text;
-            this.statusIndicator.className = 'voice-widget-status-indicator';
-            if (state === 'active' || state === 'connecting') {
-                this.statusIndicator.classList.add('active');
+        updateUI(status) {
+            this.status = status;
+            
+            switch (status) {
+                case 'connected':
+                    this.indicator.className = 'vw-indicator active';
+                    this.statusText.textContent = 'Connected - Listening...';
+                    this.btnText.textContent = 'End Call';
+                    this.toggleBtn.classList.add('danger');
+                    this.bubble.classList.add('active');
+                    this.toggleIcon.innerHTML = '<path d="M10.68 13.31a16 16 0 0 0 3.41 2.6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7 2 2 0 0 1 1.72 2v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.42 19.42 0 0 1-3.33-2.67m-2.67-3.34a19.79 19.79 0 0 1-3.07-8.63A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91"></path><line x1="23" y1="1" x2="1" y2="23"></line>';
+                    break;
+                case 'connecting':
+                    this.indicator.className = 'vw-indicator';
+                    this.statusText.textContent = 'Connecting...';
+                    this.btnText.textContent = 'Please wait...';
+                    break;
+                case 'disconnected':
+                    this.indicator.className = 'vw-indicator ready';
+                    this.statusText.textContent = 'Ready to assist you';
+                    this.btnText.textContent = 'Start Voice Call';
+                    this.toggleBtn.classList.remove('danger');
+                    this.bubble.classList.remove('active');
+                    this.toggleIcon.innerHTML = '<path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>';
+                    break;
             }
         }
 
-        animateVisualizer() {
-            if (!this.isActive) return;
+        startAnimation() {
+            let smoothedVolume = 0;
+            const draw = () => {
+                if (!this.ctx || !this.isOpen) return;
+                
+                const w = this.canvas.width;
+                const h = this.canvas.height;
+                const cx = w / 2;
+                const cy = h / 2;
 
-            const bars = this.visualizer.querySelectorAll('.voice-widget-bar');
-            bars.forEach(bar => {
-                const height = Math.random() * 40 + 10;
-                bar.style.height = `${height}px`;
-            });
+                smoothedVolume += (this.currentVolume - smoothedVolume) * 0.15;
+                if (this.status !== 'connected') smoothedVolume = 0;
 
-            setTimeout(() => this.animateVisualizer(), 150);
+                this.ctx.clearRect(0, 0, w, h);
+
+                const layers = [
+                    { r: 40 + smoothedVolume * 150, alpha: 0.1, color: config.primaryColor },
+                    { r: 35 + smoothedVolume * 80, alpha: 0.3, color: config.secondaryColor },
+                    { r: 30, alpha: 1, color: config.primaryColor }
+                ];
+
+                layers.forEach(layer => {
+                    this.ctx.beginPath();
+                    this.ctx.arc(cx, cy, Math.max(1, layer.r), 0, Math.PI * 2);
+                    this.ctx.fillStyle = layer.color;
+                    this.ctx.globalAlpha = layer.alpha;
+                    this.ctx.fill();
+                });
+
+                if (this.status === 'connected') {
+                    this.ctx.globalAlpha = 0.4;
+                    this.ctx.strokeStyle = config.primaryColor;
+                    this.ctx.lineWidth = 2;
+                    for (let i = 1; i <= 2; i++) {
+                        this.ctx.beginPath();
+                        const r = 30 + (i * 20) + (Math.sin(Date.now() / 200 + i) * 8);
+                        this.ctx.arc(cx, cy, Math.max(0, r), 0, Math.PI * 2);
+                        this.ctx.stroke();
+                    }
+                }
+
+                this.ctx.globalAlpha = 1;
+                this.animationId = requestAnimationFrame(draw);
+            };
+            draw();
+        }
+
+        stopAnimation() {
+            if (this.animationId) {
+                cancelAnimationFrame(this.animationId);
+                this.animationId = null;
+            }
         }
     }
 
-    // Initialize when DOM is ready
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initWidget);
+    if (document.readyState === 'complete') {
+        new VoiceWidget();
     } else {
-        initWidget();
+        window.addEventListener('load', () => new VoiceWidget());
     }
 })();

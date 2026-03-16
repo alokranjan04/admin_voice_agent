@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voice AI Widget Test</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+            background: #f0f2f5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+        .content {
+            text-align: center;
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            max-width: 500px;
+        }
+        h1 { color: #1e293b; margin-bottom: 16px; }
+        p { color: #64748b; line-height: 1.6; }
+    </style>
+</head>
+<body>
+
+    <div class="content">
+        <h1>Voice AI Widget Test</h1>
+        <p>This is a test environment for the <strong>Voice AI Floating Widget</strong>. Look for the microphone bubble in the bottom-right corner.</p>
+        <p>The widget is configured to connect to your Vapi assistant automatically.</p>
+    </div>
+
+    <!-- Voice AI Widget Configuration -->
+    <script>
+        window.VOICE_WIDGET_CONFIG = {
+            vapiPublicKey: "3413ee7b-c5f5-4dc3-93f1-a2185da2aa15",
+            assistantId: "your-assistant-id", // User should replace this or it will use default logic
+            businessName: "Sutherland AI Support",
+            primaryColor: "#0d9488", // Teal
+            secondaryColor: "#0f766e", // Dark Teal
+            position: "bottom-right"
+        };
+    </script>
+    
+    <!-- Load the widget from public directory -->
+    <script src="./voice-widget.js"></script>
+
+</body>
+</html>

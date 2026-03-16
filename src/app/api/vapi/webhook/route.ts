@@ -238,19 +238,25 @@ export async function POST(req: NextRequest) {
 
                         case 'getCurrentDateTime':
                             const now = new Date();
+                            const istTime = now.toLocaleString('en-US', {
+                                weekday: 'long',
+                                year: 'numeric',
+                                month: 'long',
+                                day: 'numeric',
+                                hour: 'numeric',
+                                minute: 'numeric',
+                                hour12: true,
+                                timeZone: process.env.TIMEZONE || 'Asia/Kolkata'
+                            });
+                            const istDateOnly = now.toLocaleDateString('en-CA', { timeZone: process.env.TIMEZONE || 'Asia/Kolkata' }); // YYYY-MM-DD
+                            
                             result = {
                                 success: true,
-                                dateTime: now.toISOString(),
-                                humanReadable: now.toLocaleString('en-US', {
-                                    weekday: 'long',
-                                    year: 'numeric',
-                                    month: 'long',
-                                    day: 'numeric',
-                                    hour: 'numeric',
-                                    minute: 'numeric',
-                                    timeZone: process.env.TIMEZONE || 'UTC'
-                                }),
-                                timeZone: process.env.TIMEZONE || 'UTC'
+                                humanReadable: istTime,
+                                currentDate: istDateOnly,
+                                dayOfWeek: now.toLocaleDateString('en-US', { weekday: 'long', timeZone: process.env.TIMEZONE || 'Asia/Kolkata' }),
+                                timeZone: process.env.TIMEZONE || 'Asia/Kolkata',
+                                note: "Treat the 'currentDate' as TODAY. Do not assume today is yesterday based on UTC."
                             };
                             break;
 
