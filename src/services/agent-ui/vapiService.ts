@@ -595,7 +595,7 @@ ${faqs}
 
             for (const name of modelNames) {
                 try {
-                    const model = genAI.getGenerativeModel({ model: name });
+                    const model = genAI.getGenerativeModel({ model: name }, { apiVersion: 'v1beta' });
                     const promptText = `Create 10 FAQs for ${config.metadata.businessName}. Markdown format.`;
                     const result = await model.generateContent(promptText);
                     const response = await result.response;
@@ -793,7 +793,7 @@ ${faqs}
                     console.log(`[Summarize] Trying SDK with ${modelName}...`);
                     const { GoogleGenerativeAI } = await import('@google/generative-ai');
                     const genAI = new GoogleGenerativeAI(apiKey);
-                    const model = genAI.getGenerativeModel({ model: modelName });
+                    const model = genAI.getGenerativeModel({ model: modelName }, { apiVersion: 'v1beta' });
                     const result = await model.generateContent(promptText);
                     const response = await result.response;
                     const text = response.text();

@@ -5,6 +5,7 @@ import { useSearchParams, useParams, useRouter } from 'next/navigation';
 import InfoPanel from '@/components/agent-ui/InfoPanel';
 import LiveVisualizer from '@/components/agent-ui/LiveVisualizer';
 import AdminSettings from '@/components/agent-ui/AdminSettings';
+import ChatWidget from '@/components/agent-ui/ChatWidget';
 import ErrorBoundary from '@/components/agent-ui/ErrorBoundary';
 // import { WelcomeForm } from '@/components/agent-ui/WelcomeForm'; // Not used in rendered JSX? functionality seems embedded or missing usage in App.tsx excerpt? 
 // Ah, App.tsx line 7 imported it, line 60 used state showWelcomeForm, but line 273 handleWelcomeFormSubmit defined.
@@ -74,8 +75,8 @@ const AgentInterface: React.FC<AgentInterfaceProps> = ({ initialOrgId, initialAg
     // Actually, logic in App.tsx was: path segments OR query params.
 
     const [status, setStatus] = useState<'disconnected' | 'connecting' | 'connected'>('disconnected');
-    const [volume, setVolume] = useState(0);
     const [error, setError] = useState<string | null>(null);
+    const volumeRef = useRef(0);
     const [logs, setLogs] = useState<LogEntry[]>([]);
     const logsEndRef = useRef<HTMLDivElement>(null);
     const [isCalendarAuth, setIsCalendarAuth] = useState(false);
@@ -237,8 +238,9 @@ const AgentInterface: React.FC<AgentInterfaceProps> = ({ initialOrgId, initialAg
 
         // Service Updates
         voiceService.onStatusChange = (newStatus) => setStatus(newStatus);
-        voiceService.onVolumeChange = (vol) => setVolume(vol);
-        voiceService.onLog = (entry) => setLogs(prev => [...prev, entry]);
+        voiceService.onVolumeChange = (v) => {
+            volumeRef.current = v;
+        };voiceService.onLog = (entry) => setLogs(prev => [...prev, entry]);
 
         return () => {
             voiceService.disconnect();
@@ -358,15 +360,21 @@ const AgentInterface: React.FC<AgentInterfaceProps> = ({ initialOrgId, initialAg
 
     if (isWidget) {
         return (
-            <div className="h-screen w-full bg-transparent overflow-hidden pointer-events-none">
-                <p className="text-white p-4">Widget mode deprecated.</p>
+            <div className="h-screen w-full bg-transparent overflow-hidden">
+                <ChatWidget
+                    config={config}
+                    status={status}
+                    volumeRef={volumeRef}
+                    logs={logs}
+                    onToggleCall={handleToggleConnection}
+                />
             </div>
         );
     }
 
     return (
         <ErrorBoundary>
-            <div className={`flex h-screen w-full ${isWidget ? 'bg-transparent' : 'bg-slate-100'} overflow-hidden`}>
+            <div className={`flex h-screen w-full ${isWidget ? 'bg-transparent' : 'bg-slate-100'} overflow-hidden font-sans`}>
                 <AdminSettings
                     isOpen={showSettings}
                     onClose={() => setShowSettings(false)}
@@ -379,161 +387,186 @@ const AgentInterface: React.FC<AgentInterfaceProps> = ({ initialOrgId, initialAg
                     setConfig={setConfig}
                 />
 
-                {/* Left Sidebar: Business Information */}
+                {/* Left Sidebar: Business Information (Desktop Only) */}
                 {!isWidget && (
-                    <div className="w-1/4 min-w-[300px] max-w-[400px] h-full hidden lg:block border-r border-slate-200">
+                    <div className="hidden lg:flex w-80 lg:w-96 flex-col border-r border-slate-200 bg-white shadow-[1px_0_10px_rgba(0,0,0,0.02)] z-10 flex-shrink-0">
                         <InfoPanel config={config} connectedEmail={connectedEmail} />
                     </div>
                 )}
 
-                {/* Main Content */}
-                <div className="flex-1 flex flex-col h-full relative min-w-0">
-                    {/* Header */}
-                    {!isWidget && (
-                        <header className="flex-shrink-0 bg-white border-b border-slate-200 px-6 py-4 flex justify-between items-center shadow-sm z-10">
-                            <div>
-                                <h2 className="text-lg font-bold text-slate-800">Live Agent Interface</h2>
-                                <div className="flex items-center gap-2 mt-1">
-                                    <span className={`w-2 h-2 rounded-full ${status === 'connected' ? 'bg-green-500 animate-pulse' : 'bg-slate-300'}`}></span>
-                                    <span className="text-xs text-slate-500 uppercase font-semibold tracking-wide">
-                                        {status === 'connected' ? 'System Online' : 'System Offline'}
-                                    </span>
+                {/* Main Vertical Stack (Content Area + Console) */}
+                <div className="flex-1 flex flex-col min-w-0 bg-slate-50/50 overflow-hidden">
+                    {/* Top: Main Visualizer Content */}
+                    <div className="flex-1 flex flex-col min-w-0 relative overflow-hidden">
+                        {/* Header */}
+                        {!isWidget && (
+                            <header className="flex-shrink-0 bg-white border-b border-slate-100 px-8 py-5 flex justify-between items-center shadow-sm z-20">
+                                <div className="min-w-0 flex-1">
+                                    <h2 className="text-xl font-black text-slate-900 tracking-tight truncate">Live Agent Interface</h2>
+                                    <div className="flex items-center gap-2 mt-0.5">
+                                        <div className={`w-2 h-2 rounded-full ${status === 'connected' ? 'bg-emerald-500 animate-pulse' : 'bg-slate-300'}`}></div>
+                                        <span className={`text-[10px] font-black uppercase tracking-[0.2em] ${status === 'connected' ? 'text-emerald-600' : 'text-slate-500'}`}>
+                                            {status === 'connected' ? 'Link Established' : 'System Standby'}
+                                        </span>
+                                    </div>
                                 </div>
-                            </div>
-                            <div className="flex items-center gap-4">
-                                {/* Status Badge */}
-                                <div className={`px-3 py-1.5 rounded-full border flex items-center gap-2 text-xs font-medium ${isCalendarAuth ? 'bg-green-50 border-green-200 text-green-700' : 'bg-blue-50 border-blue-200 text-blue-600'}`}>
-                                    {isCalendarAuth ? (
-                                        <>
-                                            <CheckCircle2 className="w-3.5 h-3.5" />
-                                            {connectedEmail === 'linked-account@google.com' ? 'Linked Account' : connectedEmail}
-                                        </>
-                                    ) : (
-                                        <>
-                                            <Globe className="w-3.5 h-3.5" />
-                                            Guest Mode (Request Only)
-                                        </>
-                                    )}
+                                <div className="flex items-center gap-4 flex-shrink-0">
+                                    {/* Status Badge */}
+                                    <div className={`hidden sm:flex px-4 py-2 rounded-full border items-center gap-2.5 text-[10px] font-black uppercase tracking-widest ${isCalendarAuth ? 'bg-emerald-50 border-emerald-100 text-emerald-700' : 'bg-indigo-50 border-indigo-100 text-indigo-700'}`}>
+                                        {isCalendarAuth ? (
+                                            <>
+                                                <CheckCircle2 className="w-3.5 h-3.5" />
+                                                <span className="truncate max-w-[120px]">{connectedEmail === 'linked-account@google.com' ? 'Linked Account' : connectedEmail}</span>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <Globe className="w-3.5 h-3.5" />
+                                                Guest Mode
+                                            </>
+                                        )}
+                                    </div>
+
+                                    {/* Settings Button */}
+                                    <button
+                                        onClick={() => setShowSettings(true)}
+                                        className="p-2.5 text-slate-400 hover:text-indigo-600 hover:bg-white rounded-2xl transition-all shadow-sm hover:shadow-md border border-transparent hover:border-indigo-100 relative group"
+                                        title="Admin Settings"
+                                    >
+                                        <Settings className="w-5 h-5 group-hover:rotate-45 transition-transform" />
+                                        {!isCalendarAuth && (
+                                            <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-rose-500 border-2 border-white rounded-full"></span>
+                                        )}
+                                    </button>
+                                </div>
+                            </header>
+                        )}
+
+                        {/* Main Visualizer Area */}
+                        <main className={`flex-1 flex flex-col items-center justify-center p-6 md:p-12 ${isWidget ? 'bg-transparent' : 'bg-transparent'} overflow-y-auto min-h-0 relative`}>
+                            {/* Visual background decoration */}
+                            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-indigo-500/5 rounded-full blur-[120px] pointer-events-none opacity-50" />
+                            
+                            <div className="w-full max-w-3xl relative z-10 flex flex-col items-center">
+                                <div className={`${!isWidget ? 'w-full bg-white/40 backdrop-blur-xl rounded-[40px] border border-white/50 shadow-2xl shadow-indigo-100/20 px-8 py-10' : ''}`}>
+                                    <LiveVisualizer volumeRef={volumeRef} isActive={status === 'connected'} />
                                 </div>
 
-                                {/* Settings Button */}
-                                <button
-                                    onClick={() => setShowSettings(true)}
-                                    className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors relative"
-                                    title="Admin Settings"
-                                >
-                                    <Settings className="w-5 h-5" />
-                                    {!isCalendarAuth && (
-                                        <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-rose-500 border-2 border-white rounded-full"></span>
-                                    )}
-                                </button>
-                            </div>
-                        </header>
-                    )}
-
-                    {/* Main Visualizer Area */}
-                    <main className={`flex-1 flex flex-col items-center justify-center p-4 sm:p-6 ${isWidget ? 'bg-transparent' : 'bg-slate-50/50'} overflow-y-auto min-h-0`}>
-                        <div className="w-full max-w-2xl">
-                            <div className={`${!isWidget ? 'bg-slate-50 rounded-2xl border border-slate-200 shadow-inner' : ''}`}>
-                                <LiveVisualizer volume={volume} isActive={status === 'connected'} />
-                            </div>
-
-                            {/* Controls */}
-                            <div className="mt-8 flex flex-col items-center gap-4 w-full">
-
-                                <button
-                                    onClick={() => handleToggleConnection()}
-                                    disabled={status === 'connecting'}
-                                    className={`
-                                flex items-center justify-center gap-3 px-8 py-4 rounded-full font-bold text-lg shadow-lg transition-all transform hover:scale-105 active:scale-95 min-w-[200px]
-                                ${status === 'connected'
-                                            ? 'bg-rose-500 hover:bg-rose-600 text-white shadow-rose-200'
-                                            : 'bg-teal-600 hover:bg-teal-700 text-white shadow-teal-200'}
-                                ${status === 'connecting' ? 'opacity-75 cursor-wait' : ''}
-                            `}
-                                >
+                                {/* Controls */}
+                                <div className="mt-12 flex flex-col items-center gap-6 w-full">
+                                    <button
+                                        onClick={() => handleToggleConnection()}
+                                        disabled={status === 'connecting'}
+                                        className={`
+                                            flex items-center justify-center gap-4 px-10 py-5 rounded-[24px] font-black text-xl tracking-tight shadow-2xl transition-all transform hover:scale-[1.03] active:scale-95 min-w-[280px]
+                                            ${status === 'connected'
+                                                ? 'bg-gradient-to-r from-rose-500 to-pink-600 text-white shadow-rose-200 ring-4 ring-rose-500/20'
+                                                : 'bg-gradient-to-r from-teal-500 to-indigo-500 text-white shadow-indigo-200 ring-4 ring-indigo-500/10'}
+                                            ${status === 'connecting' ? 'opacity-70 cursor-wait animate-pulse' : ''}
+                                        `}
+                                    >
                                         {status === 'connected' ? (
-                                        <>
-                                            <MicOff className="w-6 h-6" />
-                                            End Session
-                                        </>
-                                    ) : (
-                                        <>
-                                            <Phone className="w-6 h-6" />
-                                            {status === 'connecting' ? 'Connecting...' : 'Start Call'}
-                                        </>
-                                    )}
-                                </button>
+                                            <>
+                                                <MicOff className="w-7 h-7" />
+                                                End Conversation
+                                            </>
+                                        ) : (
+                                            <>
+                                                <Phone className="w-7 h-7" />
+                                                {status === 'connecting' ? 'Synchronizing...' : 'Start Conversation'}
+                                            </>
+                                        )}
+                                    </button>
 
-                                {error && (
-                                    <div className="flex items-center gap-2 text-rose-600 bg-rose-50 px-4 py-2 rounded-md text-sm mt-4 border border-rose-100">
-                                        <AlertCircle className="w-4 h-4" />
-                                        {error}
-                                    </div>
-                                )}
-
-                                {!isWidget && (
-                                    <p className="text-slate-400 text-xs md:text-sm mt-2 max-w-md text-center px-4">
-                                {status === 'connected'
-                                    ? "Listening... Speak naturally to the agent."
-                                    : "Click 'Start Call' to initialize the Voice AI Agent (Powered by VAPI)."}
-                            </p>
-                                )}
-
-                                {!isCalendarAuth && !isWidget && (
-                                    <div className="mt-2 text-center">
-                                        <p className="text-xs text-amber-600 bg-amber-50 px-3 py-1 rounded border border-amber-100 inline-flex items-center gap-2">
-                                            <KeyRound className="w-3 h-3" />
-                                            Guest Mode Active. Launch from your Admin Dashboard or use Settings to authenticate.
-                                        </p>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    </main>
-                </div>
-
-                {/* Bottom Log / Debug Panel - Fixed Height */}
-                <div className="bg-slate-900 text-slate-300 h-48 md:h-64 border-t border-slate-700 flex flex-col flex-shrink-0">
-                    <div className="px-3 md:px-4 py-2 flex items-center gap-2 text-slate-400 border-b border-slate-800 bg-slate-900/50">
-                        <Terminal className="w-4 h-4" />
-                        <span className="font-semibold text-[10px] md:text-xs uppercase tracking-wider">Live Transcript & Logs</span>
-                    </div>
-                    <div className="flex-1 overflow-y-auto p-2 md:p-4 space-y-2 md:space-y-3 font-mono text-[10px] md:text-xs">
-                        <div className="flex gap-2 opacity-50">
-                            <span className="text-teal-500">[INIT]</span>
-                            <span>Configuration loaded for {config.metadata.businessName}</span>
-                        </div>
-
-                        {logs.map((log, index) => (
-                            <div key={index} className={`flex gap-3 ${log.type === 'user' ? 'text-blue-300' : log.type === 'model' ? 'text-green-300' : 'text-slate-500'}`}>
-                                <div className="min-w-[60px] text-slate-600 select-none">
-                                    {log.timestamp.toLocaleTimeString([], { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' })}
-                                </div>
-                                <div className="flex-shrink-0 mt-0.5">
-                                    {log.type === 'user' ? <User className="w-3 h-3" /> : log.type === 'model' ? <Bot className="w-3 h-3" /> : <Info className="w-3 h-3" />}
-                                </div>
-                                <div className="break-words w-full">
-                                    <span className={`font-bold mr-2 uppercase text-[10px] tracking-wider ${log.type === 'user' ? 'text-blue-500' : log.type === 'model' ? 'text-green-500' : 'text-slate-500'
-                                        }`}>
-                                        {log.type === 'model' ? 'Agent' : log.type}
-                                    </span>
-                                    {log.type === 'model' ? (
-                                        <div className="inline-block">
-                                            {renderFormattedMessage(formatMessage(log.text))}
+                                    {error && (
+                                        <div className="flex items-center gap-3 text-rose-600 bg-rose-50/80 backdrop-blur-sm px-6 py-3 rounded-2xl text-sm font-bold border border-rose-100 shadow-sm animate-bounce">
+                                            <AlertCircle className="w-5 h-5" />
+                                            {error}
                                         </div>
-                                    ) : (
-                                        log.text
+                                    )}
+
+                                    {!isWidget && (
+                                        <div className="space-y-4 text-center">
+                                            <p className="text-slate-400 text-xs md:text-sm font-bold uppercase tracking-[0.3em] opacity-60">
+                                                {status === 'connected'
+                                                    ? "Agent Listening... Speak naturally"
+                                                    : "Audio Interface Standby"}
+                                            </p>
+                                            
+                                            {!isCalendarAuth && (
+                                                <div className="inline-flex items-center gap-3 px-5 py-2.5 bg-amber-50 rounded-2xl border border-amber-100/50 shadow-sm">
+                                                    <KeyRound className="w-4 h-4 text-amber-500" />
+                                                    <span className="text-[10px] text-amber-700 font-bold uppercase tracking-widest">Guest Session Active</span>
+                                                </div>
+                                            )}
+                                        </div>
                                     )}
                                 </div>
                             </div>
-                        ))}
-                        <div ref={logsEndRef} />
+                        </main>
+                    </div>
+
+                    {/* Bottom Console Panel */}
+                    <div className="bg-slate-950 text-slate-300 h-64 md:h-80 border-t border-white/5 flex flex-col flex-shrink-0 relative z-10 shadow-[0_-20px_50px_rgba(0,0,0,0.3)]">
+                        <div className="flex items-center justify-between px-8 py-4 border-b border-white/5 bg-slate-900/40 backdrop-blur-md">
+                            <div className="flex items-center gap-4">
+                                <div className="w-8 h-8 rounded-xl bg-teal-500/10 flex items-center justify-center border border-teal-500/20">
+                                    <Terminal className="w-4 h-4 text-teal-400" />
+                                </div>
+                                <h3 className="text-[11px] font-black uppercase tracking-[0.4em] text-slate-400">System Dynamics & Logs</h3>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                                <span className="text-[9px] font-bold text-emerald-500 uppercase tracking-widest">Live Stream</span>
+                            </div>
+                        </div>
+                        <div className="flex-1 overflow-y-auto p-6 md:p-8 space-y-4 font-mono text-[11px] md:text-xs">
+                            <div className="flex gap-4 opacity-40 italic">
+                                <span className="text-teal-500 font-black tracking-widest">[BOOT]</span>
+                                <span>Platform kernel active. Configuration '{config.metadata.businessName}' engaged.</span>
+                            </div>
+
+                            {logs.map((log, index) => (
+                                <div key={index} className={`flex gap-4 transition-all duration-300 ${log.type === 'user' ? 'text-indigo-300' : log.type === 'model' ? 'text-emerald-300 border-l-2 border-emerald-500/30 pl-3' : 'text-slate-500 opacity-60'}`}>
+                                    <div className="min-w-[70px] text-slate-700 select-none font-black opacity-40">
+                                        {log.timestamp.toLocaleTimeString([], { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                                    </div>
+                                    <div className="flex-shrink-0 mt-0.5 opacity-60">
+                                        {log.type === 'user' ? <User className="w-3.5 h-3.5" /> : log.type === 'model' ? <Bot className="w-3.5 h-3.5" /> : <Info className="w-3.5 h-3.5" />}
+                                    </div>
+                                    <div className="break-words w-full">
+                                        <span className={`font-black mr-3 uppercase text-[10px] tracking-[0.2em] ${log.type === 'user' ? 'text-indigo-400' : log.type === 'model' ? 'text-emerald-400' : 'text-slate-600'}`}>
+                                            {log.type === 'model' ? 'SYSTEM_CORE' : log.type === 'user' ? 'HUMAN_INPUT' : 'INTERNAL'}
+                                        </span>
+                                        {log.type === 'model' ? (
+                                            <div className="inline-block font-medium">
+                                                {renderFormattedMessage(formatMessage(log.text))}
+                                            </div>
+                                        ) : (
+                                            <span className="font-medium">{log.text}</span>
+                                        )}
+                                    </div>
+                                </div>
+                            ))}
+                            <div ref={logsEndRef} />
+                        </div>
                     </div>
                 </div>
-        </div>
-    </ErrorBoundary>
-);
+
+                {/* Floating Premium Chat/Voice Bot Overlay for Full Page Mode */}
+                {!isWidget && (
+                    <div className="fixed bottom-12 right-12 z-[100]">
+                        <ChatWidget
+                            config={config}
+                            status={status}
+                            volumeRef={volumeRef}
+                            logs={logs}
+                            onToggleCall={handleToggleConnection}
+                        />
+                    </div>
+                )}
+            </div>
+        </ErrorBoundary>
+    );
 };
 
 export default AgentInterface;

@@ -7,6 +7,10 @@ const getSerperApiKey = () => {
     return process.env.NEXT_PUBLIC_SERPER_API_KEY || process.env.VITE_SERPER_API_KEY || null;
 };
 
+const getJinaApiKey = () => {
+    return process.env.NEXT_PUBLIC_JINA_API_KEY || process.env.VITE_JINA_API_KEY || null;
+};
+
 export interface ResearchContext {
     searchQuery: string;
     webResults: any[];
@@ -15,16 +19,25 @@ export interface ResearchContext {
 
 /**
  * Searches for real-world business details using Serper.dev (Google Search API)
+ * with a fallback to Jina Search.
  */
 export const researchBusiness = async (query: string): Promise<ResearchContext> => {
-    const apiKey = getSerperApiKey();
+    const serperKey = getSerperApiKey();
+    const jinaKey = getJinaApiKey();
 
-    if (!apiKey) {
-        console.warn("SERPER_API_KEY missing. Falling back to Jina Search.");
+    if (!serperKey) {
+        console.warn("[Research] SERPER_API_KEY missing. Falling back to Jina Search.");
         try {
             const jinaSearchUrl = `https://s.jina.ai/${encodeURIComponent(query)}`;
             console.log(`[Research] Trying Jina Search Fallback: ${jinaSearchUrl}`);
-            const res = await axios.get(jinaSearchUrl, { headers: { 'Accept': 'text/plain' } });
+            
+            const headers: any = { 'Accept': 'text/plain' };
+            if (jinaKey) {
+                headers['Authorization'] = `Bearer ${jinaKey}`;
+                console.log("[Research] Using Jina API Key for authentication.");
+            }
+
+            const res = await axios.get(jinaSearchUrl, { headers });
             if (res.data) {
                 console.log(`[Research] Jina Search success. Received ${res.data.length} chars.`);
                 return { 
@@ -34,13 +47,26 @@ export const researchBusiness = async (query: string): Promise<ResearchContext> 
                 };
             }
         } catch (jinaErr: any) {
-            console.error("[Research] Jina Search Fallback Failed:", jinaErr.message);
+            const status = jinaErr.response?.status;
+            if (status === 401) {
+                console.error("[Research] Jina Search Failed: 401 Unauthorized. Please provide a valid JINA_API_KEY in .env.");
+            } else if (status === 402) {
+                console.error("[Research] Jina Search Failed: 402 Payment Required. Jina quota exceeded.");
+            } else {
+                console.error("[Research] Jina Search Fallback Failed:", jinaErr.message);
+            }
         }
+        
+        if (!serperKey && !jinaKey) {
+             console.error("[Research] CRITICAL: Both Serper and Jina API keys are missing. Business research will return empty results.");
+        }
+
         return { searchQuery: query, webResults: [] };
     }
 
     try {
-        console.log(`Researching: ${query}...`);
+        console.log(`[Research] Researching via Serper: ${query}...`);
+        const apiKey = serperKey;
         const [webRes, placesRes] = await Promise.allSettled([
             axios.post('https://google.serper.dev/search', {
                 q: query,

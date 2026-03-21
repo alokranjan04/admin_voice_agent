@@ -228,7 +228,7 @@ export async function generateConfigFromDescription(description: string, researc
       const model = genAI.getGenerativeModel({
         model: modelName,
         systemInstruction: { role: "system", parts: [{ text: systemInstruction }] }
-      }, { apiVersion: 'v1' });
+      }, { apiVersion: 'v1beta' });
 
       const result = await model.generateContent({
         contents: [{ role: "user", parts: [{ text: userContent }] }],
