@@ -325,8 +325,8 @@ export class VapiService {
         const isNativeHindiVoice = voiceProviderForLang === 'azure' || voiceProviderForLang === '11labs';
         const languageDirective = configuredLangName
             ? (transcriberLangCode === 'hi' && !isNativeHindiVoice
-                ? `10. LANGUAGE — HINGLISH MODE: The user prefers Hindi. Respond in Hinglish — use Hindi words and sentence structure, but write ONLY in Roman/English script (NOT Devanagari). Example: say "Aapka naam kya hai?" not "आपका नाम क्या है?". NEVER write Devanagari script. This keeps the voice clear and natural.`
-                : `10. LANGUAGE — STRICT RULE: You MUST ALWAYS respond in ${configuredLangName}. NEVER switch to English even if the user speaks in English.`)
+                ? `10. LANGUAGE — HINGLISH: Respond in Hinglish (Hindi words in Roman/English script). NEVER use Devanagari. Understand queries in both Hindi and English — if the user asks in English, still respond in Hinglish. Example response: "Humara dinner menu mein Dal Makhani, Paneer Tikka aur Naan hai." CRITICAL: Always answer the user's actual question — never say you cannot help just because of language settings.`
+                : `10. LANGUAGE: Respond primarily in ${configuredLangName}. Understand queries in both ${configuredLangName} and English. Always answer the user's actual question.`)
             : `10. LANGUAGE: Respond in English. Mirror the user's language if they switch.`;
 
         const mandatoryDirectives = `[MANDATORY RELIABILITY DIRECTIVES - READ THIS FIRST]

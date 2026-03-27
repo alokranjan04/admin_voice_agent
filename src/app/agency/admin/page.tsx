@@ -552,15 +552,25 @@ export default function AdminPage() {
             const isNativeHindiTTS = voiceProvider === 'azure' || voiceProvider === 'elevenlabs';
             const isHinglish = language === 'Hindi' && !isNativeHindiTTS;
 
-            // Translate everything. Hinglish uses Roman script throughout (no Devanagari),
-            // so TTS reads it fine and there is no script clash with the Hinglish directive.
-            // Azure/ElevenLabs use Devanagari which their voices natively support.
-            const targetLang = isHinglish ? 'Hinglish' : language;
-            const translated = await translateAgentContent(
-                { systemPrompt: config.vapi.systemPrompt, firstMessage: config.vapi.firstMessage, knowledgeBase: config.vapi.knowledgeBase },
-                targetLang
-            );
-            setConfig(prev => ({ ...prev, vapi: { ...prev.vapi, ...translated } }));
+            if (isHinglish) {
+                // Hinglish mode: only translate the first message (the spoken greeting).
+                // System prompt stays in English — AI understands complex instructions better in English.
+                // Knowledge base stays in English — menu/service item lookups break if terms are transliterated.
+                // The Hinglish language directive injected at call time tells the AI to respond in Hinglish.
+                const result = await translateAgentContent(
+                    { systemPrompt: '', firstMessage: config.vapi.firstMessage, knowledgeBase: '' },
+                    'Hinglish'
+                );
+                setConfig(prev => ({ ...prev, vapi: { ...prev.vapi, firstMessage: result.firstMessage } }));
+            } else {
+                // For Azure/ElevenLabs Hindi (Devanagari) or other languages: translate system prompt + first message.
+                // Still skip knowledge base — factual data (prices, menu items) must stay in English for accuracy.
+                const translated = await translateAgentContent(
+                    { systemPrompt: config.vapi.systemPrompt, firstMessage: config.vapi.firstMessage, knowledgeBase: '' },
+                    language
+                );
+                setConfig(prev => ({ ...prev, vapi: { ...prev.vapi, systemPrompt: translated.systemPrompt, firstMessage: translated.firstMessage } }));
+            }
         } catch (e: any) {
             alert('Translation failed: ' + (e.message || 'Unknown error'));
         } finally {

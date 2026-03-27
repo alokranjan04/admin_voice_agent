@@ -81,8 +81,8 @@ export async function POST(req: Request) {
                         const isNativeHindiVoice = earlyVProvider === 'azure' || earlyVProvider === '11labs';
                         const languageRule = langName
                             ? (langCode === 'hi' && !isNativeHindiVoice
-                                ? `\n# LANGUAGE — HINGLISH MODE\nThe user prefers Hindi. You MUST respond in Hinglish: use Hindi words and sentence structure, but write everything in Roman/English script (NOT Devanagari). Example: say "Aapka naam kya hai?" not "आपका नाम क्या है?". NEVER write in Devanagari script. This is critical for the voice to sound natural.`
-                                : `\n# LANGUAGE — STRICT RULE\nYou MUST ALWAYS respond in ${langName}. NEVER switch to English even if the user speaks in English. Every response — greetings, questions, confirmations — must be in ${langName} only.`)
+                                ? `\n# LANGUAGE — HINGLISH\nRespond in Hinglish: Hindi words written in Roman/English script. NEVER use Devanagari. Understand user queries in both Hindi and English — always answer the actual question regardless of which language they use. Example: "Dinner mein Dal Makhani, Paneer Tikka aur Garlic Naan available hai." CRITICAL: Never say you cannot answer a question due to language settings.`
+                                : `\n# LANGUAGE\nRespond primarily in ${langName}. Understand queries in both ${langName} and English. Always answer the user's actual question — never refuse due to language settings.`)
                             : '';
 
                         return `${systemPrompt}
