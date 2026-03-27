@@ -201,11 +201,19 @@ AVAILABILITY RULE: You MUST NEVER book an appointment without FIRST calling chec
                 language: normalizeFullLang(String(config.vapi.transcriber.language || 'en'))
             };
         } else {
+            // nova-3 only supports English reliably. For Hindi and other Indic/non-Latin languages,
+            // use nova-2 which has broader multilingual support. Without this, Deepgram produces
+            // garbled Russian/Korean/Kazakh characters when trying to transcribe Hindi speech.
+            const rawLangCode = normalizeShortLang(String(config.vapi.transcriber.language || 'en'));
+            const NOVA3_UNSUPPORTED = new Set(['hi','ur','bn','gu','mr','pa','ta','te','kn','ml','si','ne','or','as']);
+            let tModel = String(config.vapi.transcriber.model || '').toLowerCase();
+            if (!tModel || tModel === 'nova-3') {
+                tModel = NOVA3_UNSUPPORTED.has(rawLangCode) ? 'nova-2' : 'nova-3';
+            }
             transcriberObj = {
                 provider: tProvider,
-                model: String(config.vapi.transcriber.model || 'nova-3').toLowerCase(),
-                language: normalizeShortLang(String(config.vapi.transcriber.language || 'en')),
-                // keywords: [], // No longer supported by Vapi
+                model: tModel,
+                language: rawLangCode,
             };
         }
 
