@@ -38,6 +38,8 @@ export async function POST(req: Request) {
         const MODEL_ALIASES: Record<string, string> = {
             'gpt-5.2-instant': 'gpt-5.2', 'gpt-5.1-instant': 'gpt-5.1',
             'gpt-4.5': 'gpt-4o', 'gpt-4.5-turbo': 'gpt-4-turbo',
+            // gpt-4 (no suffix) is deprecated on most VAPI plans — auto-upgrade to gpt-4o
+            'gpt-4': 'gpt-4o', 'gpt-4-0613': 'gpt-4o',
         };
         const normalizeModelName = (model: string, provider: string): string => {
             const m = (model || '').toLowerCase().trim();

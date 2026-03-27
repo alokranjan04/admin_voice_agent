@@ -436,7 +436,9 @@ ${languageDirective}\n\n`;
             console.log("[Personalization] First message after replacement:", firstMessage);
 
             // Strict per-provider model validation — prevents stale cross-provider models from Firebase
-            const VALID_OPENAI_MODELS = ['gpt-5.2','gpt-5.1','gpt-5','gpt-5-mini','gpt-5-nano','gpt-4.1','gpt-4.1-mini','gpt-4.1-nano','gpt-4o','gpt-4o-mini','gpt-4-turbo','gpt-4','gpt-3.5-turbo','chatgpt-4o-latest','o3','o3-mini','o4-mini','o1-mini'];
+            // gpt-4 (no suffix) is deprecated on VAPI — alias to gpt-4o before validation
+            if (/^gpt-4$/i.test(modelName) || /^gpt-4-0613$/i.test(modelName)) modelName = 'gpt-4o';
+            const VALID_OPENAI_MODELS = ['gpt-5.2','gpt-5.1','gpt-5','gpt-5-mini','gpt-5-nano','gpt-4.1','gpt-4.1-mini','gpt-4.1-nano','gpt-4o','gpt-4o-mini','gpt-4-turbo','gpt-3.5-turbo','chatgpt-4o-latest','o3','o3-mini','o4-mini','o1-mini'];
             const VALID_GOOGLE_MODELS = ['gemini-2.5-pro','gemini-2.5-flash','gemini-2.0-flash','gemini-2.0-flash','gemini-1.5-flash'];
             const VALID_ANTHROPIC_MODELS = ['claude-3-5-sonnet-20240620','claude-3-5-haiku-20241022','claude-3-opus-20240229','claude-3-sonnet-20240229','claude-3-haiku-20240307'];
 
