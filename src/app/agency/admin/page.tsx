@@ -548,16 +548,29 @@ export default function AdminPage() {
         if (language === 'English') return;
         setIsTranslating(true);
         try {
-            // Use Hinglish (Roman script Hindi) when Hindi is selected with a non-native Hindi TTS voice.
-            // Azure and ElevenLabs can handle Devanagari; VAPI/PlayHT/Rime cannot.
             const voiceProvider = (config.vapi.voiceProvider || 'vapi').toLowerCase();
             const isNativeHindiTTS = voiceProvider === 'azure' || voiceProvider === 'elevenlabs';
-            const targetLang = (language === 'Hindi' && !isNativeHindiTTS) ? 'Hinglish' : language;
-            const translated = await translateAgentContent(
-                { systemPrompt: config.vapi.systemPrompt, firstMessage: config.vapi.firstMessage, knowledgeBase: config.vapi.knowledgeBase },
-                targetLang
-            );
-            setConfig(prev => ({ ...prev, vapi: { ...prev.vapi, ...translated } }));
+            const isHinglish = language === 'Hindi' && !isNativeHindiTTS;
+
+            if (isHinglish) {
+                // Hinglish mode: only translate the first message to Roman-script Hindi.
+                // System prompt stays in English — the AI comprehends complex instructions (booking, tools)
+                // better in English, and the Hinglish language directive injected at call time already
+                // tells it to OUTPUT in Roman-script Hindi. Translating the full system prompt to Hinglish
+                // creates a "script clash" where the body says one thing and the directive says another.
+                const result = await translateAgentContent(
+                    { systemPrompt: '', firstMessage: config.vapi.firstMessage, knowledgeBase: '' },
+                    'Hinglish'
+                );
+                setConfig(prev => ({ ...prev, vapi: { ...prev.vapi, firstMessage: result.firstMessage } }));
+            } else {
+                // For all other languages (including Azure/ElevenLabs Hindi with Devanagari), translate everything.
+                const translated = await translateAgentContent(
+                    { systemPrompt: config.vapi.systemPrompt, firstMessage: config.vapi.firstMessage, knowledgeBase: config.vapi.knowledgeBase },
+                    language
+                );
+                setConfig(prev => ({ ...prev, vapi: { ...prev.vapi, ...translated } }));
+            }
         } catch (e: any) {
             alert('Translation failed: ' + (e.message || 'Unknown error'));
         } finally {

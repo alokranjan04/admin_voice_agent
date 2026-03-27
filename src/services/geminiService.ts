@@ -246,30 +246,43 @@ export async function translateAgentContent(
   const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" }, { apiVersion: 'v1beta' });
 
   const isHinglish = targetLanguage === 'Hinglish';
-  const prompt = isHinglish
-    ? `You are a professional translator. Translate the following voice AI agent content into Hindi, but write ONLY in Roman/English script (Hinglish). Do NOT use any Devanagari script at all. Every Hindi word must be spelled phonetically using English letters. Example: write "Aapka swagat hai" not "आपका स्वागत है", write "Aapka naam kya hai?" not "आपका नाम क्या है?".
+
+  // Build only the non-empty fields to avoid sending empty strings to the model
+  const contentToTranslate: Record<string, string> = {};
+  if (content.systemPrompt) contentToTranslate.systemPrompt = content.systemPrompt;
+  if (content.firstMessage) contentToTranslate.firstMessage = content.firstMessage;
+  if (content.knowledgeBase) contentToTranslate.knowledgeBase = content.knowledgeBase;
+
+  const promptWithContent = (isHinglish
+    ? `You are a professional translator. Translate the following voice AI agent content into Hindi, but write ONLY in Roman/English script (Hinglish). Do NOT use any Devanagari script at all. Every Hindi word must be spelled phonetically using English letters. Example: write "Aapka swagat hai" not "आपका स्वागत है".
 Keep all placeholder variables like {{COMPANY_NAME}}, {{USER_NAME}} exactly as-is (do not translate them).
 Keep brand names, business names, and proper nouns in their original English form.
-Return ONLY a JSON object with keys: systemPrompt, firstMessage, knowledgeBase.
+Return ONLY a JSON object with exactly these keys (include a key only if it was provided): systemPrompt, firstMessage, knowledgeBase.
 
 Content to translate:
-${JSON.stringify(content, null, 2)}`
+${JSON.stringify(contentToTranslate, null, 2)}`
     : `You are a professional translator. Translate the following voice AI agent content into ${targetLanguage}.
 Keep all placeholder variables like {{COMPANY_NAME}}, {{USER_NAME}} exactly as-is (do not translate them).
 Keep technical terms, brand names, and proper nouns in their original form.
-Return ONLY a JSON object with keys: systemPrompt, firstMessage, knowledgeBase.
+Return ONLY a JSON object with exactly these keys (include a key only if it was provided): systemPrompt, firstMessage, knowledgeBase.
 
 Content to translate:
-${JSON.stringify(content, null, 2)}`;
+${JSON.stringify(contentToTranslate, null, 2)}`);
 
   const result = await model.generateContent({
-    contents: [{ role: "user", parts: [{ text: prompt }] }],
+    contents: [{ role: "user", parts: [{ text: promptWithContent }] }],
     generationConfig: { responseMimeType: "application/json" }
   });
 
   const text = result.response.text().trim();
   const cleaned = text.replace(/^```json\s*/i, '').replace(/```\s*$/i, '').trim();
-  return JSON.parse(cleaned);
+  const parsed = JSON.parse(cleaned);
+  // Return original values for any fields that were skipped (empty input)
+  return {
+    systemPrompt: parsed.systemPrompt ?? content.systemPrompt,
+    firstMessage: parsed.firstMessage ?? content.firstMessage,
+    knowledgeBase: parsed.knowledgeBase ?? content.knowledgeBase,
+  };
 }
 
 /**
