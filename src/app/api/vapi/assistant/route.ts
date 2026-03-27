@@ -23,8 +23,8 @@ export async function POST(req: Request) {
             .replace(/{{Company name}}/gi, companyName)
             .replace(/{{ROLE_DESCRIPTION}}/g, roleDesc);
 
-        let firstMessage = (config.vapi.firstMessage || (config.vapi.userName 
-            ? `Hello ${config.vapi.userName}! Thank you for calling ${companyName}. How can I help you today?` 
+        let firstMessage = (config.vapi.firstMessage || (config.vapi.userName
+            ? `Hello ${config.vapi.userName}! Thank you for calling ${companyName}. How can I help you today?`
             : `Hello, thank you for calling ${companyName}!`))
             .replace(/{{COMPANY_NAME}}/g, companyName)
             .replace(/{{Company name}}/gi, companyName)
@@ -32,6 +32,20 @@ export async function POST(req: Request) {
             .replace(/{{Name}}/gi, config.vapi.userName || 'there')
             .replace(/{{User Name}}/gi, config.vapi.userName || 'there')
             .replace(/{{First Name}}/gi, (config.vapi.userName || 'there').split(' ')[0]);
+
+        // Safety net: VAPI PlayAI/Rime/PlayHT voices cannot speak Devanagari — they produce garbled audio.
+        // If saved content contains Devanagari AND the voice is not Azure/ElevenLabs, auto-sanitize.
+        const hasDevanagari = (text: string) => /[\u0900-\u097F]/.test(text);
+        const voiceProviderEarly = String(config.vapi.voiceProvider || 'vapi').toLowerCase();
+        const isNativeSpeakingVoice = voiceProviderEarly === 'azure' || voiceProviderEarly === 'elevenlabs';
+        if (!isNativeSpeakingVoice && hasDevanagari(firstMessage)) {
+            // Replace Devanagari first message with a safe Hinglish fallback
+            firstMessage = `${companyName} mein aapka swagat hai! Main aaj aapki kaise madad kar sakta hoon?`;
+        }
+        if (!isNativeSpeakingVoice && hasDevanagari(systemPrompt)) {
+            // Prepend a strong override so the AI ignores Devanagari instructions in the prompt body
+            systemPrompt = `[CRITICAL OVERRIDE — READ FIRST]\nThis system prompt may contain Hindi (Devanagari) text. IGNORE any language in Devanagari. You MUST respond ONLY in Hinglish — Hindi words spelled in Roman/English script. NEVER output Devanagari characters. Example: write "Aapki reservation confirm ho gayi hai" not "आपकी रिजर्वेशन कन्फर्म हो गई है". All tool call results (dates, times, slot lists) must also be spoken in Hinglish Roman script.\n\n` + systemPrompt;
+        }
 
         // Normalize model names to VAPI-accepted values; fixes stale/renamed model IDs
         const VALID_OPENAI_MODELS = new Set(['gpt-5.2','gpt-5.2-chat-latest','gpt-5.1','gpt-5.1-chat-latest','gpt-5','gpt-5-chat-latest','gpt-5-mini','gpt-5-nano','gpt-4.1','gpt-4.1-mini','gpt-4.1-nano','gpt-4.1-2025-04-14','gpt-4.1-mini-2025-04-14','gpt-4.1-nano-2025-04-14','chatgpt-4o-latest','o3','o3-mini','o4-mini','o1-mini','o1-mini-2024-09-12','gpt-4o','gpt-4o-mini','gpt-4o-mini-2024-07-18','gpt-4o-2024-05-13','gpt-4o-2024-08-06','gpt-4o-2024-11-20','gpt-4-turbo','gpt-4-turbo-2024-04-09','gpt-4-turbo-preview','gpt-4-0125-preview','gpt-4-1106-preview','gpt-4','gpt-4-0613','gpt-3.5-turbo','gpt-3.5-turbo-0125','gpt-3.5-turbo-1106','gpt-3.5-turbo-16k','gpt-3.5-turbo-0613']);
