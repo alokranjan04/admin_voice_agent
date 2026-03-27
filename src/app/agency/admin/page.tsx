@@ -62,7 +62,7 @@ const VAPI_MODEL_PROVIDERS = [
 
 // Models validated against VAPI's accepted model list (as of 2026-03)
 const VAPI_MODELS: { [provider: string]: string[] } = {
-    'openai': ['gpt-5.2', 'gpt-5.1', 'gpt-5', 'gpt-5-mini', 'gpt-5-nano', 'gpt-4.1', 'gpt-4.1-mini', 'gpt-4.1-nano', 'gpt-4.1-2025-04-14', 'gpt-4.1-mini-2025-04-14', 'chatgpt-4o-latest', 'gpt-4o', 'gpt-4o-mini', 'o4-mini', 'o3', 'o3-mini', 'gpt-4-turbo', 'gpt-3.5-turbo'],
+    'openai': ['gpt-4o', 'gpt-4o-mini', 'gpt-4.1', 'gpt-4.1-mini', 'gpt-4.1-nano', 'chatgpt-4o-latest', 'o3', 'o3-mini', 'o4-mini', 'gpt-4-turbo', 'gpt-3.5-turbo'],
     'google': ['gemini-2.5-pro', 'gemini-2.5-flash', 'gemini-2.5-flash-lite', 'gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-1.5-pro'],
     'groq': ['llama-3.3-70b-versatile', 'llama-3.1-70b-versatile', 'llama-3.1-8b-instant', 'mixtral-8x7b-32768'],
     'anthropic': ['claude-opus-4-5', 'claude-sonnet-4-5', 'claude-haiku-4-5', 'claude-3-5-sonnet-20241022', 'claude-3-5-haiku-20241022', 'claude-3-opus-20240229'],
