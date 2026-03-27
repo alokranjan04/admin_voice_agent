@@ -191,8 +191,6 @@ You are a sharp, high-level enterprise consultant focused on identifying growth 
                 provider: "deepgram",
                 model: "nova-3",
                 language: "en-IN",
-                smartFormat: true,
-                keywords: ["AeroHyre", "TellYourJourney", "aviation", "Alok", "AI", "Sutherland", "Voice", "Support", "Strategic", "Book", "Demo", "Booking", "gmail", "outlook", "yahoo", "hotmail", "icloud"]
             },
             firstMessage: "Welcome to Sutherland Voice Support! I'm here to build your autonomous growth roadmap for your business. To start creating your strategy, could I get your name?",
             silenceTimeoutSeconds: 60,

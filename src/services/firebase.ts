@@ -1,5 +1,5 @@
 import { initializeApp } from "firebase/app";
-import { getFirestore, doc, setDoc, getDoc, collection, getDocs } from "firebase/firestore";
+import { getFirestore, doc, setDoc, getDoc, collection, getDocs, deleteDoc } from "firebase/firestore";
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut } from "firebase/auth";
 import { AgentConfiguration, BrandingConfig } from "../types";
 
@@ -318,4 +318,14 @@ export const getAgentConfig = async (agentId: string) => {
     console.error("Error fetching agent config:", error);
   }
   return null;
+};
+
+/**
+ * Permanently deletes an agent from Firebase.
+ */
+export const deleteAgentConfig = async (agentId: string): Promise<void> => {
+  if (!db || !auth.currentUser) throw new Error("Not authenticated.");
+  const orgId = getOrgId(auth.currentUser);
+  const agentRef = doc(db, `organizations/${orgId}/agents`, agentId);
+  await deleteDoc(agentRef);
 };

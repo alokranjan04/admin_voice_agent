@@ -1,5 +1,12 @@
 import { GoogleGenerativeAI, SchemaType } from "@google/generative-ai";
 import { AgentConfiguration, IndustryTemplate } from "../types";
+import { 
+  GEMINI_CONFIG_GEN_SYSTEM_PROMPT, 
+  EXTRACT_SERVICES_PROMPT, 
+  SUMMARIZE_RESEARCH_PROMPT, 
+  GENERATE_FAQ_PROMPT, 
+  GENERATE_QUEST_PROMPT 
+} from "../config/prompts";
 
 // Helper to reliably get env vars in different environments (Vite, Webpack, Node)
 const getEnv = (key: string) => {
@@ -43,23 +50,10 @@ export async function generateConfigFromDescription(description: string, researc
   // Explicitly use v1 API for broader model support and stability
   const genAI = new GoogleGenerativeAI(apiKey);
   // Current 2026 models: Gemini 2.0 is the stable standard
-  const modelNames = ["gemini-2.0-flash", "gemini-2.0-flash-lite", "gemini-1.5-flash", "gemini-1.5-pro"];
+  const modelNames = ["gemini-2.0-flash", "gemini-2.5-flash"];
 
   const systemInstruction = `
-    You are an expert Voice AI Configuration Admin.
-    Your job is to generate a structured JSON configuration for a Voice AI agent based on a short business description provided by the user.
-    
-    If "REAL WORLD RESEARCH DATA" is provided, prioritize that information. If the research data is missing specific fields (like specific staff names or detailed hours), use your knowledge to invent plausible ones that fit the context.
-    
-    Populate the following sections:
-    - Business Metadata
-        - Services (Invent plausible services with durations)
-    - Locations (Invent a plausible location, including address)
-        - Resources (Invent staff or rooms if applicable)
-    - Data Fields (Recommend mandatory fields)
-    - Conversation Rules (Match the tone to the business type)
-        - Safety Boundaries (Relevant to the industry)
-        - VAPI Configuration (Crucial: Generate a specialized System Prompt and Knowledge Base)
+    ${GEMINI_CONFIG_GEN_SYSTEM_PROMPT}
     
     ${template ? `
     INDUSTRY TEMPLATE CONTEXT:
@@ -72,39 +66,6 @@ export async function generateConfigFromDescription(description: string, researc
     
     Please refine and expand upon these template items to fit the specific business description provided.
     ` : ''}
-
-    FOR VAPI SYSTEM PROMPT:
-    Use this EXACT template, replacing {{COMPANY_NAME}} and {{ROLE_DESCRIPTION}} with generated values appropriate for the business:
-    "AI Assistant is a professional and empathetic voice interface for {{COMPANY_NAME}}. Your role is to act as a {{ROLE_DESCRIPTION}}, providing clear, helpful, and efficient support to users. You are engineered to accurately interpret spoken queries, adapt to emotional cues, and respond naturally through audio.
-    
-    Maintain a focus on active listening and clear communication. If a user's concern is complex, ask thoughtful, open-ended clarifying questions. Always strive to uphold the highest standards of service and resolve issues with patience and professionalism.
-    
-    CRITICAL TOOL USAGE:
-    - When you call a tool to check availability or find slots, and the tool returns available times or data, you MUST present these specific options to the user clearly.
-    - Ask the user to confirm a specific time before proceeding to book.
-    - Do not simply say 'there are no slots' or 'I couldn't retrieve info' if the tool result indicates that slots were found. Read the slots from the tool response.
-    - If a slot is unavailable, explain why (e.g., 'Outside business hours') based on the tool result.
-    - NEVER hallucinate times. Only use times explicitly returned by tools.
-    
-    Primary Mode: Voice interaction. Ensure your responses are concise and optimized for spoken conversation."
-    
-    FOR VAPI KNOWLEDGE BASE:
-    Generate 10 FAQs specific to this business in Markdown format.
-    
-    FOR VAPI VOICE SETTINGS:
-    Always use "vapi" for voiceProvider and "Mia" for voiceId.
-    
-    FOR VAPI MODEL SETTINGS:
-    Use "openai" for provider and "gpt-4o-mini" for model by default, but you can also use these providers if appropriate: "groq", "deepseek", "google", "anthropic", "mistral", "perplexity-ai", "xai".
-    Set temperature to 0.3.
-    
-    FOR VAPI TRANSCRIBER SETTINGS:
-    Always use "deepgram" for provider and "nova-3" for model by default for high accuracy. Set language to "en-IN".
-
-    FOR VAPI MESSAGE SETTINGS:
-    Generate a "firstMessage" that is personalized to the business and the user (e.g., "Hello {{USER_NAME}}, thanks for calling GreenThumb Atlanta, how can I help you today?"). Use the {{USER_NAME}} placeholder to indicate where the user's name should be inserted. Ensure NO placeholders like {{COMPANY_NAME}} remain in the firstMessage, BUT DO keep {{USER_NAME}}.
-
-    Ensure strict adherence to the schema provided.
   `;
 
   const schema = {
@@ -241,26 +202,65 @@ export async function generateConfigFromDescription(description: string, researc
       return processResult(result);
     } catch (e: any) {
       lastError = e;
-      const status = e.status || (e.message?.match(/\[(\d+)\s*\]/) || [])[1];
-      if (status === '404' || e.message?.includes('not supported')) {
-        console.warn(`[Gemini Service] Model ${modelName} not found or not supported, skipping...`);
+      const msgStr = String(e.message || '');
+      const statusCode = e.status ?? Number((msgStr.match(/\[(\d+)\s*\]/) || [])[1]);
+      if (statusCode === 404 || msgStr.includes('not found') || msgStr.includes('not supported')) {
+        console.warn(`[Gemini Service] Model ${modelName} deprecated/not found, skipping...`);
         continue;
       }
-      if (status === '429') {
-        const resetMsg = e.message?.includes('49s') ? " Wait ~50s." : " Daily/Minute cap reached.";
-        console.warn(`[Gemini Service] Quota exceeded for ${modelName}.${resetMsg} Trying next model...`);
+      if (statusCode === 429) {
+        console.warn(`[Gemini Service] Quota exceeded for ${modelName}, trying next...`);
         continue;
       }
-      console.error(`[Gemini Service] Unexpected error with ${modelName}:`, e.message);
-      continue;
+      if (statusCode === 503 || statusCode === 502 || statusCode === 500 || msgStr.includes('unavailable') || msgStr.includes('overloaded')) {
+        console.warn(`[Gemini Service] ${modelName} temporarily unavailable (${statusCode}), trying next...`);
+        continue;
+      }
+      // For auth/schema/bad-request errors, throw immediately with the real message
+      throw new Error(`Gemini (${modelName}) error [${statusCode || 'unknown'}]: ${msgStr}`);
     }
   }
 
-  if (lastError?.status === '429' || lastError?.message?.includes('429')) {
-    const isFreeTierErr = lastError.message.includes('free_tier');
-    throw new Error(`Gemini API Quota Exceeded. ${isFreeTierErr ? "Error reports 'Free Tier' usage even if you have a Pro plan. Please verify that your API Key in .env matches a project with 'Pay-as-you-go' enabled in Google AI Studio." : "Rate limit reached."} Visit ai.google.dev to check your plan and project settings.`);
+  const lastMsg = String(lastError?.message || '');
+  if (lastMsg.includes('429') || lastMsg.includes('quota')) {
+    const isFreeTierErr = lastMsg.includes('free_tier');
+    throw new Error(`Gemini API Quota Exceeded. ${isFreeTierErr ? "Verify your API Key is linked to a Pay-as-you-go project in Google AI Studio." : "Rate limit reached."} Visit ai.google.dev to check your plan.`);
+  }
+  if (lastMsg.includes('503') || lastMsg.includes('unavailable') || lastMsg.includes('overloaded')) {
+    throw new Error('Gemini API is temporarily unavailable. Please wait a moment and try again.');
   }
   throw lastError || new Error("All Gemini models failed.");
+}
+
+/**
+ * Translates agent content (system prompt, first message, knowledge base) to a target language.
+ */
+export async function translateAgentContent(
+  content: { systemPrompt: string; firstMessage: string; knowledgeBase: string },
+  targetLanguage: string
+): Promise<{ systemPrompt: string; firstMessage: string; knowledgeBase: string }> {
+  const apiKey = getGeminiApiKey();
+  if (!apiKey) throw new Error("Gemini API key missing.");
+
+  const genAI = new GoogleGenerativeAI(apiKey);
+  const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" }, { apiVersion: 'v1beta' });
+
+  const prompt = `You are a professional translator. Translate the following voice AI agent content into ${targetLanguage}.
+Keep all placeholder variables like {{COMPANY_NAME}}, {{USER_NAME}} exactly as-is (do not translate them).
+Keep technical terms, brand names, and proper nouns in their original form.
+Return ONLY a JSON object with keys: systemPrompt, firstMessage, knowledgeBase.
+
+Content to translate:
+${JSON.stringify(content, null, 2)}`;
+
+  const result = await model.generateContent({
+    contents: [{ role: "user", parts: [{ text: prompt }] }],
+    generationConfig: { responseMimeType: "application/json" }
+  });
+
+  const text = result.response.text().trim();
+  const cleaned = text.replace(/^```json\s*/i, '').replace(/```\s*$/i, '').trim();
+  return JSON.parse(cleaned);
 }
 
 /**
@@ -296,17 +296,7 @@ export async function extractServicesFromResearch(companyName: string, researchD
     }
   }, { apiVersion: 'v1' });
 
-  const prompt = `
-    Based on the following research data for "${companyName}", identify exactly 3-4 key services or features that a Voice AI agent should handle.
-    For each, provide a short professional name and a 1-sentence description of how the AI helps.
-    
-    RESEARCH DATA:
-    ${JSON.stringify(researchData).substring(0, 10000)}
-    
-    Example for a Restaurant:
-    - Name: Table Reservations
-    - Description: AI handles dynamic booking requests and checks real-time availability.
-  `;
+  const prompt = EXTRACT_SERVICES_PROMPT(companyName, researchData);
 
   try {
     const result = await model.generateContent(prompt);
@@ -329,29 +319,7 @@ export async function summarizeBusinessResearch(companyName: string, description
   const genAI = new GoogleGenerativeAI(apiKey);
   const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" }, { apiVersion: 'v1' });
 
-  const prompt = `
-    You are a professional business analyst. I am providing you with raw search results (Google Search + Google Places) for a company called "${companyName}".
-    
-    USER'S INITIAL DESCRIPTION: "${description}"
-    
-    RAW RESEARCH DATA:
-    ${JSON.stringify(researchData, null, 2)}
-    
-    YOUR TASK:
-    Extract and summarize the most relevant information for a Voice AI Agent to use. 
-    
-    CRITICAL PRIORITY:
-    1. EXACT Menu items, Services, and Products (with prices if available). If it's a restaurant, list specific dishes.
-    2. Operational details (Exact Address, Opening Hours, Contact info).
-    3. Customer Sentiment & Reviews: Summarize what customers love and what they complain about. Mention specific praise (e.g., "fast service", "great pizza").
-    4. Core value proposition and unique selling points.
-    
-    OUTPUT FORMAT:
-    Return a clean, structured Markdown summary. 
-    Use headers like "### Menu & Services", "### Customer Feedback", and "### Operational Details".
-    Be concise but thorough with facts. Avoid adjectives and marketing fluff.
-    Limit the output to 1500 characters.
-  `;
+  const prompt = SUMMARIZE_RESEARCH_PROMPT(companyName, description, researchData);
 
   console.log(`[Gemini Research] Summarizing for ${companyName}. Raw data length: ${JSON.stringify(researchData).length}`);
 
@@ -399,21 +367,7 @@ export async function generateIndustryFAQs(companyName: string, industry: string
 
   const faqContext = context && context.length > 5 ? context : `A professional business in the ${industry} industry focusing on ${focalArea}. They provide high-quality services and value customer satisfaction.`;
 
-  const prompt = `
-    You are a professional business consultant. Generate 4-5 common questions and answers (FAQ) for a customer interacting with an AI assistant from a company called "${companyName}".
-    
-    Industry: ${industry}
-    Focal Area (Support/Sales/Ops): ${focalArea}
-    Research Context: ${faqContext}
-    
-    The FAQs should be professional, helpful, and specific to the industry and focal area. 
-    Format the output as a clean Markdown list with "Q:" and "A:".
-    
-    Example:
-    ### Common Questions
-    **Q: What is the typical turnaround time?**
-    **A: We typically process all requests within 24 business hours.**
-  `;
+  const prompt = GENERATE_FAQ_PROMPT(companyName, industry, focalArea, faqContext);
 
   console.log(`[Gemini FAQ] Starting FAQ generation for ${companyName}. Context length: ${faqContext.length}`);
   try {
@@ -439,32 +393,7 @@ export async function generateCustomerIntentQuestionnaire(companyName: string, i
 
   const questContext = context && context.length > 5 ? context : `Standard business operations for ${companyName} in the ${industry} industry. Focus on high-value customer interactions and efficient troubleshooting.`;
 
-  const prompt = `
-    You are a Strategic Business Architect. I need you to generate a "Customer Intent Questionnaire" for a company called "${companyName}".
-    
-    Context:
-    - Industry: ${industry}
-    - Focal Area: ${focalArea}
-    - Business Knowledge Base: ${questContext}
-    
-    YOUR GOAL:
-    Create a deep, strategic questionnaire in Markdown format that identifies the 5 most critical customer "intents" or "reasons for calling" and how the AI should perfectly handle them.
-    
-    STRUCTURE:
-    ### 📋 Strategic Intent Questionnaire
-    
-    **Intent 1: [Specific Customer Need]**
-    *   **Common Question:** "[Example of what a user would say]"
-    *   **Strategic Response:** "[How the AI should handle this to drive ROI/Resolution]"
-    
-    (Repeat for 5 intents)
-    
-    **Strategic Guidelines for the Bot:**
-    - [Guideline 1]
-    - [Guideline 2]
-    
-    Make it professional, deeply relevant to the specific business, and highly functional.
-  `;
+  const prompt = GENERATE_QUEST_PROMPT(companyName, industry, focalArea, questContext);
 
   console.log(`[Gemini Quest] Starting Questionnaire generation for ${companyName}. Context length: ${questContext.length}`);
   try {

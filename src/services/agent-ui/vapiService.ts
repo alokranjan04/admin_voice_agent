@@ -189,13 +189,26 @@ export class VapiService {
         });
 
         this.vapi.on('error', (error: any) => {
-            console.error('Vapi Error:', error);
-            let msg = JSON.stringify(error);
-            if (error.message?.msg) msg = error.message.msg;
-            else if (error.error?.msg) msg = error.error.msg;
-            else if (typeof error === 'string') msg = error;
-
-            this.onLog({ type: 'system', text: `Error: ${msg}`, timestamp: new Date() });
+            // Recursively extract the deepest meaningful string, handles arrays and nested objects
+            const extractMsg = (obj: any, depth = 0): string => {
+                if (depth > 6) return '';
+                if (typeof obj === 'string') return obj;
+                if (Array.isArray(obj)) return obj.map(i => extractMsg(i, depth + 1)).filter(Boolean).join('; ');
+                if (obj && typeof obj === 'object') {
+                    return extractMsg(obj.message, depth + 1)
+                        || extractMsg(obj.msg, depth + 1)
+                        || extractMsg(obj.error, depth + 1)
+                        || (obj.statusCode ? `HTTP ${obj.statusCode}` : '');
+                }
+                return '';
+            };
+            let msg = extractMsg(error) || 'Unknown VAPI error — check browser console for details.';
+            // Translate known infrastructure errors into actionable messages
+            if (msg.toLowerCase().includes('ejection') || msg.toLowerCase().includes('meeting has ended')) {
+                msg = 'Call disconnected by server. This usually means the AI model (e.g. gpt-5.2) is not available in your VAPI plan — try switching to gpt-4o in admin settings and re-validating.';
+            }
+            console.error('[Vapi Error] Full object:', JSON.stringify(error, null, 2), '| Extracted:', msg);
+            this.onLog({ type: 'system', text: `Vapi Error: ${msg}`, timestamp: new Date() });
             this.onStatusChange('disconnected');
         });
     }
@@ -231,13 +244,40 @@ export class VapiService {
         if (options.assistantId) {
             try {
                 this.onLog({ type: 'system', text: `Starting session with Assistant ID: ${options.assistantId}`, timestamp: new Date() });
-                await this.vapi.start(options.assistantId, {
+
+                const sessionName = this.sessionMetadata.userName || this.sessionMetadata.name || '';
+                const sessionEmail = this.sessionMetadata.userEmail || this.sessionMetadata.email || '';
+                const sessionPhone = this.sessionMetadata.userPhone || this.sessionMetadata.phone || '';
+
+                const startOptions: any = {
                     metadata: {
-                        leadName: this.sessionMetadata.name || '',
-                        leadEmail: this.sessionMetadata.email || '',
-                        leadPhone: this.sessionMetadata.phone || ''
+                        leadName: sessionName,
+                        leadEmail: sessionEmail,
+                        leadPhone: sessionPhone
+                    },
+                    // variableValues safely substitutes {{leadName}} etc. in the saved system prompt
+                    // WITHOUT replacing the model spec (tools, temperature, knowledge base stay intact)
+                    variableValues: {
+                        leadName: sessionName || 'Unknown',
+                        leadEmail: sessionEmail || 'Unknown',
+                        leadPhone: sessionPhone || 'Unknown',
                     }
-                });
+                };
+                console.log('[Vapi] Injecting user context via variableValues:', { sessionName, sessionEmail, sessionPhone });
+
+                // Azure TTS requires Azure credentials configured in the VAPI dashboard.
+                // Override Azure voice to VAPI PlayAI so web demo calls always work without extra setup.
+                const savedVoiceProvider = String(this.currentConfig?.vapi?.voiceProvider || '').toLowerCase();
+                if (savedVoiceProvider === 'azure') {
+                    const vapiValidVoices = ["Clara","Godfrey","Elliot","Kylie","Rohan","Lily","Savannah","Hana","Cole","Harry","Paige","Spencer","Nico","Kai","Emma","Sagar","Neil","Leah","Tara","Jess","Leo","Dan","Mia","Zac","Zoe"];
+                    const savedVoiceId = String(this.currentConfig?.vapi?.voiceId || '');
+                    // Use stored voiceId if it's a valid VAPI PlayAI voice, otherwise default to Rohan
+                    const fallbackVoiceId = vapiValidVoices.includes(savedVoiceId) ? savedVoiceId : 'Rohan';
+                    startOptions.voice = { provider: 'vapi', voiceId: fallbackVoiceId };
+                    console.log('[Vapi] Azure voice detected — overriding to VAPI PlayAI for web call:', fallbackVoiceId);
+                }
+
+                await this.vapi.start(options.assistantId, startOptions);
                 return;
             } catch (e: any) {
                 console.error("Failed to start Vapi call by ID", e);
@@ -266,6 +306,24 @@ export class VapiService {
             hour: '2-digit', minute: '2-digit', timeZoneName: 'short'
         });
 
+        // Build a strict language directive based on configured transcriber language
+        const LANG_NAMES: Record<string, string> = {
+            'hi': 'Hindi', 'ar': 'Arabic', 'fr': 'French', 'de': 'German', 'es': 'Spanish',
+            'pt': 'Portuguese', 'zh': 'Chinese', 'ja': 'Japanese', 'ko': 'Korean',
+            'it': 'Italian', 'nl': 'Dutch', 'pl': 'Polish', 'ru': 'Russian',
+            'ta': 'Tamil', 'te': 'Telugu', 'bn': 'Bengali', 'gu': 'Gujarati',
+            'mr': 'Marathi', 'pa': 'Punjabi', 'ur': 'Urdu',
+        };
+        const transcriberLangCode = String(vapiConf?.transcriber?.language || 'en').split('-')[0].toLowerCase();
+        const configuredLangName = LANG_NAMES[transcriberLangCode];
+        const voiceProviderForLang = String(vapiConf?.voiceProvider || 'vapi').toLowerCase();
+        const isNativeHindiVoice = voiceProviderForLang === 'azure' || voiceProviderForLang === '11labs';
+        const languageDirective = configuredLangName
+            ? (transcriberLangCode === 'hi' && !isNativeHindiVoice
+                ? `10. LANGUAGE — HINGLISH MODE: The user prefers Hindi. Respond in Hinglish — use Hindi words and sentence structure, but write ONLY in Roman/English script (NOT Devanagari). Example: say "Aapka naam kya hai?" not "आपका नाम क्या है?". NEVER write Devanagari script. This keeps the voice clear and natural.`
+                : `10. LANGUAGE — STRICT RULE: You MUST ALWAYS respond in ${configuredLangName}. NEVER switch to English even if the user speaks in English.`)
+            : `10. LANGUAGE: Respond in English. Mirror the user's language if they switch.`;
+
         const mandatoryDirectives = `[MANDATORY RELIABILITY DIRECTIVES - READ THIS FIRST]
 1. TODAY'S DATE: The current date and time is ${currentDateTimeStr}.
 2. TRUST TOOLS: You MUST trust the result of your tools. If a tool returns 'isAvailable: true' or 'hasSlots: true', the slot is 100% AVAILABLE.
@@ -277,14 +335,14 @@ export class VapiService {
    - Name: ${this.sessionMetadata.name || this.sessionMetadata.userName || "Unknown"}
    - Phone: ${this.sessionMetadata.phone || this.sessionMetadata.userPhone || "Unknown"}
    - Email: ${this.sessionMetadata.email || this.sessionMetadata.userEmail || "Unknown"}
-   
+
    RULE: The user has ALREADY provided and verified their Name, Phone, and Email via our secure pre-call form.
    RULE: If Name, Phone, or Email are provided (not 'Unknown'), you MUST NOT ask for them.
    RULE: Use these values automatically for any bookings or tool calls. DO NOT re-confirm them with the user.
    RULE: Only ask for a field if its value is 'Unknown'.
 8. PHONETIC HINT: If the user's name is "Amrita", ensure you pronounce it clearly as "Am-ree-ta".
 9. BOOKING RULE: Once the user selects or confirms a time, perform 'createEvent' immediately using the pre-verified context.
-10. LANGUAGE: Proficient in English and Hindi. Use the user's language.\n\n`;
+${languageDirective}\n\n`;
 
         let systemPrompt = "";
         if (vapiConf?.systemPrompt) {
@@ -325,12 +383,14 @@ export class VapiService {
             }
             voiceId = String(voiceId);
 
-            const vapiVoices = ["Elliot", "Kylie", "Rohan", "Lily", "Savannah", "Hana", "Neha", "Cole", "Harry", "Paige", "Spencer", "Leah", "Tara", "Jess", "Leo", "Dan", "Mia", "Zac", "Zoe"];
+            // Keep in sync with server-side VALID_VAPI_VOICE_IDS in assistant/route.ts
+            const vapiVoices = ["Clara","Godfrey","Elliot","Kylie","Rohan","Lily","Savannah","Hana","Cole","Harry","Paige","Spencer","Nico","Kai","Emma","Sagar","Neil","Leah","Tara","Jess","Leo","Dan","Mia","Zac","Zoe"];
             const azureVoices = ["Andrew", "Brian", "Emma"];
 
             if (voiceProvider === 'vapi') {
                 const match = vapiVoices.find(v => v.toLowerCase() === voiceId.toLowerCase());
-                if (match) voiceId = match;
+                // If no match (e.g. stale ElevenLabs ID stored with vapi provider), fall back to Rohan (Indian Hindi)
+                voiceId = match || 'Rohan';
             } else if (voiceProvider === 'azure') {
                 if (azureVoices.some(v => v.toLowerCase() === voiceId.toLowerCase())) voiceId = voiceId.toLowerCase();
             } else if (voiceProvider === 'openai') {
@@ -370,14 +430,25 @@ export class VapiService {
 
             console.log("[Personalization] First message after replacement:", firstMessage);
 
-            let modelName = vapiConf?.model;
-            if (!modelName) {
-                if (modelProvider === 'openai') modelName = 'gpt-4o';
-                else if (modelProvider === 'azure-openai') modelName = 'gpt-4o';
-                else if (modelProvider === 'google') modelName = 'gemini-1.5-flash';
-                else if (modelProvider === 'anthropic') modelName = 'claude-3-5-sonnet-20240620';
-                else modelName = 'gpt-4o';
+            // Strict per-provider model validation — prevents stale cross-provider models from Firebase
+            const VALID_OPENAI_MODELS = ['gpt-5.2','gpt-5.1','gpt-5','gpt-5-mini','gpt-5-nano','gpt-4.1','gpt-4.1-mini','gpt-4.1-nano','gpt-4o','gpt-4o-mini','gpt-4-turbo','gpt-4','gpt-3.5-turbo','chatgpt-4o-latest','o3','o3-mini','o4-mini','o1-mini'];
+            const VALID_GOOGLE_MODELS = ['gemini-2.5-pro','gemini-2.5-flash','gemini-2.0-flash','gemini-2.0-flash','gemini-1.5-flash'];
+            const VALID_ANTHROPIC_MODELS = ['claude-3-5-sonnet-20240620','claude-3-5-haiku-20241022','claude-3-opus-20240229','claude-3-sonnet-20240229','claude-3-haiku-20240307'];
+
+            let modelName = String(vapiConf?.model || '').trim();
+            if (modelProvider === 'openai' || modelProvider === 'azure-openai') {
+                const isValid = VALID_OPENAI_MODELS.some(m => modelName.startsWith(m));
+                if (!isValid) modelName = 'gpt-4o-mini'; // Safe, cheap fallback
+            } else if (modelProvider === 'google') {
+                const isValid = VALID_GOOGLE_MODELS.some(m => modelName.startsWith(m));
+                if (!isValid) modelName = 'gemini-2.0-flash';
+            } else if (modelProvider === 'anthropic') {
+                const isValid = VALID_ANTHROPIC_MODELS.some(m => modelName.startsWith(m));
+                if (!isValid) modelName = 'claude-3-5-haiku-20241022';
+            } else {
+                if (!modelName) modelName = 'gpt-4o-mini';
             }
+
 
             const startParams: any = {
                 firstMessage: firstMessage,
@@ -464,34 +535,61 @@ export class VapiService {
                         }
                     ]
                 },
-                voice: { provider: voiceProvider as any, voiceId: voiceId },
-                transcriber: {
-                    provider: (vapiConf?.transcriber?.provider || "deepgram") as any,
-                    model: vapiConf?.transcriber?.model || "nova-3",
-                    language: (() => {
-                        const lang = vapiConf?.transcriber?.language || "en-IN";
-                        if (lang.toLowerCase() === 'en-in') return 'en-IN';
-                        if (lang.toLowerCase() === 'en-us') return 'en-US';
-                        if (lang.toLowerCase() === 'en-gb') return 'en-GB';
-                        if (lang.toLowerCase() === 'en-au') return 'en-AU';
-                        if (lang.toLowerCase() === 'en-nz') return 'en-NZ';
-                        return lang;
-                    })(),
-                    smartFormat: true,
-                    keywords: [
-                        ...companyName.split(/\s+/),
-                        "Youhe",
-                        "Amrita",
-                        "Book",
-                        "Demo",
-                        "Booking",
-                        ...(this.sessionMetadata.name || "").split(/\s+/),
-                        ...(this.sessionMetadata.userName || "").split(/\s+/),
-                    ]
-                        .map(k => k.replace(/[^a-zA-Z0-9]/g, '').trim())
-                        .filter(k => k && k.length > 2)
-                        .filter((v, i, a) => a.indexOf(v) === i)
-                },
+                voice: (() => {
+                    let vp = String(vapiConf?.voiceProvider || 'vapi').toLowerCase().trim();
+                    if (!vp) vp = 'vapi';
+                    if (vp === 'elevenlabs') vp = '11labs';
+                    if (vp === 'rime') vp = 'rime-ai';
+                    // Azure TTS requires server-side credentials configured in VAPI dashboard.
+                    // It does NOT work reliably in inline web SDK calls — fall back to VAPI PlayAI.
+                    if (vp === 'azure') { vp = 'vapi'; }
+                    // Fallback voiceIds per provider to prevent empty voiceId errors
+                    const vpDefault: Record<string, string> = {
+                        'vapi': 'Rohan',
+                        '11labs': 'EXAVITQu4vr4xnSDxMaL', // Sarah (real ElevenLabs UUID)
+                        'deepgram': 'aura-asteria-en',
+                        'openai': 'alloy',
+                    };
+                    let vid = String(vapiConf?.voiceId || '').trim();
+                    // If the stored voiceId is an Azure Neural voice ID (e.g. hi-IN-SwaraNeural),
+                    // it won't work with the 'vapi' PlayAI provider — fall back to a Hindi default
+                    const vapiValidVoices = ["Clara","Godfrey","Elliot","Kylie","Rohan","Lily","Savannah","Hana","Cole","Harry","Paige","Spencer","Nico","Kai","Emma","Sagar","Neil","Leah","Tara","Jess","Leo","Dan","Mia","Zac","Zoe"];
+                    if (vp === 'vapi' && vid && !vapiValidVoices.includes(vid)) vid = 'Rohan';
+                    vid = vid || vpDefault[vp] || 'Rohan';
+                    return { provider: vp as any, voiceId: vid };
+                })(),
+                transcriber: (() => {
+                    let tProvider = String(vapiConf?.transcriber?.provider || 'deepgram').toLowerCase();
+                    // Normalize provider names to their Vapi-valid identifiers
+                    if (tProvider === 'elevenlabs') tProvider = '11labs';
+                    if (!['assembly-ai', 'azure', 'custom-transcriber', 'deepgram', '11labs', 'gladia', 'google', 'openai', 'soniox', 'talkscriber', 'speechmatics', 'cartesia'].includes(tProvider)) {
+                        tProvider = 'deepgram'; // Safe fallback
+                    }
+
+                    // Normalize language: strip region subtag ('en-IN' -> 'en')
+                    const rawLang = String(vapiConf?.transcriber?.language || 'en');
+                    const normalizedLang = rawLang.toLowerCase() === 'multilingual' ? 'en' : rawLang.split('-')[0];
+
+                    const transcriber: any = {
+                        provider: tProvider as any,
+                        language: normalizedLang,
+                    };
+
+                    // Add model with strict per-provider validation (prevent cross-provider contamination from stale data)
+                    if (tProvider === 'openai') {
+                        const rawModel = String(vapiConf?.transcriber?.model || '');
+                        transcriber.model = rawModel.includes('transcribe') ? rawModel : 'gpt-4o-mini-transcribe';
+                    } else if (tProvider === 'google') {
+                        const rawModel = String(vapiConf?.transcriber?.model || '');
+                        transcriber.model = rawModel.includes('gemini') ? rawModel : 'gemini-2.0-flash';
+                    } else if (tProvider === 'deepgram') {
+                        const rawModel = String(vapiConf?.transcriber?.model || '');
+                        const deepgramModels = ['nova-3', 'nova-2', 'nova-2-medical', 'nova-2-meeting', 'nova-2-phonecall', 'nova-2-voicemail', 'base', 'enhanced'];
+                        transcriber.model = deepgramModels.includes(rawModel) ? rawModel : 'nova-3';
+                    }
+
+                    return transcriber;
+                })(),
                 clientMessages: ["transcript", "hang", "function-call", "tool-calls", "speech-update", "metadata", "conversation-update"],
                 // Enable Server URL for Backend Tool Handling (if configured)
                 serverUrl: process.env.NEXT_PUBLIC_APP_URL
@@ -787,7 +885,7 @@ ${faqs}
 
         try {
             // 1. Try SDK (Multi-model fallback)
-            const sdkModels = ["gemini-2.0-flash", "gemini-1.5-flash", "gemini-1.5-pro"];
+            const sdkModels = ["gemini-2.0-flash", "gemini-1.5-flash"];
             for (const modelName of sdkModels) {
                 try {
                     console.log(`[Summarize] Trying SDK with ${modelName}...`);

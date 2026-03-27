@@ -335,8 +335,6 @@ Be helpful, concise, and professional. Greet ${name} by name and start serving $
                     provider: "deepgram",
                     model: "nova-3",
                     language: langCode,
-                    smartFormat: true,
-                    keywords: ["AeroHyre", "TellYourJourney", "aviation", "Alok", "AI", "Sutherland", "Voice", "Support", "Strategic", "Book", "Demo", "Booking", "gmail", "outlook", "yahoo", "hotmail", "icloud"]
                 },
                 firstMessage,
             })

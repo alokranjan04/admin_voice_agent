@@ -1,19 +1,22 @@
 import React, { useState } from 'react';
-import { User, Phone, Mail, ArrowRight, Bot, ChevronDown } from 'lucide-react';
+import { User, Phone, Mail, ArrowRight, Bot, ChevronDown, PhoneCall, Loader2 } from 'lucide-react';
 
 interface WelcomeFormProps {
     onSubmit: (data: { name: string; phone: string; email?: string }) => void;
+    onCallMe?: (data: { name: string; phone: string; email?: string }) => Promise<void>;
     businessName?: string;
     avatarUrl?: string;
 }
 
-export const WelcomeForm: React.FC<WelcomeFormProps> = ({ onSubmit, businessName = 'AI Assistant', avatarUrl }) => {
+export const WelcomeForm: React.FC<WelcomeFormProps> = ({ onSubmit, onCallMe, businessName = 'AI Assistant', avatarUrl }) => {
     const [name, setName] = useState('');
     const [countryCode, setCountryCode] = useState('+1');
     const [phone, setPhone] = useState('');
     const [email, setEmail] = useState('');
     const [errors, setErrors] = useState<{ name?: string; phone?: string; email?: string }>({});
     const [isTyping, setIsTyping] = useState(true);
+    const [isCalling, setIsCalling] = useState(false);
+    const [callStatus, setCallStatus] = useState<'idle' | 'success' | 'error'>('idle');
 
     // Welcome message typing effect
     const welcomeMessage = `Welcome! I'm your ${businessName} assistant. Before we begin, I'd like to get to know you better.`;
@@ -52,6 +55,30 @@ export const WelcomeForm: React.FC<WelcomeFormProps> = ({ onSubmit, businessName
         }
 
         onSubmit({ name: name.trim(), phone: fullPhone, email: email.trim() || undefined });
+    };
+
+    const handleCallMe = async () => {
+        const newErrors: { name?: string; phone?: string; email?: string } = {};
+        if (!name.trim()) newErrors.name = 'Name is required';
+        const fullPhone = `${countryCode}${phone.replace(/\D/g, '')}`;
+        if (!phone.trim()) newErrors.phone = 'Phone number is required';
+        else if (!validatePhone(fullPhone)) newErrors.phone = 'Please enter a valid phone number';
+        if (!email.trim()) newErrors.email = 'Email is required';
+        else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) newErrors.email = 'Please enter a valid email address';
+
+        if (Object.keys(newErrors).length > 0) { setErrors(newErrors); return; }
+        if (!onCallMe) return;
+
+        setIsCalling(true);
+        setCallStatus('idle');
+        try {
+            await onCallMe({ name: name.trim(), phone: fullPhone, email: email.trim() });
+            setCallStatus('success');
+        } catch {
+            setCallStatus('error');
+        } finally {
+            setIsCalling(false);
+        }
     };
 
     // Simulate typing effect on mount and Auto-detect timezone
@@ -195,8 +222,8 @@ export const WelcomeForm: React.FC<WelcomeFormProps> = ({ onSubmit, businessName
                         {errors.email && <p className="mt-1.5 ml-1 text-[10px] font-medium text-red-500 uppercase tracking-wide">{errors.email}</p>}
                     </div>
 
-                    {/* Submit Button */}
-                    <div className="pt-2">
+                    {/* Action Buttons */}
+                    <div className="pt-2 space-y-3">
                         <button
                             type="submit"
                             className="w-full bg-teal-600 hover:bg-teal-700 text-white font-bold py-4 px-6 rounded-2xl transition-all duration-300 flex items-center justify-center gap-3 shadow-xl shadow-teal-500/20 active:scale-[0.98]"
@@ -204,6 +231,33 @@ export const WelcomeForm: React.FC<WelcomeFormProps> = ({ onSubmit, businessName
                             Start Conversation
                             <ArrowRight className="w-5 h-5" />
                         </button>
+
+                        {onCallMe && (
+                            <button
+                                type="button"
+                                onClick={handleCallMe}
+                                disabled={isCalling}
+                                className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 text-white font-bold py-4 px-6 rounded-2xl transition-all duration-300 flex items-center justify-center gap-3 shadow-xl shadow-indigo-500/20 active:scale-[0.98]"
+                            >
+                                {isCalling ? (
+                                    <><Loader2 className="w-5 h-5 animate-spin" /> Calling you...</>
+                                ) : callStatus === 'success' ? (
+                                    <><PhoneCall className="w-5 h-5" /> Call on its way!</>
+                                ) : (
+                                    <><PhoneCall className="w-5 h-5" /> Call Me Instead</>
+                                )}
+                            </button>
+                        )}
+                        {callStatus === 'success' && (
+                            <p className="text-center text-xs text-emerald-600 font-medium">
+                                You'll receive a call on {phone} shortly.
+                            </p>
+                        )}
+                        {callStatus === 'error' && (
+                            <p className="text-center text-xs text-red-500 font-medium">
+                                Call failed. Please try again or start a web conversation.
+                            </p>
+                        )}
                     </div>
                 </form>
             </div>

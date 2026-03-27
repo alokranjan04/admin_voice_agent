@@ -15,7 +15,8 @@ import {
   ExternalLink,
   ChevronDown,
   LayoutGrid,
-  CreditCard
+  CreditCard,
+  Trash2
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -29,6 +30,7 @@ interface SidebarProps {
   isLaunching?: boolean;
   agents: any[];
   onSelectAgent: (agentId: string) => void;
+  onDeleteAgent: (agentId: string, agentName: string, e: React.MouseEvent) => void;
   branding?: {
     appName: string;
     logoUrl: string;
@@ -49,7 +51,6 @@ const NAV_ITEMS = [
   { id: 'mode', label: 'Operation Modes', icon: Settings2 },
   { id: 'vapi', label: 'VAPI Setup', icon: Settings2 },
   { id: 'calendar', label: 'Calendar & Bookings', icon: Calendar },
-  { id: 'leads', label: 'Agency Leads', icon: Users },
   { id: 'billing', label: 'Plan & Billing', icon: CreditCard },
 ];
 
@@ -64,6 +65,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   isLaunching,
   agents,
   onSelectAgent,
+  onDeleteAgent,
   branding,
   currentAgentId
 }) => {
@@ -90,19 +92,33 @@ export const Sidebar: React.FC<SidebarProps> = ({
             Organization Agents
           </label>
           <div className="space-y-1">
-            {agents.map((agent) => (
-              <button
-                key={agent.id}
-                onClick={() => onSelectAgent(agent.id)}
-                className={`w-full text-left px-2 py-1.5 rounded text-xs transition-colors flex items-center gap-2 ${agent.id === currentAgentId
-                  ? 'bg-slate-800 text-white font-medium border border-slate-700'
-                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
+            {agents.map((agent) => {
+              const agentName = agent.metadata?.businessName || agent.id;
+              return (
+                <div
+                  key={agent.id}
+                  className={`group w-full flex items-center gap-2 px-2 py-1.5 rounded text-xs transition-colors ${agent.id === currentAgentId
+                    ? 'bg-slate-800 text-white font-medium border border-slate-700'
+                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
                   }`}
-              >
-                <LayoutGrid className="w-3 h-3 text-brand-500" />
-                <span className="truncate">{agent.metadata?.businessName || agent.id}</span>
-              </button>
-            ))}
+                >
+                  <button
+                    onClick={() => onSelectAgent(agent.id)}
+                    className="flex items-center gap-2 flex-1 min-w-0 text-left"
+                  >
+                    <LayoutGrid className="w-3 h-3 text-brand-500 shrink-0" />
+                    <span className="truncate">{agentName}</span>
+                  </button>
+                  <button
+                    onClick={(e) => onDeleteAgent(agent.id, agentName, e)}
+                    className="opacity-0 group-hover:opacity-100 text-slate-500 hover:text-red-400 transition-opacity shrink-0 p-0.5 rounded"
+                    title="Delete agent"
+                  >
+                    <Trash2 className="w-3 h-3" />
+                  </button>
+                </div>
+              );
+            })}
           </div>
         </div>
       )}

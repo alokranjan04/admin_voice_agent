@@ -4,15 +4,14 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Sidebar } from '@/components/Sidebar';
 import { LoginScreen } from '@/components/LoginScreen';
 import { CalendarView } from '@/components/CalendarView';
-import LeadsDashboard from '@/components/LeadsDashboard';
-import { generateConfigFromDescription } from '@/services/geminiService';
+import { generateConfigFromDescription, translateAgentContent } from '@/services/geminiService';
 import { saveConfiguration, auth, loginWithGoogle, logoutUser, getOrgId, getBranding, saveBranding } from '@/services/firebase';
 import { firebaseService } from '@/services/agent-ui/firebaseService';
 import { createVapiAssistant } from '@/services/vapiService';
 import { researchBusiness } from '@/services/researchService';
 import { getTemplateByIndustry } from '@/services/templateService';
-import { AgentConfiguration, INITIAL_CONFIG, DeliveryModeType, SUPPORTED_INDUSTRIES, BrandingConfig, DEFAULT_BRANDING, Lead } from '@/types';
-import { Wand2, Plus, Trash2, Loader2, AlertCircle, Copy, Check, Database, Calendar, Bot, Rocket, Braces, Search, Upload, Palette, Image as ImageIcon, Phone, PhoneCall, Link, Globe, ShieldCheck, Settings2, Users, MessageSquare } from 'lucide-react';
+import { AgentConfiguration, INITIAL_CONFIG, DeliveryModeType, SUPPORTED_INDUSTRIES, BrandingConfig, DEFAULT_BRANDING } from '@/types';
+import { Wand2, Plus, Trash2, Loader2, AlertCircle, Copy, Check, Database, Calendar, Bot, Rocket, Braces, Search, Upload, Palette, Image as ImageIcon, Phone, PhoneCall, Link, Globe, ShieldCheck, Settings2, Users } from 'lucide-react';
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { loadStripe } from '@stripe/stripe-js';
 
@@ -61,15 +60,16 @@ const VAPI_MODEL_PROVIDERS = [
     { id: 'custom-llm', name: 'Custom LLM' }
 ];
 
+// Models validated against VAPI's accepted model list (as of 2026-03)
 const VAPI_MODELS: { [provider: string]: string[] } = {
-    'openai': ['gpt-4o', 'gpt-4o-mini', 'gpt-4-turbo', 'gpt-3.5-turbo', 'gpt-4o-realtime-preview', 'gpt-4o-mini-realtime-preview'],
-    'google': ['gemini-1.5-pro', 'gemini-1.5-flash', 'gemini-pro'],
-    'groq': ['llama-3.1-70b-versatile', 'llama-3.1-8b-instant', 'mixtral-8x7b-32768'],
-    'anthropic': ['claude-3-5-sonnet-20240620', 'claude-3-haiku-20240307', 'claude-3-opus-20240229'],
-    'deepseek': ['deepseek-chat', 'deepseek-coder'],
-    'mistral': ['mistral-large-latest', 'mistral-small-latest', 'pixtral-12b-2409'],
-    'perplexity-ai': ['llama-3-sonar-large-32k-online', 'llama-3-sonar-small-32k-online'],
-    'xai': ['grok-beta'],
+    'openai': ['gpt-5.2', 'gpt-5.1', 'gpt-5', 'gpt-5-mini', 'gpt-5-nano', 'gpt-4.1', 'gpt-4.1-mini', 'gpt-4.1-nano', 'gpt-4.1-2025-04-14', 'gpt-4.1-mini-2025-04-14', 'chatgpt-4o-latest', 'gpt-4o', 'gpt-4o-mini', 'o4-mini', 'o3', 'o3-mini', 'gpt-4-turbo', 'gpt-4', 'gpt-3.5-turbo'],
+    'google': ['gemini-2.5-pro', 'gemini-2.5-flash', 'gemini-2.5-flash-lite', 'gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-1.5-pro'],
+    'groq': ['llama-3.3-70b-versatile', 'llama-3.1-70b-versatile', 'llama-3.1-8b-instant', 'mixtral-8x7b-32768'],
+    'anthropic': ['claude-opus-4-5', 'claude-sonnet-4-5', 'claude-haiku-4-5', 'claude-3-5-sonnet-20241022', 'claude-3-5-haiku-20241022', 'claude-3-opus-20240229'],
+    'azure-openai': ['gpt-4.1-2025-04-14', 'gpt-4.1-mini-2025-04-14', 'gpt-4.1-nano-2025-04-14', 'gpt-4o', 'gpt-4o-mini', 'gpt-4-turbo'],
+    'deepseek': ['deepseek-chat', 'deepseek-reasoner'],
+    'mistral': ['mistral-large-latest', 'mistral-small-latest'],
+    'xai': ['grok-3', 'grok-3-fast', 'grok-beta'],
     'together-ai': ['meta-llama/Llama-3-70b-chat-hf', 'mistralai/Mixtral-8x7B-Instruct-v0.1'],
 };
 
@@ -77,13 +77,19 @@ const VAPI_VOICE_PROVIDERS = [
     { id: 'vapi', name: 'Vapi' },
     { id: 'elevenlabs', name: 'ElevenLabs' },
     { id: 'playht', name: 'PlayHT' },
-    { id: 'rime', name: 'Rime' },
+    { id: 'rime-ai', name: 'Rime' },
     { id: 'azure', name: 'Azure' },
     { id: 'openai', name: 'OpenAI' },
     { id: 'deepgram', name: 'Deepgram' },
     { id: 'cartesia', name: 'Cartesia' },
-    { id: 'lmnt', name: 'LMNT' },
-    { id: 'neets', name: 'Neets' }
+    { id: 'hume', name: 'Hume (EVC)' },
+    { id: 'neuphonic', name: 'Neuphonic' },
+    { id: 'smallest-ai', name: 'Smallest AI' },
+    { id: 'tavus', name: 'Tavus' },
+    { id: 'minimax', name: 'Minimax' },
+    { id: 'wellsaid', name: 'WellSaid' },
+    { id: 'orpheus', name: 'Orpheus' },
+    { id: 'lmnt', name: 'LMNT' }
 ];
 
 const VAPI_TRANSCRIBER_PROVIDERS = [
@@ -91,11 +97,13 @@ const VAPI_TRANSCRIBER_PROVIDERS = [
     { id: 'openai', name: 'OpenAI' },
     { id: 'gladia', name: 'Gladia' },
     { id: 'azure', name: 'Azure' },
+    { id: 'google', name: 'Google (Gemini)' },
     { id: 'talkscriber', name: 'Talkscriber' }
 ];
 
 const VAPI_TRANSCRIBER_MODELS: Record<string, string[]> = {
-    'openai': ['whisper-1', 'gpt-4o-mini-transcribe'],
+    'openai': ['gpt-4o-mini-transcribe', 'gpt-4o-transcribe'],
+    'google': ['gemini-2.0-flash', 'gemini-1.5-flash'],
     'deepgram': ['nova-3', 'nova-2', 'nova-2-medical', 'nova-2-meeting', 'nova-2-phonecall', 'nova-2-voicemail'],
     'azure': ['standard'],
     'gladia': ['standard'],
@@ -104,19 +112,33 @@ const VAPI_TRANSCRIBER_MODELS: Record<string, string[]> = {
 
 const VAPI_VOICES_BY_PROVIDER: Record<string, { id: string, name: string }[]> = {
     'vapi': [
-        { id: 'Mia', name: 'Mia' },
-        { id: 'Leah', name: 'Leah' },
-        { id: 'Zac', name: 'Zac' },
-        { id: 'Jess', name: 'Jess' },
-        { id: 'Tara', name: 'Tara' },
-        { id: 'Dan', name: 'Dan' },
-        { id: 'Zoe', name: 'Zoe' },
-        { id: 'Leo', name: 'Leo' },
-        { id: 'Savannah', name: 'Savannah' },
-        { id: 'Rohan', name: 'Rohan' },
-        { id: 'Elliot', name: 'Elliot' },
-        { id: 'Andrew', name: 'Andrew' },
-        { id: 'Lily', name: 'Lily' },
+        // --- Hindi / Indian Accent ---
+        { id: 'Rohan', name: '🇮🇳 Rohan — Hindi Male' },
+        { id: 'Sagar', name: '🇮🇳 Sagar — Hinglish Male' },
+        { id: 'Neil', name: '🇮🇳 Neil — Hindi Male' },
+        { id: 'Leah', name: '🇮🇳 Leah — Hinglish Female' },
+        // --- English (US/AU) ---
+        { id: 'Mia', name: 'Mia — Female, US' },
+        { id: 'Jess', name: 'Jess — Female, US' },
+        { id: 'Tara', name: 'Tara — Female, US' },
+        { id: 'Zoe', name: 'Zoe — Female, US' },
+        { id: 'Paige', name: 'Paige — Female, US' },
+        { id: 'Emma', name: 'Emma — Female, US' },
+        { id: 'Kylie', name: 'Kylie — Female, AU' },
+        { id: 'Savannah', name: 'Savannah — Female, US' },
+        { id: 'Hana', name: 'Hana — Female' },
+        { id: 'Lily', name: 'Lily — Female, US' },
+        { id: 'Clara', name: 'Clara — Female' },
+        { id: 'Zac', name: 'Zac — Male, US' },
+        { id: 'Dan', name: 'Dan — Male, US' },
+        { id: 'Leo', name: 'Leo — Male, US' },
+        { id: 'Cole', name: 'Cole — Male, US' },
+        { id: 'Harry', name: 'Harry — Male, US' },
+        { id: 'Elliot', name: 'Elliot — Male, US' },
+        { id: 'Spencer', name: 'Spencer — Male, US' },
+        { id: 'Nico', name: 'Nico — Male' },
+        { id: 'Kai', name: 'Kai — Male' },
+        { id: 'Godfrey', name: 'Godfrey — Male, UK' },
     ],
     'deepgram': [
         { id: 'aura-asteria-en', name: 'Asteria' },
@@ -129,16 +151,55 @@ const VAPI_VOICES_BY_PROVIDER: Record<string, { id: string, name: string }[]> = 
         { id: 'aura-perseus-en', name: 'Perseus' },
         { id: 'aura-zeus-en', name: 'Zeus' },
     ],
+    'azure': [
+        // --- Hindi (India) ---
+        { id: 'hi-IN-SwaraNeural', name: '🇮🇳 Swara — Hindi Female' },
+        { id: 'hi-IN-AnanyaNeural', name: '🇮🇳 Ananya — Hindi Female' },
+        { id: 'hi-IN-NeerjaNeural', name: '🇮🇳 Neerja — Hindi Female' },
+        { id: 'hi-IN-MadhurNeural', name: '🇮🇳 Madhur — Hindi Male' },
+        { id: 'hi-IN-RehaanNeural', name: '🇮🇳 Rehaan — Hindi Male' },
+        { id: 'en-IN-NeerjaNeural', name: '🇮🇳 Neerja — English Indian Female' },
+        { id: 'en-IN-PrabhatNeural', name: '🇮🇳 Prabhat — English Indian Male' },
+        // --- English ---
+        { id: 'en-US-JennyNeural', name: 'Jenny — English US Female' },
+        { id: 'en-US-GuyNeural', name: 'Guy — English US Male' },
+        { id: 'en-GB-SoniaNeural', name: 'Sonia — English UK Female' },
+        { id: 'en-GB-RyanNeural', name: 'Ryan — English UK Male' },
+        { id: 'en-AU-NatashaNeural', name: 'Natasha — English AU Female' },
+    ],
     'elevenlabs': [
-        { id: 'pNInz6ovunSMqEisjW85', name: 'Rachel' },
-        { id: 'Lcf7I4mD7T99S0x82oBy', name: 'Josh' },
-        { id: 'VR6AewrXVre97E4pNM8C', name: 'Drew' },
-        { id: 'MF3mGyEYCl7XYW7Y904z', name: 'Marcus' },
-        { id: 'kPzsL2i3sdVqBn97W7oBy', name: 'Charlotte' },
+        { id: 'EXAVITQu4vr4xnSDxMaL', name: 'Sarah - mature, reassuring, confident' },
+        { id: 'pqHfZKP75CvOlQylNhV4', name: 'Bill - trustworthy' },
+        { id: 'N2lVS1w4EtoT3dr4eOWO', name: 'Callum - intense, gruff' },
+        { id: 'IKne3meq5aSn9XLyUdCD', name: 'Charlie - natural' },
+        { id: 'XB0fDUnXU5powFXDhCwa', name: 'Charlotte - seductive, mature' },
+        { id: 'iP95p4xoKVk53GoZ742B', name: 'Chris - casual, authentic' },
+        { id: 'onwK4e9ZLuTAKqWW03F9', name: 'Daniel - calm, British' },
+        { id: 'cjVigY5qzO86Huf0OWal', name: 'Eric - friendly' },
+        { id: 'JBFqnCBsd6RMkjVDRZzb', name: 'George - warm' },
+        { id: 'cgSgspJ2msm6clMCkdW9', name: 'Jessica - friendly' },
+        { id: 'FGY2WhTYpPnrIDTdsKH5', name: 'Laura - upbeat' },
+        { id: 'TX3LPaxmHKxFdv7VOQHJ', name: 'Liam - articulate' },
+        { id: 'pFZP5JQG7iQjIQuC4Bku', name: 'Lily - warm, British' },
+        { id: 'nPczCjzI2devNBz1zQrb', name: 'Brian - deep' },
+        { id: 'XrExE9yKIg1WjnnlVkGX', name: 'Matilda - confident, warm' },
+    ]
+};
+
+const VAPI_VOICE_MODELS: Record<string, string[]> = {
+    'elevenlabs': [
+        'eleven_multilingual_v2', 
+        'eleven_turbo_v2', 
+        'eleven_turbo_v2_5', 
+        'eleven_flash_v2', 
+        'eleven_flash_v2_5', 
+        'eleven_english_v1', 
+        'eleven_v3'
     ]
 };
 
 const VAPI_LANGUAGES = [
+    { id: 'multilingual', name: 'Multilingual' },
     { id: 'en', name: 'English' },
     { id: 'en-US', name: 'English (US)' },
     { id: 'en-GB', name: 'English (UK)' },
@@ -171,13 +232,15 @@ export default function AdminPage() {
     const [config, setConfig] = useState<AgentConfiguration>(INITIAL_CONFIG);
     const [aiPrompt, setAiPrompt] = useState('');
     const [isGenerating, setIsGenerating] = useState(false);
+    const [hasBeenGenerated, setHasBeenGenerated] = useState(false);
     const [isLocked, setIsLocked] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const [isResearching, setIsResearching] = useState(false);
     const [isLaunching, setIsLaunching] = useState(false);
     const [showEmbedCode, setShowEmbedCode] = useState(false);
     const [copyVoiceSuccess, setCopyVoiceSuccess] = useState(false);
-    const [copyTextSuccess, setCopyTextSuccess] = useState(false);
+    const [isTranslating, setIsTranslating] = useState(false);
+    const [contentLanguage, setContentLanguage] = useState('English');
     const [agents, setAgents] = useState<any[]>([]);
     const [activeAgentId, setActiveAgentId] = useState<string | null>(null);
     const [branding, setBranding] = useState<BrandingConfig>(DEFAULT_BRANDING);
@@ -186,9 +249,22 @@ export default function AdminPage() {
     const [isBillingLoading, setIsBillingLoading] = useState(false);
     const [isCalling, setIsCalling] = useState(false);
     const [vapiAssistantId, setVapiAssistantId] = useState<string | null>(null);
-    const [leads, setLeads] = useState<Lead[]>([]);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const avatarFileInputRef = useRef<HTMLInputElement>(null);
+    // Normalize voiceProvider casing and reset voiceId if invalid for the current provider
+    useEffect(() => {
+        const rawProvider = (config.vapi.voiceProvider || '').toLowerCase();
+        const validProvider = VAPI_VOICES_BY_PROVIDER[rawProvider] ? rawProvider : 'vapi';
+        const options = VAPI_VOICES_BY_PROVIDER[validProvider];
+        const isVoiceValid = options.some(v => v.id === config.vapi.voiceId);
+        const updates: any = {};
+        // Normalize casing: 'ElevenLabs' → 'elevenlabs', 'VAPI' → 'vapi', etc.
+        if (config.vapi.voiceProvider !== validProvider) updates.voiceProvider = validProvider;
+        if (!isVoiceValid) updates.voiceId = options[0]?.id || 'Rohan';
+        if (Object.keys(updates).length > 0) {
+            setConfig(prev => ({ ...prev, vapi: { ...prev.vapi, ...updates } }));
+        }
+    }, [config.vapi.voiceProvider, config.vapi.voiceId]);
 
     // Handle Stripe Checkout Success Redirect
     useEffect(() => {
@@ -249,16 +325,6 @@ export default function AdminPage() {
             setIsBrandingLoading(false);
         }
     };
-
-    // Leads Subscription
-    useEffect(() => {
-        if (user) {
-            const unsubscribe = firebaseService.subscribeToLeads((data: Lead[]) => {
-                setLeads(data);
-            });
-            return () => unsubscribe();
-        }
-    }, [user]);
 
     // Auth Listener
     useEffect(() => {
@@ -341,6 +407,7 @@ export default function AdminPage() {
                 setConfig(loadedConfig);
                 setActiveAgentId(agentId);
                 setIsLocked(true);
+                setHasBeenGenerated(true);
             }
         } catch (error) {
             console.error("Failed to select agent", error);
@@ -356,6 +423,7 @@ export default function AdminPage() {
     };
 
     const isValid =
+        hasBeenGenerated &&
         config.metadata.businessName.length > 0 &&
         config.services.length > 0 &&
         config.locations.length > 0;
@@ -439,12 +507,56 @@ export default function AdminPage() {
                     }
                 }
             }));
+            setHasBeenGenerated(true);
         } catch (error: any) {
             console.error("AI Generation failed", error);
             const message = error.message || "Unknown error";
             alert("AI Assistant Error: " + message);
         } finally {
             setIsGenerating(false);
+        }
+    };
+
+    const handleDeleteAgent = async (agentId: string, agentName: string, e: React.MouseEvent) => {
+        e.stopPropagation();
+        if (!confirm(`Delete "${agentName}"?\n\nThis will permanently remove the agent from Firebase and VAPI. This cannot be undone.`)) return;
+        try {
+            const { getAgentConfig, deleteAgentConfig } = await import('@/services/firebase');
+            const agentConfig: any = await getAgentConfig(agentId);
+            const vapiAssId = agentConfig?.vapi?.assistantId;
+            if (vapiAssId) {
+                await fetch('/api/vapi/assistant/delete', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ assistantId: vapiAssId })
+                });
+            }
+            await deleteAgentConfig(agentId);
+            await loadAgents();
+            if (activeAgentId === agentId) {
+                setActiveAgentId(null);
+                setConfig(INITIAL_CONFIG);
+                setIsLocked(false);
+                setVapiAssistantId(null);
+            }
+        } catch (err: any) {
+            alert('Failed to delete agent: ' + (err.message || 'Unknown error'));
+        }
+    };
+
+    const handleTranslateContent = async (language: string) => {
+        if (language === 'English') return;
+        setIsTranslating(true);
+        try {
+            const translated = await translateAgentContent(
+                { systemPrompt: config.vapi.systemPrompt, firstMessage: config.vapi.firstMessage, knowledgeBase: config.vapi.knowledgeBase },
+                language
+            );
+            setConfig(prev => ({ ...prev, vapi: { ...prev.vapi, ...translated } }));
+        } catch (e: any) {
+            alert('Translation failed: ' + (e.message || 'Unknown error'));
+        } finally {
+            setIsTranslating(false);
         }
     };
 
@@ -591,6 +703,9 @@ export default function AdminPage() {
                     const vapiRes = await createVapiAssistant(config);
                     if (vapiRes && vapiRes.id) {
                         setVapiAssistantId(vapiRes.id);
+                        // Save assistantId back to Firebase so delete can reference it
+                        const { saveConfiguration: save } = await import('@/services/firebase');
+                        await save({ ...config, vapi: { ...config.vapi, assistantId: vapiRes.id } } as any);
                     }
                     handleLaunchClient();
                 } catch (vapiError: any) {
@@ -826,78 +941,6 @@ export default function AdminPage() {
                         </div>
                     </div>
 
-                    {/* Embed Text Bot Code */}
-                    <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-6 space-y-4">
-                        <div className="flex items-center gap-3 mb-2">
-                            <MessageSquare className="w-5 h-5 text-indigo-400" />
-                            <h3 className="text-lg font-bold text-white">Embed Text Chatbot on Your Website</h3>
-                        </div>
-                        <p className="text-slate-400 text-sm">
-                            Need a text-only chatbot instead? Use this configuration to load the AI in chat mode.
-                        </p>
-                        <div className="bg-slate-900/50 border border-slate-600 rounded-lg p-4 space-y-3">
-                            <code className="block text-emerald-400 font-mono text-xs break-all whitespace-pre-wrap">
-                                {(() => {
-                                    const orgId = user ? getOrgId(user) : 'anonymous_org';
-                                    const safeName = config.metadata.businessName.trim().toLowerCase().replace(/[^a-z0-9]+/g, '_');
-                                    const agentId = activeAgentId || `agent_${safeName}`;
-                                    const clientBaseUrl = config.vapi.clientUrl || (typeof window !== 'undefined' ? window.location.origin : '');
-                                    return `<!-- Text AI Widget -->
-<script>
-  window.VOICE_WIDGET_CONFIG = {
-    vapiPublicKey: "${process.env.NEXT_PUBLIC_VAPI_PUBLIC_KEY || 'your-vapi-public-key'}",
-    assistantId: "${vapiAssistantId || 'your-assistant-id'}",
-    orgId: "${orgId}",
-    agentId: "${agentId}",
-    position: "bottom-right",
-    primaryColor: "#667eea",
-    secondaryColor: "#764ba2",
-    buttonConfig: {
-      idle: { icon: "chat" },
-      loading: {},
-      active: {}
-    }
-  };
-</script>
-<script src="${clientBaseUrl}/voice-widget.js"></script>`;
-                                })()}
-                            </code>
-                            <button
-                                onClick={() => {
-                                    const orgId = user ? getOrgId(user) : 'anonymous_org';
-                                    const safeName = config.metadata.businessName.trim().toLowerCase().replace(/[^a-z0-9]+/g, '_');
-                                    const agentId = activeAgentId || `agent_${safeName}`;
-                                    const clientBaseUrl = config.vapi.clientUrl || (typeof window !== 'undefined' ? window.location.origin : '');
-                                    const embedCode = `<!-- Text AI Widget -->
-<script>
-  window.VOICE_WIDGET_CONFIG = {
-    vapiPublicKey: "${process.env.NEXT_PUBLIC_VAPI_PUBLIC_KEY || 'your-vapi-public-key'}",
-    assistantId: "${vapiAssistantId || 'your-assistant-id'}",
-    orgId: "${orgId}",
-    agentId: "${agentId}",
-    position: "bottom-right",
-    primaryColor: "#667eea",
-    secondaryColor: "#764ba2",
-    buttonConfig: {
-      idle: { icon: "chat" },
-      loading: {},
-      active: {}
-    }
-  };
-</script>
-<script src="${clientBaseUrl}/voice-widget.js"></script>`;
-                                    navigator.clipboard.writeText(embedCode);
-                                    setCopyTextSuccess(true);
-                                    setTimeout(() => setCopyTextSuccess(false), 2000);
-                                }}
-                                className="w-full px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-lg transition-colors flex items-center justify-center gap-2"
-                            >
-                                {copyTextSuccess ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-                                {copyTextSuccess ? 'Copied to Clipboard!' : 'Copy Text Bot Code'}
-                            </button>
-                        </div>
-                    </div>
-
                     <div className="flex flex-wrap items-center justify-center gap-4 pt-4">
                         {config.vapi.transcriber?.userPhone && vapiAssistantId && (
                             <button
@@ -943,6 +986,7 @@ export default function AdminPage() {
                 isLaunching={isLaunching}
                 agents={agents}
                 onSelectAgent={selectAgent}
+                onDeleteAgent={handleDeleteAgent}
                 branding={branding}
                 currentAgentId={activeAgentId || undefined}
             />
@@ -1293,7 +1337,7 @@ export default function AdminPage() {
                                 <label className="text-xs font-bold text-slate-600 uppercase">Voice Provider</label>
                                 <select
                                     className="w-full p-2 text-sm border rounded bg-white"
-                                    value={config.vapi.voiceProvider || "vapi"}
+                                    value={(config.vapi.voiceProvider || 'vapi').toLowerCase()}
                                     onChange={e => {
                                         const newProvider = e.target.value;
                                         const defaultVoice = VAPI_VOICES_BY_PROVIDER[newProvider]?.[0]?.id || '';
@@ -1319,11 +1363,70 @@ export default function AdminPage() {
                                     value={config.vapi.voiceId || ""}
                                     onChange={e => setConfig(prev => ({ ...prev, vapi: { ...prev.vapi, voiceId: e.target.value } }))}
                                 >
-                                    {(VAPI_VOICES_BY_PROVIDER[config.vapi.voiceProvider?.toLowerCase() || 'vapi'] || []).map(opt => (
+                                    {(VAPI_VOICES_BY_PROVIDER[config.vapi.voiceProvider?.toLowerCase() || 'vapi'] || VAPI_VOICES_BY_PROVIDER['vapi']).map(opt => (
                                         <option key={opt.id} value={opt.id}>{opt.name}</option>
                                     ))}
                                 </select>
                             </div>
+
+                            {/* Content Language + Translate */}
+                            <div className="space-y-1 col-span-2">
+                                <label className="text-xs font-bold text-slate-600 uppercase">Content Language</label>
+                                <div className="flex gap-2">
+                                    <select
+                                        className="flex-1 p-2 text-sm border rounded bg-white"
+                                        value={contentLanguage}
+                                        onChange={e => {
+                                            const lang = e.target.value;
+                                            setContentLanguage(lang);
+                                            // Auto-switch to a Hindi voice when Hindi is selected
+                                            const currentProvider = (config.vapi.voiceProvider || 'vapi').toLowerCase();
+                                            if (lang === 'Hindi') {
+                                                if (currentProvider === 'vapi') {
+                                                    setConfig(prev => ({ ...prev, vapi: { ...prev.vapi, voiceProvider: 'vapi', voiceId: 'Rohan' } }));
+                                                } else if (currentProvider === 'azure') {
+                                                    setConfig(prev => ({ ...prev, vapi: { ...prev.vapi, voiceId: 'hi-IN-SwaraNeural' } }));
+                                                }
+                                            }
+                                            if (lang !== 'English') handleTranslateContent(lang);
+                                        }}
+                                    >
+                                        {[
+                                            'English','Hindi','Arabic','Bengali','Chinese','French','German',
+                                            'Gujarati','Indonesian','Italian','Japanese','Kannada','Korean',
+                                            'Malayalam','Marathi','Nepali','Odia','Polish','Portuguese',
+                                            'Punjabi','Russian','Spanish','Swahili','Tamil','Telugu',
+                                            'Thai','Turkish','Ukrainian','Urdu','Vietnamese'
+                                        ].map(lang => (
+                                            <option key={lang} value={lang}>{lang}</option>
+                                        ))}
+                                    </select>
+                                    <button
+                                        onClick={() => handleTranslateContent(contentLanguage)}
+                                        disabled={isTranslating || contentLanguage === 'English'}
+                                        className="px-4 py-2 text-sm font-semibold bg-indigo-600 hover:bg-indigo-700 text-white rounded disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 whitespace-nowrap"
+                                    >
+                                        {isTranslating ? <><Loader2 className="w-4 h-4 animate-spin" /> Translating...</> : 'Translate Content'}
+                                    </button>
+                                </div>
+                                <p className="text-xs text-slate-400">Auto-translates system prompt, first message, and knowledge base when you select a language. Click the button to re-translate if needed.</p>
+                            </div>
+
+                            {/* Voice Model Selection (Conditional for ElevenLabs) */}
+                            {config.vapi.voiceProvider?.toLowerCase() === 'elevenlabs' && (
+                                <div className="space-y-1 col-span-2">
+                                    <label className="text-xs font-bold text-slate-600 uppercase">Voice Model</label>
+                                    <select
+                                        className="w-full p-2 text-sm border rounded bg-white"
+                                        value={config.vapi.voiceModel || "eleven_turbo_v2_5"}
+                                        onChange={e => setConfig(prev => ({ ...prev, vapi: { ...prev.vapi, voiceModel: e.target.value } }))}
+                                    >
+                                        {(VAPI_VOICE_MODELS['elevenlabs'] || []).map(opt => (
+                                            <option key={opt} value={opt}>{opt}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                            )}
                         </div>
 
                         <div className="p-4 bg-slate-50 border rounded-lg grid grid-cols-3 gap-4">
@@ -1410,11 +1513,6 @@ export default function AdminPage() {
                     <CalendarView />
                 </section>
 
-                {/* Section L: Agency Leads Dashboard */}
-                <section id="leads" className="space-y-6 scroll-mt-24 pb-12">
-                    <LeadsDashboard leads={leads} />
-                </section>
-
                 {/* Section K: Plan & Billing */}
                 <section id="billing" className="space-y-6 scroll-mt-24 pb-12">
                     <div className="border-b border-slate-200 pb-4">
@@ -1472,10 +1570,12 @@ export default function AdminPage() {
                     <div className="fixed bottom-0 left-64 right-0 p-6 bg-white/80 backdrop-blur-md border-t border-slate-200 flex items-center justify-between z-20 shadow-[0_-10px_20px_rgba(0,0,0,0.05)]">
                         <div className="flex items-center gap-3">
                             <div className={`w-3 h-3 rounded-full ${isValid ? 'bg-emerald-500' : 'bg-red-500'}`} />
-                            <span className="text-sm font-medium text-slate-600">
+                             <span className="text-sm font-medium text-slate-600">
                                 {isValid
                                     ? 'Configuration complete and ready for deployment.'
-                                    : 'Please complete all required fields (highlighted in red) to proceed.'}
+                                    : !hasBeenGenerated
+                                        ? 'Please search for a business to generate the initial configuration.'
+                                        : 'Please complete all required fields (highlighted in red) to proceed.'}
                             </span>
                         </div>
                         <button

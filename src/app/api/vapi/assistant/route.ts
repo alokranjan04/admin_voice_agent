@@ -33,13 +33,58 @@ export async function POST(req: Request) {
             .replace(/{{User Name}}/gi, config.vapi.userName || 'there')
             .replace(/{{First Name}}/gi, (config.vapi.userName || 'there').split(' ')[0]);
 
+        // Normalize model names to VAPI-accepted values; fixes stale/renamed model IDs
+        const VALID_OPENAI_MODELS = new Set(['gpt-5.2','gpt-5.2-chat-latest','gpt-5.1','gpt-5.1-chat-latest','gpt-5','gpt-5-chat-latest','gpt-5-mini','gpt-5-nano','gpt-4.1','gpt-4.1-mini','gpt-4.1-nano','gpt-4.1-2025-04-14','gpt-4.1-mini-2025-04-14','gpt-4.1-nano-2025-04-14','chatgpt-4o-latest','o3','o3-mini','o4-mini','o1-mini','o1-mini-2024-09-12','gpt-4o','gpt-4o-mini','gpt-4o-mini-2024-07-18','gpt-4o-2024-05-13','gpt-4o-2024-08-06','gpt-4o-2024-11-20','gpt-4-turbo','gpt-4-turbo-2024-04-09','gpt-4-turbo-preview','gpt-4-0125-preview','gpt-4-1106-preview','gpt-4','gpt-4-0613','gpt-3.5-turbo','gpt-3.5-turbo-0125','gpt-3.5-turbo-1106','gpt-3.5-turbo-16k','gpt-3.5-turbo-0613']);
+        const MODEL_ALIASES: Record<string, string> = {
+            'gpt-5.2-instant': 'gpt-5.2', 'gpt-5.1-instant': 'gpt-5.1',
+            'gpt-4.5': 'gpt-4o', 'gpt-4.5-turbo': 'gpt-4-turbo',
+        };
+        const normalizeModelName = (model: string, provider: string): string => {
+            const m = (model || '').toLowerCase().trim();
+            if (provider === 'openai' || provider === 'azure-openai') {
+                const alias = MODEL_ALIASES[m];
+                if (alias) return alias;
+                return VALID_OPENAI_MODELS.has(m) ? m : 'gpt-4o-mini';
+            }
+            return m || 'gpt-4o-mini';
+        };
+
+        const modelProvider = String(config.vapi.provider || 'openai').toLowerCase();
         const modelObj: any = {
-            provider: String(config.vapi.provider || 'openai').toLowerCase(),
-            model: String(config.vapi.model || 'gpt-4o-mini').toLowerCase(),
+            provider: modelProvider,
+            model: normalizeModelName(String(config.vapi.model || 'gpt-4o-mini'), modelProvider),
             messages: [
                 {
                     role: 'system',
-                    content: `${systemPrompt}
+                    content: (() => {
+                        // Build strict language directive from configured transcriber language
+                        const LANG_NAMES: Record<string, string> = {
+                            'hi': 'Hindi', 'ar': 'Arabic', 'fr': 'French', 'de': 'German',
+                            'es': 'Spanish', 'pt': 'Portuguese', 'zh': 'Chinese', 'ja': 'Japanese',
+                            'ko': 'Korean', 'it': 'Italian', 'nl': 'Dutch', 'pl': 'Polish',
+                            'ru': 'Russian', 'ta': 'Tamil', 'te': 'Telugu', 'bn': 'Bengali',
+                            'gu': 'Gujarati', 'mr': 'Marathi', 'pa': 'Punjabi', 'ur': 'Urdu',
+                        };
+                        const langCode = String(config.vapi.transcriber?.language || 'en').split('-')[0].toLowerCase();
+                        const langName = LANG_NAMES[langCode];
+                        // VAPI PlayAI voices are English TTS — they cannot speak Devanagari/Hindi script.
+                        // Use Hinglish (Hindi meaning, English/Roman script words) for PlayAI voices.
+                        // Azure/ElevenLabs voices can speak native script properly.
+                        // Note: vProvider is declared later; derive it here from config directly.
+                        const earlyVProvider = (() => {
+                            let vp = String(config.vapi.voiceProvider || 'vapi').toLowerCase().trim();
+                            if (vp === 'elevenlabs') vp = '11labs';
+                            return vp;
+                        })();
+                        const isNativeHindiVoice = earlyVProvider === 'azure' || earlyVProvider === '11labs';
+                        const languageRule = langName
+                            ? (langCode === 'hi' && !isNativeHindiVoice
+                                ? `\n# LANGUAGE — HINGLISH MODE\nThe user prefers Hindi. You MUST respond in Hinglish: use Hindi words and sentence structure, but write everything in Roman/English script (NOT Devanagari). Example: say "Aapka naam kya hai?" not "आपका नाम क्या है?". NEVER write in Devanagari script. This is critical for the voice to sound natural.`
+                                : `\n# LANGUAGE — STRICT RULE\nYou MUST ALWAYS respond in ${langName}. NEVER switch to English even if the user speaks in English. Every response — greetings, questions, confirmations — must be in ${langName} only.`)
+                            : '';
+
+                        return `${systemPrompt}
+${languageRule}
 
 # CRITICAL: DATE & TIME VERIFICATION
 1. YOU DO NOT KNOW THE DATE. The date provided in your static training data or internal clock is WRONG.
@@ -52,41 +97,102 @@ export async function POST(req: Request) {
 2. PITCHING A DEMO: After explaining our services and how we can help in their domain, you MUST ask: 'Can I book a demo with the owner? He can explain things to you in more detail.'
 
 # USER CONTEXT (PRE-VERIFIED)
-${(config.vapi.userName || config.vapi.userEmail || config.vapi.userPhone)
-                        ? `Information about the user is already known and VERIFIED via a pre-call form:
-` +
-                        (config.vapi.userName ? `- Name: ${config.vapi.userName}\n` : '') +
-                        (config.vapi.userEmail ? `- Email: ${config.vapi.userEmail}\n` : '') +
-                        (config.vapi.userPhone ? `- Phone: ${config.vapi.userPhone}\n` : '') +
-                        `CONTACT RULE: If Name, Phone, or Email are provided above, DO NOT ask for them. They are 100% authorized and verified. Only ask for a field if it is missing or explicitly 'Unknown'.
-TITLE RULE: Always ask the user 'What is this booking for?' to use as the 'service' (event title).
-AVAILABILITY RULE: You MUST NEVER book an appointment without FIRST checking availability.`
-                        : `You MUST introduce yourself and then immediately ask the user for their Name, Phone number, and Email address if you don't already have them. 
-TITLE RULE: Always ask the user 'What is this booking for?' to use as the 'service' (event title).
-AVAILABILITY RULE: You MUST NEVER book an appointment without FIRST checking availability.`
-                        }`
+The caller's details have been collected before this call via a secure form:
+- Name: {{leadName}}
+- Email: {{leadEmail}}
+- Phone: {{leadPhone}}
+
+CONTACT RULE: If any of the above are NOT 'Unknown', you MUST NOT ask the user for that field again. Use the exact value in all tool calls (createEvent, cancelEvent, etc.). NEVER use placeholder text like [User's Name].
+CONTACT RULE: Only ask for a field if its value is literally 'Unknown'.
+TITLE RULE: Always ask the user "What is this booking for?" to get the service/event title.
+AVAILABILITY RULE: You MUST NEVER book an appointment without FIRST calling checkAvailability or findAvailableSlots.`;
+                    })()
                 }
             ],
             temperature: Number(config.vapi.temperature || 0.1), // Reduced temperature for more deterministic tool usage
         };
 
-        const voiceObj: any = {
-            provider: String(config.vapi.voiceProvider || 'vapi').toLowerCase(),
-            voiceId: String(config.vapi.voiceId || 'Mia'),
+        // Normalize and guarantee non-empty voice provider
+        const VALID_VAPI_VOICE_PROVIDERS = new Set(['vapi','11labs','azure','cartesia','custom-voice','deepgram','hume','lmnt','neuphonic','openai','playht','rime-ai','smallest-ai','tavus','sesame','inworld','minimax','wellsaid','orpheus']);
+        let vProvider = String(config.vapi.voiceProvider || 'vapi').toLowerCase().trim();
+        if (!vProvider) vProvider = 'vapi';
+        if (vProvider === 'elevenlabs') vProvider = '11labs';
+        if (vProvider === 'rime') vProvider = 'rime-ai';
+        if (!VALID_VAPI_VOICE_PROVIDERS.has(vProvider)) vProvider = 'vapi';
+
+        // Determine default voiceId per provider if empty
+        const providerDefaultVoice: Record<string, string> = {
+            'vapi': 'Rohan', // Indian Hindi male — default for Hindi-first deployments
+            '11labs': 'sarah',
+            'deepgram': 'aura-asteria-en',
+            'openai': 'alloy',
+            'azure': 'hi-IN-SwaraNeural',
+            'cartesia': 'ava',
         };
+        const VALID_VAPI_VOICE_IDS = new Set(['Clara','Godfrey','Elliot','Kylie','Rohan','Lily','Savannah','Hana','Cole','Harry','Paige','Spencer','Nico','Kai','Emma','Sagar','Neil','Leah','Tara','Jess','Leo','Dan','Mia','Zac','Zoe']);
+        let voiceId = String(config.vapi.voiceId || '').trim() || providerDefaultVoice[vProvider] || 'Rohan';
+        if (vProvider === 'vapi' && !VALID_VAPI_VOICE_IDS.has(voiceId)) voiceId = 'Rohan';
+
+        const voiceObj: any = {
+            provider: vProvider,
+            voiceId,
+        };
+        // VAPI PlayAI voices are English-trained — forcing hi-IN makes them produce garbled audio.
+        // Always use en-US for PlayAI; the AI will speak in Hinglish (Hindi words in English script)
+        // which the English TTS can pronounce clearly. Azure voices use their own native language.
+        if (vProvider === 'vapi') {
+            voiceObj.language = 'en-US';
+        }
+
+        if (vProvider === '11labs' && config.vapi.voiceModel) {
+            voiceObj.model = config.vapi.voiceModel;
+        }
 
         let transcriberObj: any = null;
         const tProvider = String(config.vapi.transcriber.provider || 'deepgram').toLowerCase();
 
+        // Deepgram/OpenAI: short ISO codes ('en', 'hi', 'fr')
+        const normalizeShortLang = (lang: string): string => {
+            const raw = String(lang || 'en').toLowerCase().trim();
+            if (raw === 'multilingual') return 'en';
+            return raw.split('-')[0]; // 'en-IN' => 'en', 'zh-TW' => 'zh'
+        };
+        // Google transcriber requires full English names ('English', 'Hindi', 'Multilingual')
+        const ISO_TO_FULL_LANG: Record<string, string> = {
+            'en': 'English', 'hi': 'Hindi', 'fr': 'French', 'de': 'German', 'es': 'Spanish',
+            'pt': 'Portuguese', 'ar': 'Arabic', 'zh': 'Chinese', 'ja': 'Japanese', 'ko': 'Korean',
+            'it': 'Italian', 'nl': 'Dutch', 'pl': 'Polish', 'ru': 'Russian', 'sv': 'Swedish',
+            'tr': 'Turkish', 'vi': 'Vietnamese', 'th': 'Thai', 'id': 'Indonesian', 'uk': 'Ukrainian',
+            'bg': 'Bulgarian', 'cs': 'Czech', 'da': 'Danish', 'et': 'Estonian', 'fi': 'Finnish',
+            'el': 'Greek', 'he': 'Hebrew', 'hr': 'Croatian', 'hu': 'Hungarian', 'lv': 'Latvian',
+            'lt': 'Lithuanian', 'no': 'Norwegian', 'ro': 'Romanian', 'sr': 'Serbian', 'sk': 'Slovak',
+            'sl': 'Slovenian', 'sw': 'Swahili', 'bn': 'Bengali', 'multilingual': 'Multilingual',
+        };
+        const normalizeFullLang = (lang: string): string => {
+            const short = normalizeShortLang(lang);
+            return ISO_TO_FULL_LANG[short] || 'English';
+        };
+
         if (tProvider === 'openai') {
-            transcriberObj = { provider: 'openai' };
+            const tModel = String(config.vapi.transcriber.model || 'gpt-4o-mini-transcribe');
+            transcriberObj = { 
+                provider: 'openai',
+                model: tModel.includes('transcribe') ? tModel : 'gpt-4o-mini-transcribe',
+                language: normalizeShortLang(String(config.vapi.transcriber.language || 'en'))
+            };
+        } else if (tProvider === 'google') {
+            const tModel = String(config.vapi.transcriber.model || 'gemini-2.0-flash');
+            transcriberObj = {
+                provider: 'google',
+                model: (tModel.includes('gemini') || tModel.includes('gemma')) ? tModel : 'gemini-2.0-flash',
+                language: normalizeFullLang(String(config.vapi.transcriber.language || 'en'))
+            };
         } else {
             transcriberObj = {
                 provider: tProvider,
                 model: String(config.vapi.transcriber.model || 'nova-3').toLowerCase(),
-                language: String(config.vapi.transcriber.language || 'en-IN'),
-                smartFormat: true, // camelCase for Vapi
-                keywords: [],      // Optional keywords
+                language: normalizeShortLang(String(config.vapi.transcriber.language || 'en')),
+                // keywords: [], // No longer supported by Vapi
             };
         }
 
@@ -168,9 +274,9 @@ AVAILABILITY RULE: You MUST NEVER book an appointment without FIRST checking ava
                                 date: { type: "string", description: "Date in YYYY-MM-DD format" },
                                 time: { type: "string", description: "Time in HH:MM format (24-hour)" },
                                 service: { type: "string", description: "Type of service" },
-                                customerName: { type: "string", description: "Customer name" },
-                                customerEmail: { type: "string", description: "Customer email. MUST use value from USER CONTEXT if available. DO NOT ask user again." },
-                                customerPhone: { type: "string", description: "Customer phone. MUST use value from USER CONTEXT if available. DO NOT ask user again." }
+                                customerName: { type: "string", description: "Customer name. MUST use the real name from USER CONTEXT. NEVER use placeholder text like [User's Name]." },
+                                customerEmail: { type: "string", description: "Customer email. MUST use the real email from USER CONTEXT. NEVER use placeholder text like [User's Email]. DO NOT ask user again." },
+                                customerPhone: { type: "string", description: "Customer phone. MUST use the real phone number from USER CONTEXT. NEVER use placeholder text like [User's Phone]. DO NOT ask user again." }
                             },
                             required: ["date", "time", "customerName", "service", "customerPhone"]
                         }

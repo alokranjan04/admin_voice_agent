@@ -10,8 +10,10 @@ export const createVapiAssistant = async (config: AgentConfiguration) => {
         console.log("VAPI Assistant Created Successfully via Proxy");
         return response.data;
     } catch (error: any) {
-        console.error("VAPI Proxy Error:", error.response?.data);
-        throw new Error(`VAPI Creation Failed: ${error.response?.data?.error || error.message}`);
+        const errData = error.response?.data;
+        const errMsg = errData?.error || errData?.message || JSON.stringify(errData) || error.message;
+        console.error("VAPI Proxy Error:", errMsg, '| Status:', error.response?.status, '| Data:', errData);
+        throw new Error(`VAPI Creation Failed: ${errMsg}`);
     }
 };
 

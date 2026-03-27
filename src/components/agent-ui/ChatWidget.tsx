@@ -25,28 +25,38 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ config, status, volumeRef, logs
     const isChatOnly = overrideWidgetType === 'chat';
     const transcriptMessages = logs.filter(l => l.type === 'user' || l.type === 'model');
 
-    // Handle welcome form submission
-    const handleWelcomeFormSubmit = async (data: { name: string; phone: string; email?: string }) => {
+    const saveUserDetails = async (data: { name: string; phone: string; email?: string }) => {
         setUserDetails(data);
-        setShowWelcomeForm(false);
-
-        // Store user details in session metadata
-        voiceService.setSessionMetadata({
-            userName: data.name,
-            userPhone: data.phone,
-            userEmail: data.email || ''
-        });
-
-        // Save user details to Firebase
+        voiceService.setSessionMetadata({ userName: data.name, userPhone: data.phone, userEmail: data.email || '' });
         try {
             const { firebaseService } = await import('@/services/agent-ui/firebaseService');
             await firebaseService.updateTranscriberUserDetails(data.name, data.email || '', data.phone);
         } catch (error) {
             console.error('[WelcomeForm] Failed to save user details:', error);
         }
+    };
 
-        // Auto-start the voice call
+    // Handle welcome form submission — starts web voice session
+    const handleWelcomeFormSubmit = async (data: { name: string; phone: string; email?: string }) => {
+        await saveUserDetails(data);
+        setShowWelcomeForm(false);
         onToggleCall();
+    };
+
+    // Handle "Call Me" — triggers VAPI outbound call to user's phone
+    const handleCallMe = async (data: { name: string; phone: string; email?: string }) => {
+        await saveUserDetails(data);
+        const assistantId = (config as any).vapi?.assistantId;
+        if (!assistantId) throw new Error('No VAPI assistant configured for this agent.');
+        const res = await fetch('/api/vapi/call', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ phoneNumber: data.phone, assistantId })
+        });
+        if (!res.ok) {
+            const err = await res.json();
+            throw new Error(err.error || 'Call failed');
+        }
     };
 
     useEffect(() => {
@@ -92,6 +102,7 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ config, status, volumeRef, logs
                                 <div className="flex-1 overflow-y-auto no-scrollbar bg-white rounded-t-3xl mt-4 p-2">
                                     <WelcomeForm
                                         onSubmit={handleWelcomeFormSubmit}
+                                        onCallMe={handleCallMe}
                                         businessName={config.metadata?.businessName}
                                         avatarUrl={config.vapi?.avatarUrl}
                                     />
