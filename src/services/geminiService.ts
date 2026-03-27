@@ -242,9 +242,6 @@ export async function translateAgentContent(
   const apiKey = getGeminiApiKey();
   if (!apiKey) throw new Error("Gemini API key missing.");
 
-  const genAI = new GoogleGenerativeAI(apiKey);
-  const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" }, { apiVersion: 'v1beta' });
-
   const isHinglish = targetLanguage === 'Hinglish';
 
   // Build only the non-empty fields to avoid sending empty strings to the model
@@ -253,7 +250,7 @@ export async function translateAgentContent(
   if (content.firstMessage) contentToTranslate.firstMessage = content.firstMessage;
   if (content.knowledgeBase) contentToTranslate.knowledgeBase = content.knowledgeBase;
 
-  const promptWithContent = (isHinglish
+  const promptWithContent = isHinglish
     ? `You are a professional translator. Translate the following voice AI agent content into Hindi, but write ONLY in Roman/English script (Hinglish). Do NOT use any Devanagari script at all. Every Hindi word must be spelled phonetically using English letters. Example: write "Aapka swagat hai" not "आपका स्वागत है".
 Keep all placeholder variables like {{COMPANY_NAME}}, {{USER_NAME}} exactly as-is (do not translate them).
 Keep brand names, business names, and proper nouns in their original English form.
@@ -267,22 +264,40 @@ Keep technical terms, brand names, and proper nouns in their original form.
 Return ONLY a JSON object with exactly these keys (include a key only if it was provided): systemPrompt, firstMessage, knowledgeBase.
 
 Content to translate:
-${JSON.stringify(contentToTranslate, null, 2)}`);
+${JSON.stringify(contentToTranslate, null, 2)}`;
 
-  const result = await model.generateContent({
-    contents: [{ role: "user", parts: [{ text: promptWithContent }] }],
-    generationConfig: { responseMimeType: "application/json" }
-  });
-
-  const text = result.response.text().trim();
-  const cleaned = text.replace(/^```json\s*/i, '').replace(/```\s*$/i, '').trim();
-  const parsed = JSON.parse(cleaned);
-  // Return original values for any fields that were skipped (empty input)
-  return {
-    systemPrompt: parsed.systemPrompt ?? content.systemPrompt,
-    firstMessage: parsed.firstMessage ?? content.firstMessage,
-    knowledgeBase: parsed.knowledgeBase ?? content.knowledgeBase,
-  };
+  // Try models in order; retry on 429 with exponential backoff
+  const modelsToTry = ['gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-2.5-flash'];
+  let lastError: any;
+  for (const modelName of modelsToTry) {
+    for (let attempt = 0; attempt < 3; attempt++) {
+      try {
+        const genAI = new GoogleGenerativeAI(apiKey);
+        const model = genAI.getGenerativeModel({ model: modelName }, { apiVersion: 'v1beta' });
+        const result = await model.generateContent({
+          contents: [{ role: "user", parts: [{ text: promptWithContent }] }],
+          generationConfig: { responseMimeType: "application/json" }
+        });
+        const text = result.response.text().trim();
+        const cleaned = text.replace(/^```json\s*/i, '').replace(/```\s*$/i, '').trim();
+        const parsed = JSON.parse(cleaned);
+        return {
+          systemPrompt: parsed.systemPrompt ?? content.systemPrompt,
+          firstMessage: parsed.firstMessage ?? content.firstMessage,
+          knowledgeBase: parsed.knowledgeBase ?? content.knowledgeBase,
+        };
+      } catch (err: any) {
+        lastError = err;
+        const is429 = err?.message?.includes('429') || err?.status === 429;
+        if (is429 && attempt < 2) {
+          await new Promise(r => setTimeout(r, (attempt + 1) * 3000));
+          continue;
+        }
+        break; // non-429 error or last attempt — try next model
+      }
+    }
+  }
+  throw lastError || new Error('Translation failed: all Gemini models exhausted.');
 }
 
 /**

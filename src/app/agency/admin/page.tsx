@@ -1447,8 +1447,22 @@ export default function AdminPage() {
                                     >
                                         {isTranslating ? <><Loader2 className="w-4 h-4 animate-spin" /> Translating...</> : 'Translate Content'}
                                     </button>
+                                    <button
+                                        onClick={() => {
+                                            const template = getTemplateByIndustry(config.metadata.industry);
+                                            if (template) {
+                                                setConfig(prev => ({ ...prev, vapi: { ...prev.vapi, systemPrompt: template.systemPrompt, firstMessage: template.firstMessage } }));
+                                            }
+                                            setContentLanguage('English');
+                                        }}
+                                        disabled={isTranslating}
+                                        className="px-4 py-2 text-sm font-semibold bg-slate-200 hover:bg-slate-300 text-slate-700 rounded disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+                                        title="Reset system prompt and first message back to English template"
+                                    >
+                                        Reset to English
+                                    </button>
                                 </div>
-                                <p className="text-xs text-slate-400">Auto-translates system prompt, first message, and knowledge base when you select a language. Click the button to re-translate if needed.</p>
+                                <p className="text-xs text-slate-400">Auto-translates the first message when you select a language. Click "Reset to English" if the system prompt gets into a non-English state.</p>
                             </div>
 
                             {/* Voice Model Selection (Conditional for ElevenLabs) */}
