@@ -94,7 +94,7 @@ export async function POST(req: Request) {
                             ? (langCode === 'hi' && !isNativeHindiVoice
                                 ? `\n# LANGUAGE — HINGLISH\nRespond in Hinglish: Hindi words written in Roman/English script. NEVER use Devanagari. Understand user queries in both Hindi and English — always answer the actual question regardless of which language they use. Example: "Dinner mein Dal Makhani, Paneer Tikka aur Garlic Naan available hai."${genderNote} CRITICAL: Never say you cannot answer a question due to language settings.`
                                 : `\n# LANGUAGE\nRespond primarily in ${langName}. Understand queries in both ${langName} and English. Always answer the user's actual question.${genderNote}`)
-                            : '';
+                            : `\n# LANGUAGE\nALWAYS respond in English ONLY. NEVER switch to any other language. Speech transcription may occasionally produce garbled text that looks like Russian or Korean — ignore the apparent language of the transcription and always respond in English. If you cannot understand a request, ask the user to repeat in English.`;
 
                         return `${systemPrompt}
 ${languageRule}
@@ -208,7 +208,8 @@ AVAILABILITY RULE: You MUST NEVER book an appointment without FIRST calling chec
             const NOVA3_UNSUPPORTED = new Set(['hi','ur','bn','gu','mr','pa','ta','te','kn','ml','si','ne','or','as']);
             let tModel = String(config.vapi.transcriber.model || '').toLowerCase();
             if (!tModel || tModel === 'nova-3') {
-                tModel = NOVA3_UNSUPPORTED.has(rawLangCode) ? 'nova-2' : 'nova-3';
+                // nova-2 handles Indian English accent and all Indic languages better than nova-3
+                tModel = 'nova-2';
             }
             transcriberObj = {
                 provider: tProvider,

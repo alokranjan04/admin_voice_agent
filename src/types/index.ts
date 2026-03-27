@@ -210,7 +210,7 @@ export const INITIAL_CONFIG: AgentConfiguration = {
     transcriber: {
       provider: 'deepgram',
       language: 'en-US',
-      model: 'nova-3',
+      model: 'nova-2',
       userName: '',
       userEmail: '',
       userPhone: ''

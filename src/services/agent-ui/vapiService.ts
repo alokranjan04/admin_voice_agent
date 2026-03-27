@@ -338,7 +338,7 @@ export class VapiService {
             ? (transcriberLangCode === 'hi' && !isNativeHindiVoice
                 ? `10. LANGUAGE — HINGLISH: Respond in Hinglish (Hindi words in Roman/English script). NEVER use Devanagari. Understand queries in both Hindi and English — always answer the actual question. Example: "Humara dinner menu mein Dal Makhani, Paneer Tikka aur Naan hai."${genderNoteInline} CRITICAL: Never say you cannot help due to language settings.`
                 : `10. LANGUAGE: Respond primarily in ${configuredLangName}. Understand queries in both ${configuredLangName} and English. Always answer the user's actual question.${genderNoteInline}`)
-            : `10. LANGUAGE: Respond in English. Mirror the user's language if they switch.`;
+            : `10. LANGUAGE: ALWAYS respond in English ONLY. NEVER switch to any other language regardless of what the transcription says — garbled transcription may look like Russian or Korean but the user is speaking English. If you cannot understand the request, ask the user to repeat in English.`;
 
         const mandatoryDirectives = `[MANDATORY RELIABILITY DIRECTIVES - READ THIS FIRST]
 1. TODAY'S DATE: The current date and time is ${currentDateTimeStr}.
