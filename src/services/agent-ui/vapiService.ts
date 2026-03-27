@@ -323,10 +323,21 @@ export class VapiService {
         const configuredLangName = LANG_NAMES[transcriberLangCode];
         const voiceProviderForLang = String(vapiConf?.voiceProvider || 'vapi').toLowerCase();
         const isNativeHindiVoice = voiceProviderForLang === 'azure' || voiceProviderForLang === '11labs';
+        // Detect female voice for grammatical gender in Hindi responses
+        const FEMALE_VOICE_IDS_INLINE = new Set([
+            'Leah','Mia','Jess','Tara','Zoe','Paige','Emma','Kylie','Savannah','Hana','Lily','Clara','Nico','Kai',
+            'hi-IN-SwaraNeural','hi-IN-AnanyaNeural','hi-IN-NeerjaNeural','en-IN-NeerjaNeural',
+            'en-US-JennyNeural','en-GB-SoniaNeural','en-AU-NatashaNeural',
+        ]);
+        const isFemaleVoiceInline = FEMALE_VOICE_IDS_INLINE.has(String(vapiConf?.voiceId || ''))
+            || String(vapiConf?.voiceId || '').toLowerCase().includes('female');
+        const genderNoteInline = (transcriberLangCode === 'hi' && isFemaleVoiceInline)
+            ? ' Use feminine Hindi grammar: say "kar sakti hoon" not "kar sakta hoon", "bataungi" not "bataunga".'
+            : '';
         const languageDirective = configuredLangName
             ? (transcriberLangCode === 'hi' && !isNativeHindiVoice
-                ? `10. LANGUAGE — HINGLISH: Respond in Hinglish (Hindi words in Roman/English script). NEVER use Devanagari. Understand queries in both Hindi and English — if the user asks in English, still respond in Hinglish. Example response: "Humara dinner menu mein Dal Makhani, Paneer Tikka aur Naan hai." CRITICAL: Always answer the user's actual question — never say you cannot help just because of language settings.`
-                : `10. LANGUAGE: Respond primarily in ${configuredLangName}. Understand queries in both ${configuredLangName} and English. Always answer the user's actual question.`)
+                ? `10. LANGUAGE — HINGLISH: Respond in Hinglish (Hindi words in Roman/English script). NEVER use Devanagari. Understand queries in both Hindi and English — always answer the actual question. Example: "Humara dinner menu mein Dal Makhani, Paneer Tikka aur Naan hai."${genderNoteInline} CRITICAL: Never say you cannot help due to language settings.`
+                : `10. LANGUAGE: Respond primarily in ${configuredLangName}. Understand queries in both ${configuredLangName} and English. Always answer the user's actual question.${genderNoteInline}`)
             : `10. LANGUAGE: Respond in English. Mirror the user's language if they switch.`;
 
         const mandatoryDirectives = `[MANDATORY RELIABILITY DIRECTIVES - READ THIS FIRST]

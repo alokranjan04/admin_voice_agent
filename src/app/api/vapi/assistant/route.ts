@@ -79,10 +79,21 @@ export async function POST(req: Request) {
                             return vp;
                         })();
                         const isNativeHindiVoice = earlyVProvider === 'azure' || earlyVProvider === '11labs';
+                        // Detect female voice for grammatical gender in Hindi
+                        const FEMALE_VOICE_IDS = new Set([
+                            'Leah','Mia','Jess','Tara','Zoe','Paige','Emma','Kylie','Savannah','Hana','Lily','Clara','Nico','Kai',
+                            'hi-IN-SwaraNeural','hi-IN-AnanyaNeural','hi-IN-NeerjaNeural','en-IN-NeerjaNeural',
+                            'en-US-JennyNeural','en-GB-SoniaNeural','en-AU-NatashaNeural',
+                        ]);
+                        const isFemaleVoice = FEMALE_VOICE_IDS.has(String(config.vapi.voiceId || ''))
+                            || String(config.vapi.voiceId || '').toLowerCase().includes('female');
+                        const genderNote = (langCode === 'hi' && isFemaleVoice)
+                            ? ' Use feminine Hindi grammar throughout: say "kar sakti hoon" not "kar sakta hoon", "bataungi" not "bataunga", "hoon" forms matching female speaker.'
+                            : '';
                         const languageRule = langName
                             ? (langCode === 'hi' && !isNativeHindiVoice
-                                ? `\n# LANGUAGE — HINGLISH\nRespond in Hinglish: Hindi words written in Roman/English script. NEVER use Devanagari. Understand user queries in both Hindi and English — always answer the actual question regardless of which language they use. Example: "Dinner mein Dal Makhani, Paneer Tikka aur Garlic Naan available hai." CRITICAL: Never say you cannot answer a question due to language settings.`
-                                : `\n# LANGUAGE\nRespond primarily in ${langName}. Understand queries in both ${langName} and English. Always answer the user's actual question — never refuse due to language settings.`)
+                                ? `\n# LANGUAGE — HINGLISH\nRespond in Hinglish: Hindi words written in Roman/English script. NEVER use Devanagari. Understand user queries in both Hindi and English — always answer the actual question regardless of which language they use. Example: "Dinner mein Dal Makhani, Paneer Tikka aur Garlic Naan available hai."${genderNote} CRITICAL: Never say you cannot answer a question due to language settings.`
+                                : `\n# LANGUAGE\nRespond primarily in ${langName}. Understand queries in both ${langName} and English. Always answer the user's actual question.${genderNote}`)
                             : '';
 
                         return `${systemPrompt}
