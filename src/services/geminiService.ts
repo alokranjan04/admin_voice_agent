@@ -245,7 +245,16 @@ export async function translateAgentContent(
   const genAI = new GoogleGenerativeAI(apiKey);
   const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" }, { apiVersion: 'v1beta' });
 
-  const prompt = `You are a professional translator. Translate the following voice AI agent content into ${targetLanguage}.
+  const isHinglish = targetLanguage === 'Hinglish';
+  const prompt = isHinglish
+    ? `You are a professional translator. Translate the following voice AI agent content into Hindi, but write ONLY in Roman/English script (Hinglish). Do NOT use any Devanagari script at all. Every Hindi word must be spelled phonetically using English letters. Example: write "Aapka swagat hai" not "आपका स्वागत है", write "Aapka naam kya hai?" not "आपका नाम क्या है?".
+Keep all placeholder variables like {{COMPANY_NAME}}, {{USER_NAME}} exactly as-is (do not translate them).
+Keep brand names, business names, and proper nouns in their original English form.
+Return ONLY a JSON object with keys: systemPrompt, firstMessage, knowledgeBase.
+
+Content to translate:
+${JSON.stringify(content, null, 2)}`
+    : `You are a professional translator. Translate the following voice AI agent content into ${targetLanguage}.
 Keep all placeholder variables like {{COMPANY_NAME}}, {{USER_NAME}} exactly as-is (do not translate them).
 Keep technical terms, brand names, and proper nouns in their original form.
 Return ONLY a JSON object with keys: systemPrompt, firstMessage, knowledgeBase.

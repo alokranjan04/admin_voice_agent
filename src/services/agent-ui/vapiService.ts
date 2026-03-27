@@ -19,6 +19,9 @@ export class VapiService {
     // Post-Call Automation State
     private conversationTranscript: { role: string, text: string }[] = [];
     private sessionMetadata: any = {};
+    // Holds metadata set by WelcomeForm/external caller for the NEXT call only.
+    // Cleared after being consumed in call-start so stale values never bleed between calls.
+    private pendingSessionMetadata: any = {};
 
     constructor() {
         const apiKey = process.env.NEXT_PUBLIC_VAPI_PUBLIC_KEY || process.env.VITE_VAPI_PUBLIC_KEY;
@@ -50,21 +53,23 @@ export class VapiService {
             this.onStatusChange('connected');
             this.onLog({ type: 'system', text: 'Vapi Call Started', timestamp: new Date() });
 
-            // Reset session state and pre-fill with config user info if available
+            // Reset session state — start completely fresh each call
             this.conversationTranscript = [];
 
-            // Priority: Existing Metadata (from form) > URL Params > Config Params
+            // Consume pending metadata (from WelcomeForm) and clear it so it never bleeds into future calls
+            const pending = this.pendingSessionMetadata;
+            this.pendingSessionMetadata = {};
+
+            // Priority: WelcomeForm (pending) > URL Params > Config Params
             const urlParams = new URLSearchParams(window.location.search);
+            const resolvedName = pending.userName || pending.name || urlParams.get('uName') || this.currentConfig?.vapi?.transcriber?.userName || '';
+            const resolvedEmail = pending.userEmail || pending.email || urlParams.get('uEmail') || this.currentConfig?.vapi?.transcriber?.userEmail || '';
+            const resolvedPhone = pending.userPhone || pending.phone || urlParams.get('uPhone') || this.currentConfig?.vapi?.transcriber?.userPhone || '';
             this.sessionMetadata = {
-                userName: this.sessionMetadata.userName || urlParams.get('uName') || this.currentConfig?.vapi?.transcriber?.userName || '',
-                userEmail: this.sessionMetadata.userEmail || urlParams.get('uEmail') || this.currentConfig?.vapi?.transcriber?.userEmail || '',
-                userPhone: this.sessionMetadata.userPhone || urlParams.get('uPhone') || this.currentConfig?.vapi?.transcriber?.userPhone || '',
-                // Support both key styles
-                name: this.sessionMetadata.name || this.sessionMetadata.userName,
-                email: this.sessionMetadata.email || this.sessionMetadata.userEmail,
-                phone: this.sessionMetadata.phone || this.sessionMetadata.userPhone
+                userName: resolvedName, userEmail: resolvedEmail, userPhone: resolvedPhone,
+                name: resolvedName, email: resolvedEmail, phone: resolvedPhone
             };
-            console.log("[Metadata] Initialized with config/URL:", this.sessionMetadata);
+            console.log("[Metadata] Initialized fresh for this call:", this.sessionMetadata);
         });
 
         this.vapi.on('call-end', async () => {
@@ -217,8 +222,8 @@ export class VapiService {
      * Set session metadata (e.g., user details from welcome form)
      */
     public setSessionMetadata(metadata: any) {
-        this.sessionMetadata = { ...this.sessionMetadata, ...metadata };
-        console.log('[Metadata] Updated from external source:', this.sessionMetadata);
+        this.pendingSessionMetadata = { ...this.pendingSessionMetadata, ...metadata };
+        console.log('[Metadata] Pending for next call:', this.pendingSessionMetadata);
     }
 
     /**
@@ -245,9 +250,9 @@ export class VapiService {
             try {
                 this.onLog({ type: 'system', text: `Starting session with Assistant ID: ${options.assistantId}`, timestamp: new Date() });
 
-                const sessionName = this.sessionMetadata.userName || this.sessionMetadata.name || '';
-                const sessionEmail = this.sessionMetadata.userEmail || this.sessionMetadata.email || '';
-                const sessionPhone = this.sessionMetadata.userPhone || this.sessionMetadata.phone || '';
+                const sessionName = this.pendingSessionMetadata.userName || this.pendingSessionMetadata.name || '';
+                const sessionEmail = this.pendingSessionMetadata.userEmail || this.pendingSessionMetadata.email || '';
+                const sessionPhone = this.pendingSessionMetadata.userPhone || this.pendingSessionMetadata.phone || '';
 
                 const startOptions: any = {
                     metadata: {
@@ -332,9 +337,9 @@ export class VapiService {
 5. OFFER SLOTS: If findAvailableSlots returns slots, you MUST list them to the user immediately.
 6. CALENDAR ID: Use 'alokranjan04@gmail.com' for all operations.
 7. PRE-VERIFIED USER CONTEXT (IDENTIFICATION):
-   - Name: ${this.sessionMetadata.name || this.sessionMetadata.userName || "Unknown"}
-   - Phone: ${this.sessionMetadata.phone || this.sessionMetadata.userPhone || "Unknown"}
-   - Email: ${this.sessionMetadata.email || this.sessionMetadata.userEmail || "Unknown"}
+   - Name: ${this.pendingSessionMetadata.name || this.pendingSessionMetadata.userName || "Unknown"}
+   - Phone: ${this.pendingSessionMetadata.phone || this.pendingSessionMetadata.userPhone || "Unknown"}
+   - Email: ${this.pendingSessionMetadata.email || this.pendingSessionMetadata.userEmail || "Unknown"}
 
    RULE: The user has ALREADY provided and verified their Name, Phone, and Email via our secure pre-call form.
    RULE: If Name, Phone, or Email are provided (not 'Unknown'), you MUST NOT ask for them.

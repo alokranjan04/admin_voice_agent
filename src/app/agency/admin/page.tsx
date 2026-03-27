@@ -548,9 +548,14 @@ export default function AdminPage() {
         if (language === 'English') return;
         setIsTranslating(true);
         try {
+            // Use Hinglish (Roman script Hindi) when Hindi is selected with a non-native Hindi TTS voice.
+            // Azure and ElevenLabs can handle Devanagari; VAPI/PlayHT/Rime cannot.
+            const voiceProvider = (config.vapi.voiceProvider || 'vapi').toLowerCase();
+            const isNativeHindiTTS = voiceProvider === 'azure' || voiceProvider === 'elevenlabs';
+            const targetLang = (language === 'Hindi' && !isNativeHindiTTS) ? 'Hinglish' : language;
             const translated = await translateAgentContent(
                 { systemPrompt: config.vapi.systemPrompt, firstMessage: config.vapi.firstMessage, knowledgeBase: config.vapi.knowledgeBase },
-                language
+                targetLang
             );
             setConfig(prev => ({ ...prev, vapi: { ...prev.vapi, ...translated } }));
         } catch (e: any) {
@@ -1379,15 +1384,36 @@ export default function AdminPage() {
                                         onChange={e => {
                                             const lang = e.target.value;
                                             setContentLanguage(lang);
-                                            // Auto-switch to a Hindi voice when Hindi is selected
+
+                                            // Language name → ISO code for transcriber
+                                            const LANG_TO_ISO: Record<string, string> = {
+                                                'English':'en','Hindi':'hi','Arabic':'ar','Bengali':'bn',
+                                                'Chinese':'zh','French':'fr','German':'de','Gujarati':'gu',
+                                                'Indonesian':'id','Italian':'it','Japanese':'ja','Kannada':'kn',
+                                                'Korean':'ko','Malayalam':'ml','Marathi':'mr','Nepali':'ne',
+                                                'Odia':'or','Polish':'pl','Portuguese':'pt','Punjabi':'pa',
+                                                'Russian':'ru','Spanish':'es','Swahili':'sw','Tamil':'ta',
+                                                'Telugu':'te','Thai':'th','Turkish':'tr','Ukrainian':'uk',
+                                                'Urdu':'ur','Vietnamese':'vi',
+                                            };
+                                            const isoCode = LANG_TO_ISO[lang] || 'en';
+
+                                            // Always sync transcriber language with content language
                                             const currentProvider = (config.vapi.voiceProvider || 'vapi').toLowerCase();
-                                            if (lang === 'Hindi') {
-                                                if (currentProvider === 'vapi') {
-                                                    setConfig(prev => ({ ...prev, vapi: { ...prev.vapi, voiceProvider: 'vapi', voiceId: 'Rohan' } }));
-                                                } else if (currentProvider === 'azure') {
-                                                    setConfig(prev => ({ ...prev, vapi: { ...prev.vapi, voiceId: 'hi-IN-SwaraNeural' } }));
+                                            setConfig(prev => ({
+                                                ...prev,
+                                                vapi: {
+                                                    ...prev.vapi,
+                                                    transcriber: {
+                                                        ...prev.vapi.transcriber,
+                                                        language: isoCode,
+                                                    },
+                                                    // Auto-switch voice for Hindi
+                                                    ...(lang === 'Hindi' && currentProvider === 'vapi' ? { voiceProvider: 'vapi', voiceId: 'Rohan' } : {}),
+                                                    ...(lang === 'Hindi' && currentProvider === 'azure' ? { voiceId: 'hi-IN-SwaraNeural' } : {}),
                                                 }
-                                            }
+                                            }));
+
                                             if (lang !== 'English') handleTranslateContent(lang);
                                         }}
                                     >
