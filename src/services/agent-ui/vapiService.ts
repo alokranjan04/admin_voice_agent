@@ -210,7 +210,10 @@ export class VapiService {
             let msg = extractMsg(error) || 'Unknown VAPI error — check browser console for details.';
             // Translate known infrastructure errors into actionable messages
             if (msg.toLowerCase().includes('ejection') || msg.toLowerCase().includes('meeting has ended')) {
-                msg = 'Call disconnected by server (ejection). Possible causes:\n1. AI model not available on your VAPI plan — go to admin, set model to "gpt-4o", re-validate.\n2. VAPI account out of credits/minutes — check vapi.ai dashboard → Billing.\n3. VAPI private key expired — check Settings → API Keys in your VAPI dashboard.';
+                msg = 'Call disconnected by server (ejection). Possible causes: (1) AI model not available on your VAPI plan — set model to gpt-4o and re-validate. (2) VAPI account out of credits — check vapi.ai dashboard → Billing. (3) VAPI private key expired.';
+            }
+            if (msg.toLowerCase().includes('eleven') || msg.toLowerCase().includes('elevenlabs') || msg.toLowerCase().includes('pipeline error')) {
+                msg = 'ElevenLabs voice failed. Either add your ElevenLabs API key in VAPI dashboard → Settings → Voice Providers, or switch the Voice Provider to "Vapi" in admin settings and re-validate.';
             }
             console.error('[Vapi Error] Full object:', JSON.stringify(error, null, 2), '| Extracted:', msg);
             this.onLog({ type: 'system', text: `Vapi Error: ${msg}`, timestamp: new Date() });
