@@ -210,7 +210,7 @@ export class VapiService {
             let msg = extractMsg(error) || 'Unknown VAPI error — check browser console for details.';
             // Translate known infrastructure errors into actionable messages
             if (msg.toLowerCase().includes('ejection') || msg.toLowerCase().includes('meeting has ended')) {
-                msg = 'Call disconnected by server. This usually means the AI model (e.g. gpt-5.2) is not available in your VAPI plan — try switching to gpt-4o in admin settings and re-validating.';
+                msg = 'Call disconnected by server (ejection). Possible causes:\n1. AI model not available on your VAPI plan — go to admin, set model to "gpt-4o", re-validate.\n2. VAPI account out of credits/minutes — check vapi.ai dashboard → Billing.\n3. VAPI private key expired — check Settings → API Keys in your VAPI dashboard.';
             }
             console.error('[Vapi Error] Full object:', JSON.stringify(error, null, 2), '| Extracted:', msg);
             this.onLog({ type: 'system', text: `Vapi Error: ${msg}`, timestamp: new Date() });
