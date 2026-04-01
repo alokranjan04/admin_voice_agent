@@ -15,7 +15,6 @@ env:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    environment: NEXT_PUBLIC_GEMINI_API_KEY
     steps:
       - name: Checkout code
         uses: actions/checkout@v5
@@ -46,6 +45,7 @@ jobs:
             --build-arg NEXT_PUBLIC_GOOGLE_CLIENT_ID="${{ secrets.NEXT_PUBLIC_GOOGLE_CLIENT_ID }}" \
             --build-arg NEXT_PUBLIC_APP_URL="${{ secrets.NEXT_PUBLIC_APP_URL }}" \
             --build-arg NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY="${{ secrets.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY }}" \
+            --build-arg NODE_OPTIONS="--max-old-space-size=4096" \
             -t us-central1-docker.pkg.dev/${{ env.PROJECT_ID }}/voice-ai-repo/voice-ai-admin:${{ github.sha }} .
           docker push us-central1-docker.pkg.dev/${{ env.PROJECT_ID }}/voice-ai-repo/voice-ai-admin:${{ github.sha }}
 
