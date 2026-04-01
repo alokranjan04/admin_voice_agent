@@ -3,11 +3,27 @@ import nodemailer from 'nodemailer';
 import { researchBusiness } from '@/services/researchService';
 import { summarizeBusinessResearch, extractServicesFromResearch, generateIndustryFAQs, generateCustomerIntentQuestionnaire } from '@/services/geminiService';
 import { adminDb } from '@/lib/firebase-admin';
+import { createRateLimiter } from '@/lib/rate-limit';
 
 export const dynamic = 'force-dynamic';
 
+// Rate limit: 3 requests per IP per 10 minutes — prevents credit abuse
+const limiter = createRateLimiter({ windowMs: 10 * 60 * 1000, maxRequests: 3 });
+
 export async function POST(req: Request) {
     try {
+        // Rate limit check (public route — no Firebase auth required)
+        const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
+            || req.headers.get('x-real-ip')
+            || 'unknown';
+        if (limiter.check(ip)) {
+            console.warn(`[Generate Agent API] Rate limited IP: ${ip}`);
+            return NextResponse.json(
+                { error: 'Too many requests. Please wait a few minutes and try again.' },
+                { status: 429 }
+            );
+        }
+
         const body = await req.json();
         const { name, company, email, phone, website, deliveryOption, language = 'English', companyDetails = '', industry = '', interest = '', isSutherland = false } = body;
 

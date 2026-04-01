@@ -1,0 +1,80 @@
+   Γû▓ Next.js 15.5.12
+   - Environments: .env.local, .env
+
+   Creating an optimized production build ...
+ Γ£ô Compiled successfully in 16.2s
+   Linting and checking validity of types ...
+   Collecting page data ...
+[Firebase Admin] Attempting JSON parse. String length: 2354
+[Firebase Admin] Attempting JSON parse. String length: 2354
+[Firebase Admin] Key Start: {"type":"service_acc...
+[Firebase Admin] Key End: ...n":"googleapis.com"}
+[Firebase Admin] Key Start: {"type":"service_acc...
+[Firebase Admin] Key End: ...n":"googleapis.com"}
+[Firebase Admin] Attempting JSON parse. String length: 2354
+[Firebase Admin] Key Start: {"type":"service_acc...
+[Firebase Admin] Key End: ...n":"googleapis.com"}
+[Firebase Admin] Attempting JSON parse. String length: 2354
+[Firebase Admin] Attempting JSON parse. String length: 2354
+[Firebase Admin] Key Start: {"type":"service_acc...
+[Firebase Admin] Key End: ...n":"googleapis.com"}
+[Firebase Admin] Key Start: {"type":"service_acc...
+[Firebase Admin] Key End: ...n":"googleapis.com"}
+[Firebase Admin] Attempting JSON parse. String length: 2354
+[Firebase Admin] Key Start: {"type":"service_acc...
+[Firebase Admin] Key End: ...n":"googleapis.com"}
+[Firebase Admin] Initialized successfully.
+[Firebase Admin] Initialized successfully.
+[Firebase Admin] Initialized successfully.
+[Firebase Admin] Initialized successfully.
+[Firebase Admin] Initialized successfully.
+[Firebase Admin] Initialized successfully.
+   Generating static pages (0/21) ...
+Initializing Firebase with Project: ai-voice-agent-c2a2b
+[Firebase Admin] Attempting JSON parse. String length: 2354
+[Firebase Admin] Key Start: {"type":"service_acc...
+[Firebase Admin] Key End: ...n":"googleapis.com"}
+[Firebase Admin] Initialized successfully.
+   Generating static pages (5/21) 
+   Generating static pages (10/21) 
+   Generating static pages (15/21) 
+ Γ£ô Generating static pages (21/21)
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                                 Size  First Load JS
+Γöî Γùï /                                     271 kB         498 kB
+Γö£ Γùï /_not-found                            997 B         103 kB
+Γö£ Γùï /agency                                177 B         102 kB
+Γö£ Γùï /agency/admin                        47.2 kB         312 kB
+Γö£ Γùï /agentUI                               189 B         368 kB
+Γö£ ╞Æ /agentUI/[orgId]/[agentId]             189 B         368 kB
+Γö£ ╞Æ /api/agent/[orgId]/[agentId]           177 B         102 kB
+Γö£ ╞Æ /api/auth/google                       177 B         102 kB
+Γö£ ╞Æ /api/calendar/availability             177 B         102 kB
+Γö£ ╞Æ /api/check-call-status                 177 B         102 kB
+Γö£ ╞Æ /api/cleanup-agents                    177 B         102 kB
+Γö£ ╞Æ /api/diag                              177 B         102 kB
+Γö£ ╞Æ /api/email                             177 B         102 kB
+Γö£ ╞Æ /api/generate-demo-agent               177 B         102 kB
+Γö£ ╞Æ /api/generate-lead-agent               177 B         102 kB
+Γö£ ╞Æ /api/livekit/token                     177 B         102 kB
+Γö£ ╞Æ /api/stripe/checkout                   177 B         102 kB
+Γö£ ╞Æ /api/stripe/portal                     177 B         102 kB
+Γö£ ╞Æ /api/stripe/webhook                    177 B         102 kB
+Γö£ ╞Æ /api/vapi/assistant                    177 B         102 kB
+Γö£ ╞Æ /api/vapi/call                         177 B         102 kB
+Γö£ ╞Æ /api/vapi/tools                        177 B         102 kB
+Γö£ ╞Æ /api/vapi/webhook                      177 B         102 kB
+Γö£ ╞Æ /business/[orgId]/[agentId]          4.94 kB         107 kB
+Γö£ Γùï /sutherland                          14.2 kB         241 kB
+Γöö ╞Æ /test/[assistantId]                    429 B         368 kB
++ First Load JS shared by all             102 kB
+  Γö£ chunks/1255-a390e12b70b4a9fb.js        46 kB
+  Γö£ chunks/4bd1b696-f785427dddbba9fb.js  54.2 kB
+  Γöö other shared chunks (total)          2.04 kB
+
+
+Γùï  (Static)   prerendered as static content
+╞Æ  (Dynamic)  server-rendered on demand
+

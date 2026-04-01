@@ -1,8 +1,24 @@
 import { NextResponse } from 'next/server';
 import axios from 'axios';
+import { createRateLimiter } from '@/lib/rate-limit';
+
+// Rate limit: 3 requests per IP per 10 minutes — prevents credit abuse
+const limiter = createRateLimiter({ windowMs: 10 * 60 * 1000, maxRequests: 3 });
 
 export async function POST(req: Request) {
     try {
+        // Rate limit check
+        const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
+            || req.headers.get('x-real-ip')
+            || 'unknown';
+        if (limiter.check(ip)) {
+            console.warn(`[Demo Agent API] Rate limited IP: ${ip}`);
+            return NextResponse.json(
+                { error: 'Too many requests. Please wait a few minutes and try again.' },
+                { status: 429 }
+            );
+        }
+
         const apiKey = process.env.VITE_VAPI_PRIVATE_KEY || process.env.VAPI_PRIVATE_API_KEY;
 
         if (!apiKey) {

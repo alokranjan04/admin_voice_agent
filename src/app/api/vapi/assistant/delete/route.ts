@@ -1,7 +1,12 @@
 import { NextResponse } from 'next/server';
+import { verifyAuth } from '@/lib/auth-guard';
 
 export async function POST(req: Request) {
     try {
+        // Require Firebase authentication — this route deletes Vapi assistants
+        const authResult = await verifyAuth(req);
+        if (authResult instanceof NextResponse) return authResult;
+
         const { assistantId } = await req.json();
         if (!assistantId) {
             return NextResponse.json({ error: 'assistantId is required' }, { status: 400 });

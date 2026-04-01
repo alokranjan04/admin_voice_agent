@@ -1,12 +1,29 @@
 
 import axios from 'axios';
 import { AgentConfiguration } from '../types';
+import { auth } from './firebase';
 
-const VAPI_API_URL = 'https://api.vapi.ai/assistant';
+/**
+ * Gets the current user's Firebase ID token for authenticated API calls.
+ * Returns null if the user is not logged in.
+ */
+async function getAuthHeaders(): Promise<Record<string, string>> {
+    const user = auth?.currentUser;
+    if (!user) return {};
+    try {
+        const token = await user.getIdToken();
+        return { 'Authorization': `Bearer ${token}` };
+    } catch {
+        return {};
+    }
+}
 
 export const createVapiAssistant = async (config: AgentConfiguration) => {
     try {
-        const response = await axios.post('/api/vapi/assistant', config);
+        const authHeaders = await getAuthHeaders();
+        const response = await axios.post('/api/vapi/assistant', config, {
+            headers: authHeaders
+        });
         console.log("VAPI Assistant Created Successfully via Proxy");
         return response.data;
     } catch (error: any) {
@@ -19,9 +36,12 @@ export const createVapiAssistant = async (config: AgentConfiguration) => {
 
 export const makeOutboundCall = async (phoneNumber: string, assistantId: string) => {
     try {
+        const authHeaders = await getAuthHeaders();
         const response = await axios.post('/api/vapi/call', {
             phoneNumber,
             assistantId
+        }, {
+            headers: authHeaders
         });
         console.log("Outbound call triggered successfully via Proxy");
         return response.data;

@@ -23,6 +23,11 @@ export class VapiService {
     // Cleared after being consumed in call-start so stale values never bleed between calls.
     private pendingSessionMetadata: any = {};
 
+    // Auto-retry state: tracks last assistantId so we can silently retry with VAPI native voice
+    // when ElevenLabs or Azure pipeline fails on the first attempt.
+    private lastAssistantId: string | null = null;
+    private pipelineRetryDone = false;
+
     constructor() {
         const apiKey = process.env.NEXT_PUBLIC_VAPI_PUBLIC_KEY || process.env.VITE_VAPI_PUBLIC_KEY;
         if (apiKey) {
@@ -55,6 +60,7 @@ export class VapiService {
 
             // Reset session state — start completely fresh each call
             this.conversationTranscript = [];
+            this.pipelineRetryDone = false;
 
             // Consume pending metadata (from WelcomeForm) and clear it so it never bleeds into future calls
             const pending = this.pendingSessionMetadata;
@@ -213,7 +219,27 @@ export class VapiService {
                 msg = 'Call disconnected by server (ejection). Possible causes: (1) AI model not available on your VAPI plan — set model to gpt-4o and re-validate. (2) VAPI account out of credits — check vapi.ai dashboard → Billing. (3) VAPI private key expired.';
             }
             if (msg.toLowerCase().includes('eleven') || msg.toLowerCase().includes('elevenlabs') || msg.toLowerCase().includes('pipeline error')) {
-                msg = 'ElevenLabs voice failed. Either add your ElevenLabs API key in VAPI dashboard → Settings → Voice Providers, or switch the Voice Provider to "Vapi" in admin settings and re-validate.';
+                // Auto-retry once with an explicit VAPI native voice override.
+                // This handles the edge case where VAPI's server initialised the ElevenLabs
+                // pipeline before our startOptions voice override was applied.
+                if (this.lastAssistantId && !this.pipelineRetryDone) {
+                    this.pipelineRetryDone = true;
+                    console.warn('[Vapi] ElevenLabs pipeline error — auto-retrying with VAPI native voice...');
+                    this.onLog({ type: 'system', text: 'Switching to backup voice and reconnecting...', timestamp: new Date() });
+                    setTimeout(async () => {
+                        try {
+                            await this.vapi.start(this.lastAssistantId, {
+                                voice: { provider: 'vapi', voiceId: 'Mia' }
+                            });
+                        } catch (retryErr: any) {
+                            console.error('[Vapi] Auto-retry failed:', retryErr);
+                            this.onLog({ type: 'system', text: 'Vapi Error: Voice pipeline unavailable. Please try again.', timestamp: new Date() });
+                            this.onStatusChange('disconnected');
+                        }
+                    }, 1200);
+                    return; // Don't show error to user — retry is in progress
+                }
+                msg = 'Voice pipeline unavailable. Please try again.';
             }
             console.error('[Vapi Error] Full object:', JSON.stringify(error, null, 2), '| Extracted:', msg);
             this.onLog({ type: 'system', text: `Vapi Error: ${msg}`, timestamp: new Date() });
@@ -273,17 +299,19 @@ export class VapiService {
                 };
                 console.log('[Vapi] Injecting user context via variableValues:', { sessionName, sessionEmail, sessionPhone });
 
-                // Azure TTS requires Azure credentials configured in the VAPI dashboard.
-                // Override Azure voice to VAPI PlayAI so web demo calls always work without extra setup.
-                const savedVoiceProvider = String(this.currentConfig?.vapi?.voiceProvider || '').toLowerCase();
-                if (savedVoiceProvider === 'azure') {
-                    const vapiValidVoices = ["Clara","Godfrey","Elliot","Kylie","Rohan","Lily","Savannah","Hana","Cole","Harry","Paige","Spencer","Nico","Kai","Emma","Sagar","Neil","Leah","Tara","Jess","Leo","Dan","Mia","Zac","Zoe"];
-                    const savedVoiceId = String(this.currentConfig?.vapi?.voiceId || '');
-                    // Use stored voiceId if it's a valid VAPI PlayAI voice, otherwise default to Rohan
-                    const fallbackVoiceId = vapiValidVoices.includes(savedVoiceId) ? savedVoiceId : 'Rohan';
-                    startOptions.voice = { provider: 'vapi', voiceId: fallbackVoiceId };
-                    console.log('[Vapi] Azure voice detected — overriding to VAPI PlayAI for web call:', fallbackVoiceId);
-                }
+                // Always force VAPI native PlayAI voice for web calls started via assistantId.
+                // The stored VAPI assistant may have ElevenLabs or Azure configured — both require
+                // external credentials in the VAPI dashboard that may not be available. VAPI native
+                // voices work with zero credentials and never cause pipeline failures.
+                // If the stored voiceId is already a valid VAPI native voice, keep it; otherwise
+                // fall back to 'Mia' (clear, professional female voice).
+                const VAPI_NATIVE_VOICES = new Set(["Clara","Godfrey","Elliot","Kylie","Rohan","Lily","Savannah","Hana","Cole","Harry","Paige","Spencer","Nico","Kai","Emma","Sagar","Neil","Leah","Tara","Jess","Leo","Dan","Mia","Zac","Zoe"]);
+                const savedVoiceId = String(this.currentConfig?.vapi?.voiceId || '');
+                const safeVoiceId = VAPI_NATIVE_VOICES.has(savedVoiceId) ? savedVoiceId : 'Mia';
+                startOptions.voice = { provider: 'vapi', voiceId: safeVoiceId };
+                this.lastAssistantId = options.assistantId;
+                this.pipelineRetryDone = false;
+                console.log('[Vapi] Forcing VAPI native voice for web call:', safeVoiceId);
 
                 await this.vapi.start(options.assistantId, startOptions);
                 return;
@@ -385,8 +413,8 @@ ${languageDirective}\n\n`;
             if (modelProvider === "anthropic") modelProvider = "anthropic";
             if (modelProvider === "together" || modelProvider === "togetherai") modelProvider = "together-ai";
 
-            let voiceProvider = vapiConf?.voiceProvider?.toLowerCase() || "11labs";
-            if (voiceProvider === "elevenlabs" || voiceProvider === "eleven labs") voiceProvider = "11labs";
+            let voiceProvider = vapiConf?.voiceProvider?.toLowerCase() || "vapi";
+            if (voiceProvider === "elevenlabs" || voiceProvider === "eleven labs" || voiceProvider === "11labs") voiceProvider = "vapi";
             if (voiceProvider === "openai") voiceProvider = "openai";
             if (voiceProvider === "playht") voiceProvider = "playht";
             if (voiceProvider === "cartesia") voiceProvider = "cartesia";
@@ -396,9 +424,8 @@ ${languageDirective}\n\n`;
             let voiceId = vapiConf?.voiceId;
             if (!voiceId) {
                 if (voiceProvider === 'azure') voiceId = "andrew";
-                else if (voiceProvider === '11labs') voiceId = "cjVigAj5ms15Di0SA2K6";
                 else if (voiceProvider === 'openai') voiceId = "alloy";
-                else voiceId = "cjVigAj5ms15Di0SA2K6";
+                else voiceId = "Mia"; // VAPI native default — no external credentials needed
             }
             voiceId = String(voiceId);
 

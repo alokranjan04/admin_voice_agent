@@ -525,9 +525,10 @@ export default function AdminPage() {
             const agentConfig: any = await getAgentConfig(agentId);
             const vapiAssId = agentConfig?.vapi?.assistantId;
             if (vapiAssId) {
+                const token = await user?.getIdToken();
                 await fetch('/api/vapi/assistant/delete', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: { 'Content-Type': 'application/json', ...(token ? { 'Authorization': `Bearer ${token}` } : {}) },
                     body: JSON.stringify({ assistantId: vapiAssId })
                 });
             }
@@ -639,9 +640,10 @@ export default function AdminPage() {
 
         setIsCalling(true);
         try {
+            const token = await user?.getIdToken();
             const response = await fetch('/api/vapi/call', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 'Content-Type': 'application/json', ...(token ? { 'Authorization': `Bearer ${token}` } : {}) },
                 body: JSON.stringify({
                     phoneNumber: config.vapi.transcriber?.userPhone,
                     assistantId: vapiAssistantId

@@ -1,8 +1,13 @@
 import { NextResponse } from 'next/server';
 import axios from 'axios';
+import { verifyAuth } from '@/lib/auth-guard';
 
 export async function POST(req: Request) {
     try {
+        // Require Firebase authentication — this route creates/updates Vapi assistants
+        const auth = await verifyAuth(req);
+        if (auth instanceof NextResponse) return auth;
+
         const config = await req.json();
 
         if (!config) {

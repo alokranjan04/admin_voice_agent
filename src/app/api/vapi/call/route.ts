@@ -1,8 +1,13 @@
 import { NextResponse } from 'next/server';
 import axios from 'axios';
+import { verifyAuth } from '@/lib/auth-guard';
 
 export async function POST(req: Request) {
     try {
+        // Require Firebase authentication — this route triggers billable phone calls
+        const auth = await verifyAuth(req);
+        if (auth instanceof NextResponse) return auth;
+
         const { phoneNumber, assistantId } = await req.json();
 
         if (!phoneNumber || !assistantId) {
