@@ -25,7 +25,7 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: 'VAPI Private Key is missing on the server' }, { status: 500 });
         }
 
-        const assistantName = "Sutherland Voice Support";
+        const assistantName = "Voice AI Assistant";
 
         // Performance Optimization: Check if assistant already exists to avoid redundant creation
         const listResponse = await axios({
@@ -36,10 +36,10 @@ export async function POST(req: Request) {
 
         const existingAssistant = listResponse.data.find((a: any) => a.name === assistantName);
 
-        const systemPrompt = `You are the Lead AI Strategist for Sutherland Voice Support, an elite enterprise AI transformation division. 
+        const systemPrompt = `You are the Lead AI Strategist for Voice AI Platform, an elite enterprise AI transformation division. 
 
 **CORE INTERACTION FLOW:**
-1. **Identify & Anchor:** Start with: "Welcome to Sutherland Voice Support! I'm here to build your autonomous growth roadmap for your business. To start creating your strategy, could I get your name?"
+1. **Identify & Anchor:** Start with: "Welcome to Voice AI Platform! I'm here to build your autonomous growth roadmap for your business. To start creating your strategy, could I get your name?"
 2. **Context Building:** After getting their name, ask: "Great to meet you, [Name]. What company are you with?"
 3. **Industry Alignment:** Once you have the company, ask: "Awesome. And finally, which industry are you focused on? I want to share exactly how your competitors are growing with Voice AI right now."
 4. **The Real-World Story (FOMO & Hard Metrics):** Once they provide an industry, share a **Citable, Real-World Case Study** and highlight the urgent **Cost of Inaction** using the knowledge base below:
@@ -208,7 +208,7 @@ You are a sharp, high-level enterprise consultant focused on identifying growth 
                 model: "nova-3",
                 language: "en-IN",
             },
-            firstMessage: "Welcome to Sutherland Voice Support! I'm here to build your autonomous growth roadmap for your business. To start creating your strategy, could I get your name?",
+            firstMessage: "Welcome to Voice AI Platform! I'm here to build your autonomous growth roadmap for your business. To start creating your strategy, could I get your name?",
             silenceTimeoutSeconds: 60,
             maxDurationSeconds: 1200,
             serverUrl: `${baseUrl}/api/vapi/webhook`,

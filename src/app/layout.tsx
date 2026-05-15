@@ -14,7 +14,7 @@ const sora = Sora({
 });
 
 export const metadata: Metadata = {
-    title: "Sutherland | Enterprise Voice AI Platform",
+    title: "Enterprise Voice AI Platform",
     description: "The Agentic Enterprise Starts Here. Generate Your AI Agent in 60 Seconds.",
 };
 

@@ -15,7 +15,6 @@ import {
 } from 'lucide-react';
 import SutherlandLeadForm from '@/components/SutherlandLeadForm';
 import DemoCallButton from '@/components/DemoCallButton';
-import Image from 'next/image';
 
 const stats = [
     { label: "Phone Calls Weekly", value: "2,400+", icon: Phone },
@@ -55,15 +54,7 @@ export default function SutherlandLandingPage() {
             <header className="fixed top-0 left-0 right-0 z-50 bg-[#0a1628]/80 backdrop-blur-xl border-b border-white/5">
                 <nav className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
                     <div className="flex items-center gap-12">
-                        <Image 
-                            src="/images/sutherland-logo.png"
-                            alt="Sutherland Logo"
-                            width={160}
-                            height={40}
-                            className="brightness-0 invert priority"
-                            priority
-                            unoptimized
-                        />
+                        <span className="text-xl font-bold font-display tracking-tight text-white">Voice AI Platform</span>
                         <div className="hidden lg:flex items-center gap-8 text-[10px] font-black uppercase tracking-[0.25em] text-gray-500">
                             <a href="#" className="hover:text-white transition-colors">Services</a>
                             <a href="#" className="hover:text-white transition-colors text-white">Platform</a>
@@ -222,17 +213,10 @@ export default function SutherlandLandingPage() {
             <footer className="border-t border-white/5 py-16 bg-black/20">
                 <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
                     <div className="space-y-8 col-span-1 lg:col-span-1">
-                        <Image 
-                            src="/images/sutherland-logo.png"
-                            alt="Sutherland Logo"
-                            width={160}
-                            height={40}
-                            className="brightness-0 invert opacity-60 unoptimized"
-                            unoptimized
-                        />
+                        <span className="text-xl font-bold font-display tracking-tight text-white opacity-60">Voice AI Platform</span>
                         <p className="text-gray-500 text-xs font-bold leading-relaxed uppercase tracking-widest">
-                            Global Experience <br />
-                            Transformation Agency.
+                            Enterprise Voice <br />
+                            AI Solutions.
                         </p>
                     </div>
                     <div>
@@ -263,7 +247,7 @@ export default function SutherlandLandingPage() {
                     </div>
                 </div>
                 <div className="max-w-7xl mx-auto px-6 pt-12 border-t border-white/5 flex flex-col md:flex-row items-center justify-between gap-8 text-[10px] font-black uppercase tracking-[0.25em] text-gray-600">
-                    <p>© 2026 Sutherland Global. All rights reserved.</p>
+                    <p>© 2026 Voice AI Platform. All rights reserved.</p>
                     <div className="flex gap-8">
                         <a href="#" className="hover:text-white">Privacy</a>
                         <a href="#" className="hover:text-white">Terms</a>

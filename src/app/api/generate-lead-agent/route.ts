@@ -25,9 +25,9 @@ export async function POST(req: Request) {
         }
 
         const body = await req.json();
-        const { name, company, email, phone, website, deliveryOption, language = 'English', companyDetails = '', industry = '', interest = '', isSutherland = false } = body;
+        const { name, company, email, phone, website, deliveryOption, language = 'English', companyDetails = '', industry = '', interest = '' } = body;
 
-        console.log(`[Generate Agent API DEBUG] Received Request: company=${company}, deliveryOption=${deliveryOption}, isSutherland=${isSutherland}`);
+        console.log(`[Generate Agent API DEBUG] Received Request: company=${company}, deliveryOption=${deliveryOption}`);
 
         if (!name || !company || !email || !phone) {
             return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
@@ -364,7 +364,7 @@ Be helpful, concise, and professional. Greet ${name} by name and start serving $
         }
 
         const assistantId = vapiData.id;
-        console.log(`[Generate Agent API] Resolved Assistant ID: ${assistantId} (isSutherland: ${isSutherland})`);
+        console.log(`[Generate Agent API] Resolved Assistant ID: ${assistantId}`);
 
         // TRACK FOR CLEANUP (Expires in 30 mins)
         if (assistantId && adminDb) {
@@ -398,7 +398,7 @@ Be helpful, concise, and professional. Greet ${name} by name and start serving $
 
         // 2. Determine the host URL for the Test Drive link (Standardized to premium theme)
         const emailAssistantId = assistantId;
-        const orgSlug = isSutherland ? 'sutherland' : company.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+        const orgSlug = company.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
         const testLink = `${protocol}://${host}/business/${orgSlug || 'agent'}/${emailAssistantId}`;
 
         // 3. Handle Delivery Mode — Call directly via VAPI API (no internal fetch)

@@ -75,7 +75,7 @@ export default function SutherlandLeadForm() {
         setStatus('loading');
         setErrorMessage('');
 
-        sendGAEvent('event', 'sutherland_lead_submit', {
+        sendGAEvent('event', 'lead_submit', {
             category: 'acquisition',
             action: 'submit',
             label: formData.industry,
@@ -89,7 +89,7 @@ export default function SutherlandLeadForm() {
                 body: JSON.stringify({
                     ...formData,
                     deliveryOption: 'none',
-                    isSutherland: true
+                    isSutherland: false
                 }),
             });
 
@@ -241,7 +241,7 @@ export default function SutherlandLeadForm() {
                                     <input
                                         required name="company" value={formData.company} onChange={handleChange}
                                         className="glass-input w-full py-2 px-3 text-[11px]"
-                                        placeholder="e.g. Sutherland"
+                                        placeholder="e.g. Acme Corp"
                                     />
                                 </div>
                                 <div className="space-y-1">
